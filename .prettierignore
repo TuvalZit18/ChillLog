@@ -1,0 +1,7 @@
+client/dist/
+server/data/
+samples/
+coverage/
+package-lock.json
+# Hand-written docs keep their own formatting
+*.md
