@@ -1,0 +1,22 @@
+/* Mobile-first: base styles target phones; add min-width queries for larger screens. */
+:root {
+  --color-bg: #ffffff;
+  --color-text: #111111;
+  --space-2: 0.5rem;
+  --space-4: 1rem;
+  --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: var(--space-4);
+  font-family: var(--font-body);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
