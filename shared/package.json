@@ -1,0 +1,10 @@
+{
+  "name": "@chilllog/shared",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Code shared by server and client: Zod schemas, detection thresholds",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js"
+  }
+}

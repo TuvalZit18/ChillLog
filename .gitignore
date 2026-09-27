@@ -1,0 +1,14 @@
+node_modules/
+client/dist/
+coverage/
+
+# Runtime data: raw uploads + SQLite DB (created on startup)
+server/data/
+
+# Generated demo data (npm run seed)
+samples/
+
+.env
+*.log
+.DS_Store
+Thumbs.db
