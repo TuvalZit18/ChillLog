@@ -18,6 +18,7 @@
     "build": "npm run build -w @chilllog/client",
     "test": "npm test --workspaces --if-present",
     "rebuild": "npm run rebuild -w @chilllog/server",
+    "seed": "npm run seed -w @chilllog/server --",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
