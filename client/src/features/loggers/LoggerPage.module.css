@@ -1,0 +1,130 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.eyebrow {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+/* Details: label/value pairs, two in a row. */
+.details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.details div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.details dt {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.details dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Move history: a vertical line with a dot per place; the current place has a filled dot. */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 4px 0 0;
+  list-style: none;
+}
+
+.timeline li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 0 18px 26px;
+}
+
+.timeline li::before {
+  content: '';
+  position: absolute;
+  top: 7px;
+  left: 6px;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--muted);
+  border-radius: 50%;
+  background: var(--surface);
+}
+
+.timeline li::after {
+  content: '';
+  position: absolute;
+  top: 20px;
+  bottom: 0;
+  left: 11px;
+  width: 2px;
+  background: var(--line);
+}
+
+.timeline li:last-child {
+  padding-bottom: 0;
+}
+
+.timeline li:last-child::after {
+  display: none;
+}
+
+.timeline .now::before {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.where {
+  font-weight: 600;
+}
+
+.when {
+  font-size: 14px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}

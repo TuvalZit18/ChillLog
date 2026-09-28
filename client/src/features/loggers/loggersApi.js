@@ -1,20 +1,63 @@
-// The registry: GET /api/loggers (every logger with the fridge it is in now) and GET
-// /api/branches (branches A–Z with their fridges). Used by the upload screen ("Which logger is
-// this file from?") and the inspector's filters.
+// The registry: loggers (GET /api/loggers, every logger with the fridge it is in now) and
+// branches (GET /api/branches, A–Z with their fridges), and the forms that change them.
+// Used by the Loggers screens, the upload screen ("Which logger is this file from?") and the
+// inspector's filters. Each change invalidates the screens built from it (architecture §9).
 
 import { api } from '../../app/api.js';
 
-const loggersApi = api.enhanceEndpoints({ addTagTypes: ['Loggers', 'Branches'] }).injectEndpoints({
-  endpoints: (build) => ({
-    getLoggers: build.query({
-      query: () => 'loggers',
-      providesTags: ['Loggers'],
-    }),
-    getBranches: build.query({
-      query: () => 'branches',
-      providesTags: ['Branches'],
-    }),
-  }),
-});
+// A new or changed logger can process files that were waiting for it, so readings change too.
+const AFTER_LOGGER_CHANGE = ['Loggers', 'Uploads', 'Overview', 'Fridge', 'Inspector'];
+// A new branch or fridge appears on the overview (as "No file") and in every branch list.
+const AFTER_BRANCH_CHANGE = ['Branches', 'Overview', 'Inspector'];
 
-export const { useGetLoggersQuery, useGetBranchesQuery } = loggersApi;
+const loggersApi = api
+  .enhanceEndpoints({
+    addTagTypes: ['Loggers', 'Branches', 'Uploads', 'Overview', 'Fridge', 'Inspector'],
+  })
+  .injectEndpoints({
+    endpoints: (build) => ({
+      getLoggers: build.query({
+        query: () => 'loggers',
+        providesTags: ['Loggers'],
+      }),
+      getLogger: build.query({
+        query: (id) => `loggers/${id}`,
+        providesTags: ['Loggers'],
+      }),
+      moveLogger: build.mutation({
+        query: ({ id, ...body }) => ({ url: `loggers/${id}/moves`, method: 'POST', body }),
+        invalidatesTags: AFTER_LOGGER_CHANGE,
+      }),
+      updateLoggerSettings: build.mutation({
+        query: ({ id, ...body }) => ({ url: `loggers/${id}/settings`, method: 'PATCH', body }),
+        invalidatesTags: AFTER_LOGGER_CHANGE,
+      }),
+      getBranches: build.query({
+        query: () => 'branches',
+        providesTags: ['Branches'],
+      }),
+      addLogger: build.mutation({
+        query: (body) => ({ url: 'loggers', method: 'POST', body }),
+        invalidatesTags: AFTER_LOGGER_CHANGE,
+      }),
+      addBranch: build.mutation({
+        query: (body) => ({ url: 'branches', method: 'POST', body }),
+        invalidatesTags: AFTER_BRANCH_CHANGE,
+      }),
+      addFridge: build.mutation({
+        query: (body) => ({ url: 'fridges', method: 'POST', body }),
+        invalidatesTags: AFTER_BRANCH_CHANGE,
+      }),
+    }),
+  });
+
+export const {
+  useGetLoggerQuery,
+  useMoveLoggerMutation,
+  useUpdateLoggerSettingsMutation,
+  useGetLoggersQuery,
+  useGetBranchesQuery,
+  useAddLoggerMutation,
+  useAddBranchMutation,
+  useAddFridgeMutation,
+} = loggersApi;

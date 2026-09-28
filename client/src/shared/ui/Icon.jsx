@@ -75,6 +75,8 @@ const PATHS = {
     </>
   ),
   chevDown: <path d="M6 9l6 6 6-6" />,
+  chevRight: <path d="M9 5l7 7-7 7" />,
+  plus: <path d="M12 5v14M5 12h14" />,
   back: <path d="M15 5l-7 7 7 7" />,
   info: (
     <>
