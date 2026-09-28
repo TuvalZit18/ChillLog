@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { transaction } from './transaction.js';
 
 const defaultDir = path.resolve(import.meta.dirname, '..', '..', 'migrations');
 
@@ -33,13 +34,12 @@ export function migrate(db, { dir = defaultDir } = {}) {
   const record = db.prepare('INSERT INTO schema_migrations (name, applied_at) VALUES (?, ?)');
   for (const name of pending) {
     const sql = fs.readFileSync(path.join(dir, name), 'utf8');
-    db.exec('BEGIN');
     try {
-      db.exec(sql);
-      record.run(name, new Date().toISOString());
-      db.exec('COMMIT');
+      transaction(db, () => {
+        db.exec(sql);
+        record.run(name, new Date().toISOString());
+      });
     } catch (err) {
-      db.exec('ROLLBACK');
       throw new Error(`Migration ${name} failed: ${err.message}`, { cause: err });
     }
   }
