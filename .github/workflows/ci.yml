@@ -1,8 +1,17 @@
 name: CI
 
+# Branches are checked through their PR; main is checked again after each merge.
+# Docs-only changes skip CI: lint, tests and build don't read them.
 on:
   push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
   pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
 
 jobs:
   test:
