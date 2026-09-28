@@ -3,14 +3,17 @@ import path from 'node:path';
 import express from 'express';
 import { errorHandler } from './api/errors.js';
 import { registryRoutes } from './api/registry-routes.js';
+import { overviewRoutes } from './api/overview-routes.js';
 import { uploadRoutes } from './api/upload-routes.js';
 
 /**
  * Builds the Express app without starting it, so tests can drive it with Supertest.
- * @param {{ db?: import('node:sqlite').DatabaseSync, rawDir?: string, clientDist?: string }} [options]
+ * @param {{ db?: import('node:sqlite').DatabaseSync, rawDir?: string, clientDist?: string,
+ *   now?: () => Date }} [options]
  *   db and rawDir go together: the data routes are mounted only when both are given.
+ *   now is the clock ("this week" depends on it); tests pin it.
  */
-export function createApp({ db, rawDir, clientDist } = {}) {
+export function createApp({ db, rawDir, clientDist, now = () => new Date() } = {}) {
   const app = express();
 
   app.use(express.json());
@@ -24,6 +27,7 @@ export function createApp({ db, rawDir, clientDist } = {}) {
   if (db && rawDir) {
     api.use(registryRoutes(db, rawDir));
     api.use(uploadRoutes(db, rawDir));
+    api.use(overviewRoutes(db, now));
   }
   app.use('/api', api);
   app.use('/api', (req, res) => {

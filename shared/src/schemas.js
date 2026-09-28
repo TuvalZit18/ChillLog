@@ -49,3 +49,11 @@ export const moveInput = z.object({ fridgeId: id, from: localDateTime });
 
 /** "Which logger is this file from?" */
 export const assignInput = z.object({ loggerId: id });
+
+export const localDate = z
+  .string()
+  .trim()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2026-09-14.');
+
+/** Overview: any day in the week to show; the last full week when left out. */
+export const overviewQuery = z.object({ week: localDate.optional() });
