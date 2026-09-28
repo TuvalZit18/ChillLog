@@ -3,11 +3,11 @@
 import { Navigate, Route, Routes } from 'react-router';
 import { FridgePage } from '../features/fridge/FridgePage.jsx';
 import { InspectorPage } from '../features/inspector/InspectorPage.jsx';
+import { LoggerPage } from '../features/loggers/LoggerPage.jsx';
 import { LoggersPage } from '../features/loggers/LoggersPage.jsx';
 import { OverviewPage } from '../features/overview/OverviewPage.jsx';
 import { UploadPage } from '../features/upload/UploadPage.jsx';
 import { AppShell } from '../shared/layout/AppShell.jsx';
-import { Placeholder } from './Placeholder.jsx';
 
 export default function App() {
   return (
@@ -18,7 +18,7 @@ export default function App() {
         <Route path="upload" element={<UploadPage />} />
         <Route path="inspector" element={<InspectorPage />} />
         <Route path="loggers" element={<LoggersPage />} />
-        <Route path="loggers/:id" element={<Placeholder title="Logger" />} />
+        <Route path="loggers/:id" element={<LoggerPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

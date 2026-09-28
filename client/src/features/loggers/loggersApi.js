@@ -20,6 +20,18 @@ const loggersApi = api
         query: () => 'loggers',
         providesTags: ['Loggers'],
       }),
+      getLogger: build.query({
+        query: (id) => `loggers/${id}`,
+        providesTags: ['Loggers'],
+      }),
+      moveLogger: build.mutation({
+        query: ({ id, ...body }) => ({ url: `loggers/${id}/moves`, method: 'POST', body }),
+        invalidatesTags: AFTER_LOGGER_CHANGE,
+      }),
+      updateLoggerSettings: build.mutation({
+        query: ({ id, ...body }) => ({ url: `loggers/${id}/settings`, method: 'PATCH', body }),
+        invalidatesTags: AFTER_LOGGER_CHANGE,
+      }),
       getBranches: build.query({
         query: () => 'branches',
         providesTags: ['Branches'],
@@ -40,6 +52,9 @@ const loggersApi = api
   });
 
 export const {
+  useGetLoggerQuery,
+  useMoveLoggerMutation,
+  useUpdateLoggerSettingsMutation,
   useGetLoggersQuery,
   useGetBranchesQuery,
   useAddLoggerMutation,

@@ -4,6 +4,12 @@
   gap: 16px;
 }
 
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 /* Two fields side by side (branch + fridge, unit + date format). */
 .two {
   display: grid;
