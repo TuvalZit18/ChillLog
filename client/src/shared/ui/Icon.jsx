@@ -98,6 +98,20 @@ const PATHS = {
       <path d="M12 17h.01" />
     </>
   ),
+  download: (
+    <>
+      <path d="M12 4v11" />
+      <path d="M7 10l5 5 5-5" />
+      <path d="M5 19h14" />
+    </>
+  ),
+  share: (
+    <>
+      <path d="M12 4v11" />
+      <path d="M8 8l4-4 4 4" />
+      <path d="M5 12v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7" />
+    </>
+  ),
   history: (
     <>
       <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />

@@ -1,0 +1,172 @@
+.page,
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.results {
+  transition: opacity 0.15s;
+}
+
+.results[aria-busy='true'] {
+  opacity: 0.6;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+/* Filters: branch and fridge on their own rows on phones, all four in a row from 880px. */
+.filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 880px) {
+  .filters {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .wide {
+    grid-column: auto;
+  }
+}
+
+/* The answer: the one sentence Summer reads to the inspector. */
+.answer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.eyebrow {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.sentence {
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+
+.sentence b {
+  font-weight: 700;
+}
+
+/* Every time above 5°C: cards on phones, a table from 720px. */
+.tableWrap {
+  display: none;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+}
+
+.cardsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media (min-width: 720px) {
+  .tableWrap {
+    display: block;
+  }
+
+  .cardsList {
+    display: none;
+  }
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  font-variant-numeric: tabular-nums;
+}
+
+.table th,
+.table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table th {
+  background: var(--bg);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.table tr:last-child td {
+  border-bottom: 0;
+}
+
+.table .number {
+  text-align: right;
+}
+
+.plainList {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding-block: 6px;
+  list-style: none;
+}
+
+.plainList li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  padding: 10px 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.plainList li + li {
+  border-top: 1px solid var(--line);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
