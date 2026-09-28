@@ -71,6 +71,28 @@ export function groupBranches(fridges) {
     }));
 }
 
+// How each problem is counted in words: "1 gap", "2 gaps", "1 warming", "1 without a file".
+const COUNT_WORDS = {
+  alert: ['alert', 'alerts'],
+  warming: ['warming', 'warming'],
+  gap: ['gap', 'gaps'],
+  no_file: ['without a file', 'without a file'],
+};
+
+/**
+ * A branch card's header in words, worst first: "1 alert, 1 gap · 3 fridges" or
+ * "All OK · 2 fridges", so the branch reads at a glance without decoding icons.
+ */
+export function branchSummary(branch) {
+  const fridges = `${branch.fridges.length} ${branch.fridges.length === 1 ? 'fridge' : 'fridges'}`;
+  if (branch.fridges.every((f) => f.status === 'no_file')) return `No file this week · ${fridges}`;
+  const problems = STATUS_ORDER.filter((status) => status !== 'ok')
+    .map((status) => [status, branch.fridges.filter((f) => f.status === status).length])
+    .filter(([, n]) => n > 0)
+    .map(([status, n]) => `${n} ${COUNT_WORDS[status][n === 1 ? 0 : 1]}`);
+  return `${problems.length ? problems.join(', ') : 'All OK'} · ${fridges}`;
+}
+
 /** The ?status= filter, or null when it's missing or not a real status. */
 export function readStatusFilter(value) {
   return STATUS_ORDER.includes(value) ? value : null;

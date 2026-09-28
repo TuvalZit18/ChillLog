@@ -4,16 +4,40 @@
 import { Link } from 'react-router';
 import { Icon } from '../../shared/ui/Icon.jsx';
 import { StatusPill } from '../../shared/status/StatusPill.jsx';
-import { describeStatus } from '../../shared/status/status.js';
+import { describeStatus, STATUS_META } from '../../shared/status/status.js';
+import { branchSummary } from './overviewModel.js';
 import styles from './BranchList.module.css';
 
 const fridgeCount = (n) => `${n} ${n === 1 ? 'fridge' : 'fridges'}`;
 
+/** One fridge in a branch, on the phone list: name and full pill side by side. */
 function FridgeRow({ fridge }) {
   return (
     <Link to={`/fridges/${fridge.fridgeId}`} className={styles.row}>
       <span className={styles.rowName}>{fridge.fridgeName}</span>
       <StatusPill status={fridge.status} text={describeStatus(fridge)} />
+    </Link>
+  );
+}
+
+/**
+ * One fridge in a narrow desktop card (Laws of UX: Von Restorff, Selective Attention). An OK
+ * fridge is one quiet line ("Walk-in ✓ OK · 3.3°C"); a problem gets its own filled pill on a line
+ * of its own, so the few problems stand out from the many OK rows.
+ */
+function CardRow({ fridge }) {
+  const ok = fridge.status === 'ok';
+  return (
+    <Link
+      to={`/fridges/${fridge.fridgeId}`}
+      className={`${styles.row} ${ok ? styles.quietRow : styles.stacked}`}
+    >
+      <span className={styles.rowName}>{fridge.fridgeName}</span>
+      <StatusPill
+        status={fridge.status}
+        text={describeStatus(fridge, { compact: true })}
+        quiet={ok}
+      />
     </Link>
   );
 }
@@ -44,21 +68,32 @@ export function BranchList({ branches }) {
       </div>
 
       <div className={styles.grid}>
-        {branches.map((branch) => (
-          <section
-            key={branch.branchId}
-            className={`${styles.card} ${branch.worst.status === 'ok' ? '' : styles.hasProblem}`}
-            aria-label={branch.branchName}
-          >
-            <div className={styles.cardHead}>
-              <span className={styles.cardName}>{branch.branchName}</span>
-              <span className="small muted">{fridgeCount(branch.fridges.length)}</span>
-            </div>
-            {branch.fridges.map((fridge) => (
-              <FridgeRow key={fridge.fridgeId} fridge={fridge} />
-            ))}
-          </section>
-        ))}
+        {branches.map((branch) => {
+          // A branch with a problem takes its worst status's color on the card's edge; the header
+          // says what's wrong in words ("1 alert, 1 gap · 3 fridges") next to that status's icon,
+          // so neither the color nor the icon has to be decoded.
+          const problem = branch.worst.status !== 'ok';
+          const meta = STATUS_META[branch.worst.status];
+          return (
+            <section
+              key={branch.branchId}
+              className={`${styles.card} ${problem ? styles.toned : ''}`}
+              style={{ '--tone': meta.color }}
+              aria-label={branch.branchName}
+            >
+              <div className={styles.cardHead}>
+                <span className={styles.cardName}>{branch.branchName}</span>
+                <span className={`${styles.cardSummary} ${problem ? styles.summaryProblem : ''}`}>
+                  <Icon name={meta.icon} size={16} className={styles.summaryIcon} />
+                  {branchSummary(branch)}
+                </span>
+              </div>
+              {branch.fridges.map((fridge) => (
+                <CardRow key={fridge.fridgeId} fridge={fridge} />
+              ))}
+            </section>
+          );
+        })}
       </div>
     </>
   );

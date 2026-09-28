@@ -14,6 +14,8 @@
   --grid: #e4e8eb;
   --band: rgba(176, 39, 31, 0.1);
   --shade: rgba(20, 25, 29, 0.14);
+  /* How strongly problem cards glow in their status color (0–1): faint on light backgrounds. */
+  --glow: 0.22;
 
   --ok: #2b7535;
   --ok-soft: #e3f1e4;
@@ -21,8 +23,8 @@
   --alert-soft: #fbe7e5;
   --warm: #8f5500;
   --warm-soft: #faeed9;
-  --gap: #5847ae;
-  --gap-soft: #ece9f8;
+  --gap: #1f5fa8;
+  --gap-soft: #e3eef9;
   --nofile: #4f5963;
   --nofile-soft: #e8ecee;
 
@@ -61,6 +63,7 @@
     --grid: #232b30;
     --band: rgba(255, 124, 114, 0.15);
     --shade: rgba(0, 0, 0, 0.5);
+    --glow: 0.45;
 
     --ok: #6cc77a;
     --ok-soft: #173222;
@@ -68,8 +71,8 @@
     --alert-soft: #3a1916;
     --warm: #f2b25c;
     --warm-soft: #33260f;
-    --gap: #aca0f5;
-    --gap-soft: #25213f;
+    --gap: #7eb6f2;
+    --gap-soft: #16283b;
     --nofile: #a7b0b8;
     --nofile-soft: #20272c;
   }
@@ -89,6 +92,7 @@
   --grid: #232b30;
   --band: rgba(255, 124, 114, 0.15);
   --shade: rgba(0, 0, 0, 0.5);
+  --glow: 0.45;
 
   --ok: #6cc77a;
   --ok-soft: #173222;
@@ -96,8 +100,8 @@
   --alert-soft: #3a1916;
   --warm: #f2b25c;
   --warm-soft: #33260f;
-  --gap: #aca0f5;
-  --gap-soft: #25213f;
+  --gap: #7eb6f2;
+  --gap-soft: #16283b;
   --nofile: #a7b0b8;
   --nofile-soft: #20272c;
 }

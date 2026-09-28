@@ -16,6 +16,18 @@
   flex: none;
 }
 
+/* Quiet: the same icon, word and value, without the filled pill; only the icon keeps its color. */
+.quiet {
+  padding: 0;
+  background: none;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.quiet .icon {
+  color: var(--pill-strong);
+}
+
 .alert {
   --pill-strong: var(--alert);
   --pill-soft: var(--alert-soft);
