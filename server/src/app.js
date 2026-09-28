@@ -3,6 +3,7 @@ import path from 'node:path';
 import express from 'express';
 import { errorHandler } from './api/errors.js';
 import { registryRoutes } from './api/registry-routes.js';
+import { fridgeRoutes } from './api/fridge-routes.js';
 import { overviewRoutes } from './api/overview-routes.js';
 import { uploadRoutes } from './api/upload-routes.js';
 
@@ -28,6 +29,7 @@ export function createApp({ db, rawDir, clientDist, now = () => new Date() } = {
     api.use(registryRoutes(db, rawDir));
     api.use(uploadRoutes(db, rawDir));
     api.use(overviewRoutes(db, now));
+    api.use(fridgeRoutes(db, now));
   }
   app.use('/api', api);
   app.use('/api', (req, res) => {

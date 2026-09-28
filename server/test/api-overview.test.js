@@ -175,6 +175,18 @@ describe('GET /api/overview', () => {
     });
   });
 
+  it('gives each card a 7-day sparkline that still shows a single high reading', async () => {
+    const { body } = await overview();
+    const display = body.fridges.find((f) => f.fridgeName === 'Display 2');
+    expect(display.sparkline).toHaveLength(56); // 7 days of 3-hour buckets
+    expect(display.sparkline.find((p) => p.tsUtc === '2026-09-18T06:00:00Z')).toEqual({
+      tsUtc: '2026-09-18T06:00:00Z',
+      minC: 3.9,
+      maxC: 9.4,
+    });
+    expect(body.fridges.find((f) => f.fridgeName === 'Drinks').sparkline).toEqual([]);
+  });
+
   it('marks a fridge with no file this week, and one that has never had a logger', async () => {
     const { body } = await overview();
     const eilat = body.fridges.filter((f) => f.branchName === 'Eilat');

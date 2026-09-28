@@ -4,8 +4,10 @@
 
 import { DateTime } from 'luxon';
 import { THRESHOLDS, TIME_ZONE } from '@chilllog/shared';
-import { findGaps, warmingAt } from '../detection/detection.js';
+import { warmingAt } from '../detection/detection.js';
 import { fridgeReadings } from '../detection/store.js';
+import { missingInRange } from './gaps.js';
+import { bucketize } from './series.js';
 
 /** @typedef {'alert' | 'warming' | 'gap' | 'no_file' | 'ok'} Status */
 
@@ -14,7 +16,8 @@ export const STATUS_ORDER = /** @type {const} */ (['alert', 'warming', 'gap', 'n
 
 const MINUTE = 60_000;
 // Warming compares two windows ending at the last reading, so load that much before the week.
-const LOOKBACK_MS = 2 * THRESHOLDS.warming.windowHours * 60 * MINUTE;
+export const LOOKBACK_MS = 2 * THRESHOLDS.warming.windowHours * 60 * MINUTE;
+const SPARKLINE_BUCKET_MINUTES = 180;
 
 const toUtcIso = (dt) => dt.toUTC().toISO({ suppressMilliseconds: true });
 const time = (iso) => Date.parse(iso);
@@ -43,9 +46,10 @@ export function weekWindow({ now, week }) {
 
 /**
  * @param {import('node:sqlite').DatabaseSync} db
- * @param {{ now: Date, week: NonNullable<ReturnType<typeof weekWindow>> }} options
+ * @param {{ now: Date, week: NonNullable<ReturnType<typeof weekWindow>>, fridgeId?: number }} options
+ *   fridgeId limits it to one fridge (the fridge page's status pill)
  */
-export function buildOverview(db, { now, week }) {
+export function buildOverview(db, { now, week, fridgeId = null }) {
   const { startUtc, endUtc } = week;
   // For the current week, missing data can only run until now, not until Sunday night.
   const nowUtc = now.toISOString().replace(/\.\d{3}Z$/, 'Z');
@@ -58,9 +62,10 @@ export function buildOverview(db, { now, week }) {
                       WHERE a.fridge_id = f.id AND a.from_utc < ?) AS has_logger
        FROM fridges f
        JOIN branches b ON b.id = f.branch_id
-       LEFT JOIN fridge_status s ON s.fridge_id = f.id`,
+       LEFT JOIN fridge_status s ON s.fridge_id = f.id
+       WHERE ? IS NULL OR f.id = ?`,
     )
-    .all(endUtc);
+    .all(endUtc, fridgeId, fridgeId);
   const excursionsInWeek = db.prepare(
     `SELECT peak_c, duration_minutes FROM excursions
      WHERE fridge_id = ? AND start_utc < ? AND end_utc > ?`,
@@ -77,6 +82,7 @@ export function buildOverview(db, { now, week }) {
       alert: null,
       warming: null,
       gap: null,
+      sparkline: [],
     };
     const loaded = fridgeReadings(db, fridge.id, {
       fromUtc: new Date(time(startUtc) - LOOKBACK_MS).toISOString(),
@@ -88,6 +94,12 @@ export function buildOverview(db, { now, week }) {
     const validInWeek = inWeek.filter(isValid);
     const last = validInWeek.at(-1);
     if (last) base.latest = { tsUtc: last.tsUtc, tempC: last.tempC };
+    // The card's 7-day sparkline: 56 min/max points, so a spike still shows.
+    base.sparkline = bucketize(inWeek, {
+      fromUtc: startUtc,
+      toUtc: endUtc,
+      bucketMinutes: SPARKLINE_BUCKET_MINUTES,
+    });
 
     const excursions = excursionsInWeek.all(fridge.id, endUtc, startUtc);
     if (excursions.length > 0) {
@@ -104,7 +116,7 @@ export function buildOverview(db, { now, week }) {
     }
 
     const hadDataBefore = fridge.first_utc !== null && fridge.first_utc < startUtc;
-    const gaps = weekGaps(loaded, { startUtc, edgeEndUtc, hadDataBefore });
+    const gaps = missingInRange(loaded, { startUtc, edgeEndUtc, hadDataBefore });
     if (gaps.length > 0) {
       base.gap = { count: gaps.length, totalMinutes: gaps.reduce((sum, g) => sum + g.minutes, 0) };
     }
@@ -124,38 +136,4 @@ export function buildOverview(db, { now, week }) {
   );
   const { last } = db.prepare('SELECT MAX(uploaded_at) AS last FROM uploads').get();
   return { week, lastUploadUtc: last, counts, fridges: rows };
-}
-
-/**
- * Missing data inside the week, in minutes, clipped to the week: gaps between readings, and
- * the stretches at either edge ("the logger died on Thursday"). The start edge only counts when
- * the fridge had data before the week; otherwise the logger simply wasn't there yet.
- */
-function weekGaps(loaded, { startUtc, edgeEndUtc, hadDataBefore }) {
-  const threshold = THRESHOLDS.gapMinutes;
-  const clipped = (fromUtc, toUtc) => {
-    const from = Math.max(time(fromUtc), time(startUtc));
-    const to = Math.min(time(toUtc), time(edgeEndUtc));
-    return { fromUtc, toUtc, minutes: Math.max(0, (to - from) / MINUTE) };
-  };
-
-  const gaps = findGaps(loaded)
-    .filter((g) => g.toUtc > startUtc && g.fromUtc < edgeEndUtc)
-    .map((g) => clipped(g.fromUtc, g.toUtc));
-
-  const valid = loaded.filter(isValid);
-  const validInWeek = valid.filter((r) => r.tsUtc >= startUtc);
-  const validBefore = valid.filter((r) => r.tsUtc < startUtc);
-
-  if (validInWeek.length === 0) {
-    // Readings this week, but every one of them ERR: the whole week is missing.
-    return [clipped(startUtc, edgeEndUtc)];
-  }
-  if (hadDataBefore && validBefore.length === 0) {
-    const edge = clipped(startUtc, validInWeek[0].tsUtc);
-    if (edge.minutes > threshold) gaps.unshift(edge);
-  }
-  const end = clipped(validInWeek.at(-1).tsUtc, edgeEndUtc);
-  if (end.minutes > threshold) gaps.push(end);
-  return gaps;
 }

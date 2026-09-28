@@ -85,6 +85,37 @@ export function listFridges(db) {
     .all();
 }
 
+/** @returns {(Fridge & { branchName: string }) | null} */
+export function getFridge(db, id) {
+  const row = db
+    .prepare(
+      `SELECT f.id, f.branch_id AS branchId, b.name AS branchName, f.name
+       FROM fridges f JOIN branches b ON b.id = f.branch_id
+       WHERE f.id = ?`,
+    )
+    .get(id);
+  return row ?? null;
+}
+
+/**
+ * Which loggers have been in this fridge, and when, newest first. toUtc is null for a logger
+ * that is still there.
+ * @returns {{ loggerId: number, loggerCode: string, fromUtc: string, toUtc: string | null }[]}
+ */
+export function fridgePlacements(db, fridgeId) {
+  return db
+    .prepare(
+      `SELECT a.logger_id AS loggerId, l.code AS loggerCode, a.from_utc AS fromUtc,
+              (SELECT MIN(next.from_utc) FROM logger_assignments next
+               WHERE next.logger_id = a.logger_id AND next.from_utc > a.from_utc) AS toUtc
+       FROM logger_assignments a
+       JOIN loggers l ON l.id = a.logger_id
+       WHERE a.fridge_id = ?
+       ORDER BY a.from_utc DESC`,
+    )
+    .all(fridgeId);
+}
+
 // Loggers -------------------------------------------------------------------
 
 /** @returns {Logger} */
