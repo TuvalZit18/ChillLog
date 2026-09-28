@@ -6,6 +6,11 @@ import { openDatabase } from '../src/db/database.js';
 import { migrate } from '../src/db/migrate.js';
 
 const coreTables = ['branches', 'fridges', 'loggers', 'logger_assignments', 'uploads', 'readings'];
+const derivedTables = ['excursions', 'door_spikes', 'gaps', 'fridge_status'];
+const migrationFiles = fs
+  .readdirSync(path.join(import.meta.dirname, '..', 'migrations'))
+  .filter((name) => name.endsWith('.sql'))
+  .sort();
 
 function tableNames(db) {
   return db
@@ -34,15 +39,19 @@ describe('migrations', () => {
     db.close();
   });
 
-  it('applies the core schema to a fresh database', () => {
-    expect(migrate(db)).toEqual(['001_core_tables.sql']);
-    expect(tableNames(db)).toEqual(expect.arrayContaining([...coreTables, 'schema_migrations']));
+  it('applies every migration, in order, to a fresh database', () => {
+    expect(migrate(db)).toEqual(migrationFiles);
+    expect(tableNames(db)).toEqual(
+      expect.arrayContaining([...coreTables, ...derivedTables, 'schema_migrations']),
+    );
   });
 
   it('applies nothing when run a second time', () => {
     migrate(db);
     expect(migrate(db)).toEqual([]);
-    expect(db.prepare('SELECT COUNT(*) AS n FROM schema_migrations').get().n).toBe(1);
+    expect(db.prepare('SELECT COUNT(*) AS n FROM schema_migrations').get().n).toBe(
+      migrationFiles.length,
+    );
   });
 
   it('rolls back a failing migration and does not record it', () => {
