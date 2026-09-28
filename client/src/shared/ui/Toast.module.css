@@ -1,0 +1,27 @@
+/* The live region is always there (so screen readers pick up new messages); only the pill shows. */
+.region {
+  position: fixed;
+  left: 50%;
+  bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  z-index: 50;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.toast {
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 15px;
+  box-shadow: 0 8px 24px var(--shade);
+}
+
+/* Desktop has no bottom tab bar. */
+@media (min-width: 880px) {
+  .region {
+    bottom: 32px;
+  }
+}

@@ -179,7 +179,7 @@ Summer's email is the whole spec; where it was open, the call is written down he
 
 - **GitHub, public from the first push.**
 - **Feature branches + self-merged PRs**, one per module/feature (mirrors the modular monolith). `type/scope` names. **Merge commits, not squash**, to keep the real history. CI must pass before merge. PR template: *What · Decisions made · Tests · AI notes*.
-- Planned sequence: `chore/scaffold` → `feat/db-migrations` → `feat/registry` → `feat/ingest` → `feat/detection` → `feat/api` → `feat/seed-generator` → `feat/ui-overview` → `feat/ui-fridge-detail` → `feat/ui-upload` → `feat/ui-inspector` → `docs/notes-readme`.
+- Planned sequence: `chore/scaffold` → `feat/db-migrations` → `feat/registry` → `feat/ingest` → `feat/detection` → `feat/api` → `feat/seed-generator` → `feat/ui-overview` → `feat/ui-fridge-detail` → `feat/ui-upload` → `feat/ui-inspector` → `feat/ui-loggers` → `docs/notes-readme`. (`feat/ui-loggers` was added during the build: ui.md specifies the Loggers screens, but the first plan had no branch for them.)
 - **Conventional Commits**; history never rewritten.
 - **AI traceability:** failing test committed first → fix committed → entry in `docs/ai-log.md`.
 - **AI session summaries:** at the end of each AI conversation, `docs/ai-sessions/NNN-<topic>.md` (what I asked, what I decided, where I overrode the AI, what I didn't like, what the AI did).
