@@ -1,0 +1,103 @@
+/* Design tokens (docs/design/ui.md). Components use these variables, never raw hex values.
+   Light is the default; dark applies when the device asks for it (unless the user picked Light)
+   or when the user picked Dark, so the choice wins both ways. */
+:root {
+  --bg: #f3f5f6;
+  --surface: #ffffff;
+  --sunken: #e8ecee;
+  --ink: #14191d;
+  --muted: #56606a;
+  --line: #d8dee2;
+  --accent: #0d6776;
+  --accent-ink: #ffffff;
+  --accent-soft: #dcedf0;
+  --grid: #e4e8eb;
+  --band: rgba(176, 39, 31, 0.1);
+  --shade: rgba(20, 25, 29, 0.14);
+
+  --ok: #2b7535;
+  --ok-soft: #e3f1e4;
+  --alert: #b0271f;
+  --alert-soft: #fbe7e5;
+  --warm: #8f5500;
+  --warm-soft: #faeed9;
+  --gap: #5847ae;
+  --gap-soft: #ece9f8;
+  --nofile: #4f5963;
+  --nofile-soft: #e8ecee;
+
+  --font: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+
+  --radius-control: 8px;
+  --radius-card: 12px;
+  --radius-dialog: 16px;
+  --radius-pill: 999px;
+
+  --topbar-height: 54px;
+  --sidebar-width: 224px;
+  --content-max: 1180px;
+  --gutter: 16px;
+}
+
+@media (min-width: 880px) {
+  :root {
+    --gutter: 32px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #0f1316;
+    --surface: #171c20;
+    --sunken: #20272c;
+    --ink: #e6eaed;
+    --muted: #9ba5ae;
+    --line: #2b3339;
+    --accent: #5cb8c7;
+    --accent-ink: #06282e;
+    --accent-soft: #163439;
+    --grid: #232b30;
+    --band: rgba(255, 124, 114, 0.15);
+    --shade: rgba(0, 0, 0, 0.5);
+
+    --ok: #6cc77a;
+    --ok-soft: #173222;
+    --alert: #ff7c72;
+    --alert-soft: #3a1916;
+    --warm: #f2b25c;
+    --warm-soft: #33260f;
+    --gap: #aca0f5;
+    --gap-soft: #25213f;
+    --nofile: #a7b0b8;
+    --nofile-soft: #20272c;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0f1316;
+  --surface: #171c20;
+  --sunken: #20272c;
+  --ink: #e6eaed;
+  --muted: #9ba5ae;
+  --line: #2b3339;
+  --accent: #5cb8c7;
+  --accent-ink: #06282e;
+  --accent-soft: #163439;
+  --grid: #232b30;
+  --band: rgba(255, 124, 114, 0.15);
+  --shade: rgba(0, 0, 0, 0.5);
+
+  --ok: #6cc77a;
+  --ok-soft: #173222;
+  --alert: #ff7c72;
+  --alert-soft: #3a1916;
+  --warm: #f2b25c;
+  --warm-soft: #33260f;
+  --gap: #aca0f5;
+  --gap-soft: #25213f;
+  --nofile: #a7b0b8;
+  --nofile-soft: #20272c;
+}

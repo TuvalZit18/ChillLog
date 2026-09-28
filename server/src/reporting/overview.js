@@ -3,16 +3,11 @@
 // Depends on "now", so it is worked out on read from the derived tables and a week of readings.
 
 import { DateTime } from 'luxon';
-import { THRESHOLDS, TIME_ZONE } from '@chilllog/shared';
+import { STATUS_ORDER, THRESHOLDS, TIME_ZONE } from '@chilllog/shared';
 import { warmingAt } from '../detection/detection.js';
 import { fridgeReadings } from '../detection/store.js';
 import { missingInRange } from './gaps.js';
 import { bucketize } from './series.js';
-
-/** @typedef {'alert' | 'warming' | 'gap' | 'no_file' | 'ok'} Status */
-
-/** Worst first. Lists are sorted in this order and the chips follow it. */
-export const STATUS_ORDER = /** @type {const} */ (['alert', 'warming', 'gap', 'no_file', 'ok']);
 
 const MINUTE = 60_000;
 // Warming compares two windows ending at the last reading, so load that much before the week.

@@ -1,0 +1,42 @@
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--pill-soft);
+  color: var(--pill-strong);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.icon {
+  flex: none;
+}
+
+.alert {
+  --pill-strong: var(--alert);
+  --pill-soft: var(--alert-soft);
+}
+
+.warming {
+  --pill-strong: var(--warm);
+  --pill-soft: var(--warm-soft);
+}
+
+.gap {
+  --pill-strong: var(--gap);
+  --pill-soft: var(--gap-soft);
+}
+
+.no_file {
+  --pill-strong: var(--nofile);
+  --pill-soft: var(--nofile-soft);
+}
+
+.ok {
+  --pill-strong: var(--ok);
+  --pill-soft: var(--ok-soft);
+}
