@@ -7,7 +7,7 @@ import { TIME_ZONE } from '@chilllog/shared';
 import { fridgeReadings } from '../detection/store.js';
 import { fridgePlacements, getFridge } from '../registry/registry.js';
 import { missingInRange } from './gaps.js';
-import { LOOKBACK_MS, buildOverview, weekWindow } from './overview.js';
+import { LOOKBACK_MS, buildOverview, filesDueUntilUtc, weekWindow } from './overview.js';
 import { bucketize, chooseBucketMinutes } from './series.js';
 
 export const MAX_RANGE_DAYS = 366;
@@ -61,6 +61,7 @@ export function buildFridgeDetail(db, { fridgeId, range, now }) {
   const inRange = loaded.filter((r) => r.tsUtc >= fromUtc);
 
   const nowUtc = now.toISOString().replace(/\.\d{3}Z$/, 'Z');
+  const dueUntilUtc = filesDueUntilUtc(now);
   const gaps =
     inRange.length === 0
       ? []
@@ -68,6 +69,7 @@ export function buildFridgeDetail(db, { fridgeId, range, now }) {
           startUtc: fromUtc,
           edgeEndUtc: nowUtc < toUtc ? nowUtc : toUtc,
           hadDataBefore: status !== undefined && status.first_utc < fromUtc,
+          dueUntilUtc,
         });
 
   const placements = fridgePlacements(db, fridgeId);
@@ -104,5 +106,7 @@ export function buildFridgeDetail(db, { fridgeId, range, now }) {
       .all(fridgeId, fromUtc, toUtc),
     gaps,
     errCount: inRange.filter((r) => r.isErr).length,
+    // Readings after this haven't been sent yet (next Monday's files), so they aren't a gap.
+    filesDueUntilUtc: dueUntilUtc,
   };
 }
