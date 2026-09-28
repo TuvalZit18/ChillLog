@@ -15,7 +15,7 @@ if (applied.length > 0) {
   console.log(`Applied migrations: ${applied.join(', ')}`);
 }
 
-const app = createApp({ clientDist: config.clientDist });
+const app = createApp({ db, clientDist: config.clientDist });
 
 app.listen(config.port, config.host, () => {
   console.log(`ChillLog running at http://${config.host}:${config.port}`);

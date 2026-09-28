@@ -1,12 +1,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import express from 'express';
+import { errorHandler } from './api/errors.js';
+import { registryRoutes } from './api/registry-routes.js';
 
 /**
  * Builds the Express app without starting it, so tests can drive it with Supertest.
- * @param {{ clientDist?: string }} [options]
+ * @param {{ db?: import('node:sqlite').DatabaseSync, clientDist?: string }} [options]
  */
-export function createApp({ clientDist } = {}) {
+export function createApp({ db, clientDist } = {}) {
   const app = express();
 
   app.use(express.json());
@@ -17,6 +19,9 @@ export function createApp({ clientDist } = {}) {
   api.get('/health', (req, res) => {
     res.json({ status: 'ok' });
   });
+  if (db) {
+    api.use(registryRoutes(db));
+  }
   app.use('/api', api);
   app.use('/api', (req, res) => {
     res.status(404).json({ error: 'Not found' });
@@ -30,6 +35,8 @@ export function createApp({ clientDist } = {}) {
       res.sendFile(path.join(clientDist, 'index.html'));
     });
   }
+
+  app.use(errorHandler);
 
   return app;
 }
