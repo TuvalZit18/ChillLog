@@ -3,8 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#ffffff" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#171c20" media="(prefers-color-scheme: dark)" />
     <title>ChillLog</title>
+    <script>
+      // Apply the saved theme before the app loads so the page doesn't flash (src/app/theme.js).
+      try {
+        var theme = localStorage.getItem('chilllog.theme');
+        if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme;
+      } catch (e) {
+        // No storage: follow the device.
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
