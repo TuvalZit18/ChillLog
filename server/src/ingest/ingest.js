@@ -59,11 +59,19 @@ export function ingestFile(db, { rawDir, fileName, content }) {
   const sha256 = crypto.createHash('sha256').update(content).digest('hex');
   const seen = db.prepare('SELECT id, report_json FROM uploads WHERE sha256 = ?').get(sha256);
   if (seen) {
+    // Describe the file as it was found the first time, but this upload added nothing:
+    // every reading in it is already stored.
+    const first = JSON.parse(seen.report_json);
     return {
-      ...JSON.parse(seen.report_json),
+      ...first,
       uploadId: seen.id,
       fileName,
       status: 'already_uploaded',
+      readings: {
+        ...first.readings,
+        added: 0,
+        alreadyStored: first.readings.added + first.readings.alreadyStored,
+      },
     };
   }
 
