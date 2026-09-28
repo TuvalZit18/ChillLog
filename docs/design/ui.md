@@ -165,7 +165,12 @@ The mockup follows the device setting only. The app adds a switch.
 - **Sparkline:** 112×36, last 7 days, `--muted` line, dashed 5°C line in `--alert`, end dot in the status color.
   Fixed scale 1–8°C so cards compare.
 - **Branch row (phone):** collapsible `<details>`: name, "3 fridges", worst status pill, chevron. Opens to one row per fridge.
-- **Branch card (desktop):** name + fridge count, then one row per fridge with its pill.
+- **Branch card (desktop):** name, then the branch's state in words next to its worst status's icon
+  ("1 alert, 1 gap · 3 fridges", "All OK · 2 fridges"). OK fridges are one quiet line (icon, word and
+  value, no filled pill); a problem fridge gets its filled pill on its own line. All cards are the
+  same size. A branch with a problem glows in its worst status's color: a gradient border and a soft
+  outer halo (fainter in light mode, stronger on hover/focus); all-OK cards stay plain, and on
+  hover/focus take the accent (the active sidebar item's teal) as border and glow.
 - **Temperature chart:**
   - Line in `--accent`, broken where readings are missing (no line drawn across a gap).
   - Dashed 5°C line in `--alert`, labelled "5°C" at the left axis.

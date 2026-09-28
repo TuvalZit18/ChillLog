@@ -3,6 +3,7 @@
 
 import { describe, expect, it } from 'vitest';
 import {
+  branchSummary,
   groupBranches,
   needsAttention,
   readStatusFilter,
@@ -94,6 +95,29 @@ describe('groupBranches', () => {
     expect(branches[1].fridges.map((f) => f.fridgeName)).toEqual(['Cream cakes', 'Display']);
     expect(branches[1].worst.fridgeName).toBe('Cream cakes');
     expect(branches[0].worst.status).toBe('ok');
+  });
+});
+
+describe('branchSummary', () => {
+  const branch = (...statuses) => ({
+    fridges: statuses.map((status, i) => fridge('Haifa', `Fridge ${i}`, status)),
+  });
+
+  it('says in words what is wrong in a branch, worst first, and how many fridges it has', () => {
+    expect(branchSummary(branch('gap', 'ok'))).toBe('1 gap · 2 fridges');
+    expect(branchSummary(branch('ok', 'gap', 'alert'))).toBe('1 alert, 1 gap · 3 fridges');
+    expect(branchSummary(branch('gap', 'gap', 'warming', 'no_file'))).toBe(
+      '1 warming, 2 gaps, 1 without a file · 4 fridges',
+    );
+  });
+
+  it('says "No file this week" when the whole branch sent nothing', () => {
+    expect(branchSummary(branch('no_file', 'no_file'))).toBe('No file this week · 2 fridges');
+  });
+
+  it('says "All OK" when nothing is wrong', () => {
+    expect(branchSummary(branch('ok', 'ok'))).toBe('All OK · 2 fridges');
+    expect(branchSummary(branch('ok'))).toBe('All OK · 1 fridge');
   });
 });
 

@@ -94,39 +94,94 @@
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-auto-rows: 1fr;
-    gap: 12px;
+    gap: 16px;
   }
 
+  /* No overflow: hidden, so a problem card's glow can show around it; the last row rounds its
+     own bottom corners instead, so its hover background stays inside the card. */
   .card {
-    overflow: hidden;
+    position: relative;
+    isolation: isolate;
     border: 1px solid var(--line);
     border-radius: var(--radius-card);
     background: var(--surface);
   }
 
-  /* A branch with a problem: its worst status's color (--tone, set on the card) on the edge,
-     with a thicker stripe along the top; the header repeats it as the status icon. */
+  .card > :last-child {
+    border-radius: 0 0 calc(var(--radius-card) - 1px) calc(var(--radius-card) - 1px);
+  }
+
+  /* An all-OK card answers hover and keyboard focus in the app's accent (the teal of the active
+     sidebar item): accent border and a soft accent glow. Problem cards keep their status color
+     and just glow stronger (below). */
+  .card:not(.toned) {
+    transition:
+      border-color 0.3s,
+      box-shadow 0.3s;
+  }
+
+  .card:not(.toned):hover,
+  .card:not(.toned):focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 26px -4px
+      color-mix(in oklab, var(--accent) calc(var(--glow) * 180%), transparent);
+  }
+
+  /*
+   * A branch with a problem glows in its worst status's color (--tone, set on the card):
+   * a gradient border that fades along the edge, and a soft halo of the same color around
+   * the card (adapted from CodeFronts' "Neon / Dark Mode Glow Card", MIT). The halo is an
+   * outer box-shadow, so it never tints the card face under the text. Fainter in light mode
+   * (--glow), stronger on hover or keyboard focus. All-OK cards stay plain, so only problems
+   * draw the eye.
+   */
   .toned {
+    --tone-fade: color-mix(in oklab, var(--tone) 30%, var(--line));
     border-color: var(--tone);
-    box-shadow: inset 0 3px 0 var(--tone);
+    box-shadow: 0 0 22px -4px color-mix(in oklab, var(--tone) calc(var(--glow) * 100%), transparent);
+    transition: box-shadow 0.3s;
   }
 
-  .cardMeta {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+  .toned:hover,
+  .toned:focus-within {
+    box-shadow: 0 0 30px -2px color-mix(in oklab, var(--tone) calc(var(--glow) * 180%), transparent);
   }
 
-  .worstIcon {
-    display: inline-flex;
-    color: var(--tone);
+  /* The gradient border: a gradient layer masked down to a 1.5px ring. Browsers without mask
+     compositing keep the plain border in the status color set above. */
+  @supports (mask-composite: exclude) or (-webkit-mask-composite: xor) {
+    .toned {
+      border-color: transparent;
+    }
+
+    /* Above the rows (z-index 1), so the dividers and hover backgrounds end under the ring
+       instead of cutting through it; pointer-events: none keeps the rows clickable. */
+    .toned::after {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      z-index: 1;
+      padding: 1.5px;
+      border-radius: inherit;
+      background: linear-gradient(140deg, var(--tone), var(--tone-fade));
+      -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      mask-composite: exclude;
+      pointer-events: none;
+    }
   }
 
+  /* Header: the branch name, then what's wrong in words ("1 gap · 2 fridges") with the worst
+     status's icon; in the status color when something is wrong, quiet when all is OK. */
   .cardHead {
     display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 8px;
+    flex-direction: column;
+    gap: 2px;
     padding: 14px 16px 10px;
   }
 
@@ -135,8 +190,33 @@
     font-weight: 700;
   }
 
-  /* Branch cards are narrow in the 3–4 column grid, so every row has the same shape: the name,
-     then its pill (compact wording, slightly smaller) on the line below. */
+  .cardSummary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  .summaryIcon {
+    flex: none;
+    color: var(--tone);
+  }
+
+  .summaryProblem {
+    color: var(--tone);
+    font-weight: 600;
+  }
+
+  /* An OK fridge: one quiet line, name on the left, "✓ OK · 3.3°C" on the right. */
+  .card .quietRow {
+    flex-wrap: nowrap;
+    min-height: 44px;
+    padding: 6px 16px;
+  }
+
+  /* A problem: the name, then its filled pill (compact wording) on the line below, so the few
+     problems take more room than the many OK rows. */
   .card .stacked {
     flex-direction: column;
     flex-wrap: nowrap;
@@ -147,7 +227,7 @@
     padding: 8px 16px;
   }
 
-  .card .stacked > :last-child {
+  .card .row > :last-child {
     font-size: 13px;
   }
 }

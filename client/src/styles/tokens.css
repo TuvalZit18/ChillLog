@@ -14,6 +14,8 @@
   --grid: #e4e8eb;
   --band: rgba(176, 39, 31, 0.1);
   --shade: rgba(20, 25, 29, 0.14);
+  /* How strongly problem cards glow in their status color (0–1): faint on light backgrounds. */
+  --glow: 0.22;
 
   --ok: #2b7535;
   --ok-soft: #e3f1e4;
@@ -61,6 +63,7 @@
     --grid: #232b30;
     --band: rgba(255, 124, 114, 0.15);
     --shade: rgba(0, 0, 0, 0.5);
+    --glow: 0.45;
 
     --ok: #6cc77a;
     --ok-soft: #173222;
@@ -89,6 +92,7 @@
   --grid: #232b30;
   --band: rgba(255, 124, 114, 0.15);
   --shade: rgba(0, 0, 0, 0.5);
+  --glow: 0.45;
 
   --ok: #6cc77a;
   --ok-soft: #173222;
