@@ -1,0 +1,38 @@
+/* Form field (docs/design/ui.md, "Components"): 14px / 600 label above a 46px input or select,
+   an optional 13px hint, and an error line in the alert color. */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.field label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  font-size: 16px; /* 16px keeps iOS from zooming into the field */
+}
+
+.field [aria-invalid='true'] {
+  border-color: var(--alert);
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.error {
+  font-size: 14px;
+  color: var(--alert);
+}

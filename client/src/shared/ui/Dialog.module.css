@@ -1,0 +1,57 @@
+.dialog {
+  width: min(520px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-dialog);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 20px 60px var(--shade);
+}
+
+.dialog::backdrop {
+  background: rgba(10, 14, 17, 0.5);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+}
+
+.grab {
+  display: none;
+  align-self: center;
+  width: 40px;
+  height: 4px;
+  margin-top: -8px;
+  border-radius: 2px;
+  background: var(--line);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Phones: a bottom sheet with a grab handle and full-width buttons. */
+@media (max-width: 640px) {
+  .dialog {
+    width: 100%;
+    max-width: 100%;
+    margin: auto 0 0;
+    border-radius: 18px 18px 0 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .grab {
+    display: block;
+  }
+
+  .actions > * {
+    flex: 1;
+  }
+}
