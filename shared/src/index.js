@@ -1,2 +1,4 @@
 // Shared between server and client. Schemas and thresholds are added by their feature branches.
-export {};
+
+/** Loggers record Israel local time; the UI always shows times in it too. */
+export const TIME_ZONE = 'Asia/Jerusalem';

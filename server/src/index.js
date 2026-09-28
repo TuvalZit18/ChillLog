@@ -1,5 +1,4 @@
 import fs from 'node:fs';
-import path from 'node:path';
 import { loadConfig } from './config.js';
 import { createApp } from './app.js';
 import { openDatabase } from './db/database.js';
@@ -10,7 +9,7 @@ const config = loadConfig();
 // The data folder (raw files + DB) must never be a reason a fresh clone fails to start.
 fs.mkdirSync(config.dataDir, { recursive: true });
 
-const db = openDatabase(path.join(config.dataDir, 'chilllog.db'));
+const db = openDatabase(config.dbFile);
 const applied = migrate(db);
 if (applied.length > 0) {
   console.log(`Applied migrations: ${applied.join(', ')}`);

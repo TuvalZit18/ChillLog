@@ -7,10 +7,14 @@
   "scripts": {
     "start": "node --env-file-if-exists=../.env src/index.js",
     "dev": "node --watch --env-file-if-exists=../.env src/index.js",
+    "rebuild": "node --env-file-if-exists=../.env scripts/rebuild.js",
     "test": "vitest run"
   },
   "dependencies": {
-    "express": "^5.2.1"
+    "@chilllog/shared": "^0.1.0",
+    "express": "^5.2.1",
+    "luxon": "^3.7.2",
+    "papaparse": "^5.7.0"
   },
   "devDependencies": {
     "supertest": "^7.3.0",
