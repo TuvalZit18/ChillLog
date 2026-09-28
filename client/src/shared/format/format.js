@@ -17,8 +17,12 @@ const partsFormatter = new Intl.DateTimeFormat('en-US', {
   hourCycle: 'h23',
 });
 
-/** @param {string} value ISO UTC timestamp, or a plain Israel date 'YYYY-MM-DD' */
-function parts(value) {
+/**
+ * The Israel-time pieces of a moment: weekday "Mon", day "14", month "Sep", hour "06", minute "45".
+ * @param {string | number | Date} value ISO UTC timestamp, a plain Israel date 'YYYY-MM-DD',
+ *   epoch milliseconds or a Date
+ */
+export function israelParts(value) {
   // A plain date parses as UTC midnight, which is 02:00 or 03:00 the same day in Israel.
   return Object.fromEntries(
     partsFormatter.formatToParts(new Date(value)).map((p) => [p.type, p.value]),
@@ -27,25 +31,25 @@ function parts(value) {
 
 /** "Mon 14 Sep, 06:45" */
 export function formatDateTime(value) {
-  const p = parts(value);
+  const p = israelParts(value);
   return `${p.weekday} ${p.day} ${p.month}, ${p.hour}:${p.minute}`;
 }
 
 /** "Mon 14 Sep" */
 export function formatDay(value) {
-  const p = parts(value);
+  const p = israelParts(value);
   return `${p.weekday} ${p.day} ${p.month}`;
 }
 
 /** "14 Sep" */
 export function formatDate(value) {
-  const p = parts(value);
+  const p = israelParts(value);
   return `${p.day} ${p.month}`;
 }
 
 /** "04:45" */
 export function formatTime(value) {
-  const p = parts(value);
+  const p = israelParts(value);
   return `${p.hour}:${p.minute}`;
 }
 

@@ -1,4 +1,6 @@
 .card {
+  /* Sized by the card, not the screen: the card also sits in a narrow column on desktop. */
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -20,7 +22,7 @@
   font-weight: 600;
 }
 
-/* Label/value pairs: 2 in a row on phones, 4 from 640px. */
+/* Label/value pairs: 2 in a row, 4 when the card is wide enough. */
 .values {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -46,7 +48,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-@media (min-width: 640px) {
+@container (min-width: 560px) {
   .values {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }

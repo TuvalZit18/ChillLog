@@ -1,7 +1,7 @@
 // Sentences on the fridge page. Shapes are what GET /api/fridges/:id returns.
 
 import { describe, expect, it } from 'vitest';
-import { doorNote, excursionNote, gapLine, loggerHistory } from './fridgeText.js';
+import { doorNote, excursionNote, filesDueNote, gapLine, loggerHistory } from './fridgeText.js';
 
 describe('doorNote', () => {
   it('"someone opens the door for a delivery and you see a jump for one reading, which is fine"', () => {
@@ -53,6 +53,29 @@ describe('excursionNote', () => {
 
   it('adds nothing when the fridge came back to 5°C or below', () => {
     expect(excursionNote({ endReason: 'back_in_range' })).toBeNull();
+  });
+});
+
+describe('filesDueNote', () => {
+  const DUE = '2026-09-27T21:00:00Z'; // Mon 28 Sep, 00:00 Israel time
+  const page = (toUtc, latestUtc) => ({
+    range: { fromUtc: '2026-09-21T09:30:00Z', toUtc },
+    latest: latestUtc ? { tsUtc: latestUtc, tempC: 3.5 } : null,
+    filesDueUntilUtc: DUE,
+  });
+
+  it('"Once a week each branch manager downloads the logger\'s file": says when the next readings arrive', () => {
+    expect(filesDueNote(page('2026-09-28T09:30:00Z', '2026-09-27T20:45:00Z'))).toBe(
+      "Readings after Sun 27 Sep arrive with next Monday's files.",
+    );
+  });
+
+  it('says nothing for a range that ends before the files are due', () => {
+    expect(filesDueNote(page('2026-09-27T21:00:00Z', '2026-09-27T20:45:00Z'))).toBeNull();
+  });
+
+  it("says nothing once this week's readings are already in", () => {
+    expect(filesDueNote(page('2026-09-28T09:30:00Z', '2026-09-28T08:00:00Z'))).toBeNull();
   });
 });
 

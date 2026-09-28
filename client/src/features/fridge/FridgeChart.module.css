@@ -1,0 +1,94 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 12px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.readout {
+  min-height: 21px;
+  padding-inline: 4px;
+  font-size: 14px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.chart {
+  height: 230px;
+  /* Let the page scroll vertically while a finger drags across the chart. */
+  touch-action: pan-y;
+}
+
+@media (min-width: 560px) {
+  .chart {
+    height: 300px;
+  }
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 12px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 0;
+  padding: 4px;
+  font-size: 13px;
+  color: var(--muted);
+  list-style: none;
+}
+
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.key {
+  display: inline-block;
+  width: 18px;
+  height: 10px;
+}
+
+.keyLine {
+  height: 0;
+  border-top: 2px solid var(--accent);
+}
+
+.keyLimit {
+  height: 0;
+  border-top: 2px dashed var(--alert);
+}
+
+.keyBand {
+  background: var(--band);
+  border: 1px solid var(--alert);
+  border-width: 0 1px;
+}
+
+.keyGap {
+  height: 0;
+  border-top: 3px solid var(--gap);
+}
+
+.keyDoor {
+  width: 10px;
+  border: 2px solid var(--warm);
+  border-radius: 50%;
+}
+
+.keyNoLogger {
+  background: var(--sunken);
+  border: 1px solid var(--line);
+}

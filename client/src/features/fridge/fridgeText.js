@@ -37,6 +37,18 @@ export function excursionNote(excursion) {
   return END_NOTES[excursion.endReason] ?? null;
 }
 
+/**
+ * When the range runs past the files that are due (the week's files arrive the Monday after),
+ * say so, so the empty end of the chart isn't read as a broken logger.
+ */
+export function filesDueNote({ range, latest, filesDueUntilUtc }) {
+  if (range.toUtc <= filesDueUntilUtc) return null;
+  if (latest && latest.tsUtc >= filesDueUntilUtc) return null;
+  // The last day the due files cover is the one before Monday 00:00.
+  const lastDay = formatDay(new Date(Date.parse(filesDueUntilUtc) - 60_000));
+  return `Readings after ${lastDay} arrive with next Monday's files.`;
+}
+
 /** Which logger was in this fridge when, oldest first. */
 export function loggerHistory(placements) {
   if (placements.length === 0) return null;

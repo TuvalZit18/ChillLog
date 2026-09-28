@@ -1,7 +1,7 @@
 // Fridge page (docs/design/ui.md, "Screens > Fridge detail"): one fridge over a range, with the
 // time above 5°C, gaps, door openings and logger history. The range lives in the URL.
 
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
 import { formatDateTime, formatDurationShort, formatTemp } from '../../shared/format/format.js';
 import { StatusPill } from '../../shared/status/StatusPill.jsx';
@@ -13,10 +13,13 @@ import { Skeleton } from '../../shared/ui/Skeleton.jsx';
 import { StateBox } from '../../shared/ui/StateBox.jsx';
 import { ExcursionCard } from './ExcursionCard.jsx';
 import { useGetFridgeQuery } from './fridgeApi.js';
-import { doorNote, gapLine, loggerHistory } from './fridgeText.js';
+import { doorNote, filesDueNote, gapLine, loggerHistory } from './fridgeText.js';
 import { RangePicker } from './RangePicker.jsx';
 import { rangeQuery, rangeSearch, readRange } from './rangeModel.js';
 import styles from './FridgePage.module.css';
+
+// Recharts only loads when a fridge page opens (architecture §8: chart screen lazy-loaded).
+const FridgeChart = lazy(() => import('./FridgeChart.jsx'));
 
 const DEFAULT_RANGE = readRange(new URLSearchParams());
 
@@ -50,6 +53,7 @@ export function FridgePage() {
   const { weekStatus, latest, currentLogger } = fridge;
   const history = loggerHistory(fridge.placements);
   const doors = doorNote(fridge.doorSpikes);
+  const filesDue = filesDueNote(fridge);
 
   return (
     <div className={styles.page}>
@@ -75,58 +79,66 @@ export function FridgePage() {
         </p>
       ) : (
         <div className={styles.content} aria-busy={isFetching}>
-          {doors && <Note icon="info">{doors}</Note>}
+          <div className={styles.column}>
+            <Suspense fallback={<Skeleton height={300} />}>
+              <FridgeChart fridge={fridge} />
+            </Suspense>
+            {filesDue && <Note icon="info">{filesDue}</Note>}
+            {doors && <Note icon="info">{doors}</Note>}
+          </div>
 
-          <section className={styles.section} aria-labelledby="above-limit">
-            <h2 id="above-limit">Time above 5°C</h2>
-            {fridge.excursions.length === 0 ? (
-              <div className={styles.card}>
-                <StatusPill status="ok" text="None in this range" />
-              </div>
-            ) : (
-              <div className={styles.list}>
-                {fridge.excursions.map((excursion) => (
-                  <ExcursionCard key={excursion.startUtc} excursion={excursion} />
-                ))}
-              </div>
-            )}
-          </section>
-
-          {(fridge.gaps.length > 0 || fridge.errCount > 0) && (
-            <section className={styles.section} aria-labelledby="gaps">
-              <h2 id="gaps">Gaps in data</h2>
-              <ul className={`${styles.card} ${styles.plainList}`}>
-                {fridge.gaps.map((gap) => (
-                  <li key={gap.fromUtc}>
-                    <StatusPill status="gap" text={`Gap · ${formatDurationShort(gap.minutes)}`} />
-                    <span>{gapLine(gap)}</span>
-                  </li>
-                ))}
-                {fridge.errCount > 0 && (
-                  <li>
-                    <span className={styles.tag}>ERR</span>
-                    <span>
-                      {fridge.errCount} unreadable {fridge.errCount === 1 ? 'reading' : 'readings'}{' '}
-                      skipped
-                    </span>
-                  </li>
-                )}
-              </ul>
+          <div className={styles.column}>
+            <section className={styles.section} aria-labelledby="above-limit">
+              <h2 id="above-limit">Time above 5°C</h2>
+              {fridge.excursions.length === 0 ? (
+                <div className={styles.card}>
+                  <StatusPill status="ok" text="None in this range" />
+                </div>
+              ) : (
+                <div className={styles.list}>
+                  {fridge.excursions.map((excursion) => (
+                    <ExcursionCard key={excursion.startUtc} excursion={excursion} />
+                  ))}
+                </div>
+              )}
             </section>
-          )}
 
-          {history && (
-            <Note icon="history">
-              <b>Logger history.</b> {history}
-            </Note>
-          )}
+            {(fridge.gaps.length > 0 || fridge.errCount > 0) && (
+              <section className={styles.section} aria-labelledby="gaps">
+                <h2 id="gaps">Gaps in data</h2>
+                <ul className={`${styles.card} ${styles.plainList}`}>
+                  {fridge.gaps.map((gap) => (
+                    <li key={gap.fromUtc}>
+                      <StatusPill status="gap" text={`Gap · ${formatDurationShort(gap.minutes)}`} />
+                      <span>{gapLine(gap)}</span>
+                    </li>
+                  ))}
+                  {fridge.errCount > 0 && (
+                    <li>
+                      <span className={styles.tag}>ERR</span>
+                      <span>
+                        {fridge.errCount} unreadable{' '}
+                        {fridge.errCount === 1 ? 'reading' : 'readings'} skipped
+                      </span>
+                    </li>
+                  )}
+                </ul>
+              </section>
+            )}
 
-          <Link
-            to={`/inspector?fridgeId=${fridge.fridge.id}`}
-            className={`${button.button} ${button.primary} ${styles.inspector}`}
-          >
-            Inspector report for this fridge
-          </Link>
+            {history && (
+              <Note icon="history">
+                <b>Logger history.</b> {history}
+              </Note>
+            )}
+
+            <Link
+              to={`/inspector?fridgeId=${fridge.fridge.id}`}
+              className={`${button.button} ${button.primary} ${styles.inspector}`}
+            >
+              Inspector report for this fridge
+            </Link>
+          </div>
         </div>
       )}
     </div>
