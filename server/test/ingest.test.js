@@ -18,6 +18,8 @@ import {
   ingestFiles,
   assignUploadLogger,
   retryUpload,
+  rebuildReadings,
+  rawPath,
 } from '../src/ingest/ingest.js';
 import { findLoggerCode } from '../src/ingest/identify.js';
 
@@ -309,6 +311,80 @@ describe('ingestFiles (bulk upload)', () => {
       ],
     });
     expect(reports.map((r) => r.status)).toEqual(['processed', 'needs_logger', 'already_uploaded']);
+    expect(readingCount()).toBe(4);
+  });
+});
+
+describe('rebuildReadings', () => {
+  const allReadings = () =>
+    db
+      .prepare('SELECT logger_id, ts_utc, temp_c, is_err, upload_id FROM readings ORDER BY ts_utc')
+      .all();
+
+  it('derives exactly the same readings again from the raw files', () => {
+    placedLogger('TL-0417');
+    placedLogger('TL-0231', { unit: 'F' });
+    ingestFile(db, {
+      rawDir,
+      fileName: 'TL-0417_a.csv',
+      content: fixture('tel-aviv-logger-moved.csv'),
+    });
+    ingestFile(db, {
+      rawDir,
+      fileName: 'TL-0417_b.csv',
+      content: csv('17/09/2026 10:15,4.1\n17/09/2026 10:30,4.0\n'),
+    });
+    ingestFile(db, {
+      rawDir,
+      fileName: 'haifa.csv',
+      content: fixture('haifa-fahrenheit-ddmm.csv'),
+    });
+    const before = allReadings();
+
+    const reports = rebuildReadings(db, { rawDir });
+    expect(reports.map((r) => r.status)).toEqual(['processed', 'processed', 'processed']);
+    expect(allReadings()).toEqual(before);
+  });
+
+  it('uses the logger settings as they are now', () => {
+    const logger = placedLogger('TL-0231');
+    ingestFile(db, {
+      rawDir,
+      fileName: 'haifa.csv',
+      content: fixture('haifa-fahrenheit-ddmm.csv'),
+    });
+    expect(readingCount()).toBe(0); // held back: looked like °F on a °C logger
+
+    updateLoggerSettings(db, logger.id, { unit: 'F' });
+    const [report] = rebuildReadings(db, { rawDir });
+    expect(report).toMatchObject({ status: 'processed', readings: { added: 5 } });
+  });
+
+  it('picks up a waiting file whose logger has been registered since', () => {
+    ingestFile(db, {
+      rawDir,
+      fileName: 'TL-0999.csv',
+      content: fixture('tel-aviv-logger-moved.csv'),
+    });
+    placedLogger('TL-0999');
+    const [report] = rebuildReadings(db, { rawDir });
+    expect(report).toMatchObject({ status: 'processed', loggerCode: 'TL-0999' });
+    expect(readingCount()).toBe(4);
+  });
+
+  it('refuses to start when a raw file is missing, and leaves the readings as they were', () => {
+    placedLogger('TL-0417');
+    const report = ingestFile(db, {
+      rawDir,
+      fileName: 'TL-0417.csv',
+      content: fixture('tel-aviv-logger-moved.csv'),
+    });
+    const { sha256 } = db.prepare('SELECT sha256 FROM uploads WHERE id = ?').get(report.uploadId);
+    fs.rmSync(rawPath(rawDir, sha256));
+
+    expect(() => rebuildReadings(db, { rawDir })).toThrow(
+      expect.objectContaining({ code: 'raw_missing' }),
+    );
     expect(readingCount()).toBe(4);
   });
 });

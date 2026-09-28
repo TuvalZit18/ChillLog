@@ -7,6 +7,7 @@
   "scripts": {
     "start": "node --env-file-if-exists=../.env src/index.js",
     "dev": "node --watch --env-file-if-exists=../.env src/index.js",
+    "rebuild": "node --env-file-if-exists=../.env scripts/rebuild.js",
     "test": "vitest run"
   },
   "dependencies": {

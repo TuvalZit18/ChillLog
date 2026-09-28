@@ -31,7 +31,7 @@ import { findLoggerCode } from './identify.js';
 
 export class IngestError extends Error {
   /**
-   * @param {'not_found' | 'already_processed'} code
+   * @param {'not_found' | 'already_processed' | 'raw_missing'} code
    * @param {string} message
    */
   constructor(code, message) {
@@ -44,6 +44,8 @@ export class IngestError extends Error {
 export function rawPath(rawDir, sha256) {
   return path.join(rawDir, `${sha256}.csv`);
 }
+
+const UPLOAD_ROW = 'SELECT id, sha256, original_name, logger_id, status FROM uploads';
 
 /**
  * Stores one uploaded file and, when its logger is known, adds its readings.
@@ -119,14 +121,38 @@ export function retryUpload(db, { rawDir, uploadId }) {
   return reprocess(db, rawDir, uploadId, null);
 }
 
+/**
+ * Throws away every reading and derives them again from the stored raw files, in upload order,
+ * with today's logger settings and rules: the recovery path after a bug fix or rule change.
+ * All or nothing: if a raw file is missing it doesn't start, and any error rolls back.
+ * @param {Db} db
+ * @param {{ rawDir: string }} options
+ * @returns {FileReport[]} one per stored file
+ */
+export function rebuildReadings(db, { rawDir }) {
+  const rows = db.prepare(`${UPLOAD_ROW} ORDER BY id`).all();
+  const missing = rows.filter((row) => !fs.existsSync(rawPath(rawDir, row.sha256)));
+  if (missing.length > 0) {
+    const names = missing.map((row) => row.original_name).join(', ');
+    throw new IngestError('raw_missing', `Raw files are missing for: ${names}. Nothing changed.`);
+  }
+  return transaction(db, () => {
+    db.exec('DELETE FROM readings');
+    return rows.map((row) => processStored(db, rawDir, row, null));
+  });
+}
+
 function reprocess(db, rawDir, uploadId, loggerId) {
-  const row = db
-    .prepare('SELECT id, sha256, original_name, logger_id, status FROM uploads WHERE id = ?')
-    .get(uploadId);
+  const row = db.prepare(`${UPLOAD_ROW} WHERE id = ?`).get(uploadId);
   if (!row) throw new IngestError('not_found', `Upload ${uploadId} does not exist.`);
   if (row.status === 'processed') {
     throw new IngestError('already_processed', `${row.original_name} is already in.`);
   }
+  return transaction(db, () => processStored(db, rawDir, row, loggerId));
+}
+
+/** Processes a stored raw file again. The caller owns the transaction. */
+function processStored(db, rawDir, row, loggerId) {
   const upload = { id: row.id, fileName: row.original_name };
   const text = decode(fs.readFileSync(rawPath(rawDir, row.sha256)));
   const code = findLoggerCode(upload.fileName, text);
@@ -141,9 +167,7 @@ function reprocess(db, rawDir, uploadId, loggerId) {
     // The logger may have been registered since the file came in.
     logger = code ? findLoggerByCode(db, code) : null;
   }
-  return transaction(db, () =>
-    save(db, logger ? addReadings(db, upload, logger, text) : needsLogger(upload, code)),
-  );
+  return save(db, logger ? addReadings(db, upload, logger, text) : needsLogger(upload, code));
 }
 
 /** Normalizes the file with its logger's settings and inserts the readings. */
