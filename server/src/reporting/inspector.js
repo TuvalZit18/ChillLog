@@ -7,7 +7,7 @@ import { THRESHOLDS, TIME_ZONE, formatDurationLong } from '@chilllog/shared';
 import { fridgeReadings } from '../detection/store.js';
 import { toCsv } from './csv.js';
 import { missingInRange } from './gaps.js';
-import { LOOKBACK_MS } from './overview.js';
+import { LOOKBACK_MS, filesDueUntilUtc } from './overview.js';
 
 export const DEFAULT_RANGE_DAYS = 30;
 
@@ -37,6 +37,7 @@ export function buildInspectorReport(db, { branchId = null, fridgeId = null, ran
   );
   const nowUtc = now.toISOString().replace(/\.\d{3}Z$/, 'Z');
   const edgeEndUtc = nowUtc < toUtc ? nowUtc : toUtc;
+  const dueUntilUtc = filesDueUntilUtc(now);
 
   const excursions = [];
   const gaps = [];
@@ -63,7 +64,8 @@ export function buildInspectorReport(db, { branchId = null, fridgeId = null, ran
       continue;
     }
     const hadDataBefore = fridge.first_utc !== null && fridge.first_utc < fromUtc;
-    for (const g of missingInRange(loaded, { startUtc: fromUtc, edgeEndUtc, hadDataBefore })) {
+    const options = { startUtc: fromUtc, edgeEndUtc, hadDataBefore, dueUntilUtc };
+    for (const g of missingInRange(loaded, options)) {
       gaps.push({ ...where, ...g });
     }
   }
@@ -79,6 +81,8 @@ export function buildInspectorReport(db, { branchId = null, fridgeId = null, ran
     excursions,
     gaps,
     fridgesWithoutData,
+    // Readings after this haven't been sent yet (next Monday's files), so they aren't a gap.
+    filesDueUntilUtc: dueUntilUtc,
   };
 }
 

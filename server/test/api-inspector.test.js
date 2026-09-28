@@ -13,6 +13,7 @@ import {
   createLogger,
 } from '../src/registry/registry.js';
 import { ingestFile } from '../src/ingest/ingest.js';
+import { weekFile } from './week-file.js';
 
 const fixture = (name) => fs.readFileSync(path.join(import.meta.dirname, 'fixtures', name));
 const MONDAY_MORNING = new Date('2026-09-21T06:12:00Z');
@@ -127,6 +128,16 @@ describe('GET /api/inspector', () => {
     expect(body.fridgesWithoutData).toEqual([
       { fridgeId: fridges.walkIn.id, branchName: 'Tel Aviv', fridgeName: 'Walk-in' },
     ]);
+  });
+
+  it("\"Once a week each branch manager downloads the logger's file\": no gap after the last reading while this week's file isn't due yet", async () => {
+    // Readings up to Sun 20 Sep, 23:45; "now" is Mon 21 Sep, 09:12, before this week's file exists.
+    const dairy = fridgeWithFile('Haifa', 'Dairy', 'TL-0600', weekFile(20, 23));
+    const { body } = await api().get(
+      `/api/inspector?fridgeId=${dairy.id}&from=2026-09-14&to=2026-09-21`,
+    );
+    expect(body.gaps).toEqual([]);
+    expect(body.filesDueUntilUtc).toBe('2026-09-20T21:00:00Z'); // Mon 21 Sep, 00:00 Israel time
   });
 
   it('covers the last 30 days when no dates are given', async () => {

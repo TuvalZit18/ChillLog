@@ -40,6 +40,15 @@ export function weekWindow({ now, week }) {
 }
 
 /**
+ * How far logger files are due: the end of the last full week (Monday 00:00 Israel time), since
+ * each week's files arrive the Monday after. Readings later than this simply haven't been sent.
+ * @param {Date} now
+ */
+export function filesDueUntilUtc(now) {
+  return weekWindow({ now }).endUtc;
+}
+
+/**
  * @param {import('node:sqlite').DatabaseSync} db
  * @param {{ now: Date, week: NonNullable<ReturnType<typeof weekWindow>>, fridgeId?: number }} options
  *   fridgeId limits it to one fridge (the fridge page's status pill)
@@ -49,6 +58,7 @@ export function buildOverview(db, { now, week, fridgeId = null }) {
   // For the current week, missing data can only run until now, not until Sunday night.
   const nowUtc = now.toISOString().replace(/\.\d{3}Z$/, 'Z');
   const edgeEndUtc = nowUtc < endUtc ? nowUtc : endUtc;
+  const dueUntilUtc = filesDueUntilUtc(now);
 
   const fridges = db
     .prepare(
@@ -111,7 +121,7 @@ export function buildOverview(db, { now, week, fridgeId = null }) {
     }
 
     const hadDataBefore = fridge.first_utc !== null && fridge.first_utc < startUtc;
-    const gaps = missingInRange(loaded, { startUtc, edgeEndUtc, hadDataBefore });
+    const gaps = missingInRange(loaded, { startUtc, edgeEndUtc, hadDataBefore, dueUntilUtc });
     if (gaps.length > 0) {
       base.gap = { count: gaps.length, totalMinutes: gaps.reduce((sum, g) => sum + g.minutes, 0) };
     }

@@ -1122,13 +1122,20 @@ curl -X POST http://127.0.0.1:3000/api/uploads/90/assign \
   ],
   "doorSpikes": [ { "tsUtc": "2026-09-22T06:15:00Z", "tempC": 7.8 } ],
   "gaps": [],
-  "errCount": 0
+  "errCount": 0,
+  "filesDueUntilUtc": "2026-09-27T21:00:00Z"
 }</pre>
           <p class="note">
             <code>endReason</code>: <code>back_in_range</code> (ends at the first reading back at or
             below 5°C), <code>gap</code> (the data stops for more than an hour), or
             <code>data_ends</code> (still above 5°C at the last reading).
             <code>doorSpikes</code> are single readings above 5°C: shown, never counted.
+          </p>
+          <p class="note">
+            <code>filesDueUntilUtc</code> is the end of the last full week (Monday 00:00 Israel
+            time): each week's files arrive the Monday after, so missing time after the last reading
+            only counts as a gap up to there. Later readings simply haven't been sent yet. Gaps
+            between readings always count.
           </p>
           <h3>Range that ends before it starts <span class="status bad">400</span></h3>
           <pre>{ "error": "The start of the range must be before its end." }</pre>
@@ -1176,7 +1183,8 @@ curl "http://127.0.0.1:3000/api/inspector?fridgeId=8&amp;from=2026-09-01&amp;to=
     }
   ],
   "gaps": [],
-  "fridgesWithoutData": []
+  "fridgesWithoutData": [],
+  "filesDueUntilUtc": "2026-09-27T21:00:00Z"
 }</pre>
           <p class="note">
             All fridges, same range (<code>/api/inspector?from=2026-09-01&amp;to=2026-09-27</code>),

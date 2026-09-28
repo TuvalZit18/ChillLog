@@ -13,6 +13,7 @@ import {
   createLogger,
 } from '../src/registry/registry.js';
 import { ingestFile } from '../src/ingest/ingest.js';
+import { weekFile } from './week-file.js';
 
 const fixture = (name) => fs.readFileSync(path.join(import.meta.dirname, 'fixtures', name));
 const MONDAY_MORNING = new Date('2026-09-21T06:12:00Z');
@@ -43,6 +44,12 @@ function fridgeWithFile(branchName, fridgeName, code, fixtureName) {
 
 const get = (url, now = MONDAY_MORNING) =>
   request(createApp({ db, rawDir, now: () => now })).get(url);
+
+function fridgeWithContent(code, content) {
+  const { fridge } = fridgeWithFile('Rishon LeZion', 'Dairy', code);
+  ingestFile(db, { rawDir, fileName: `${code}.csv`, content });
+  return fridge;
+}
 
 describe('GET /api/fridges/:id', () => {
   it('"when did this fridge go above five degrees, and for how long?": the fridge page lists the time above 5°C', async () => {
@@ -106,6 +113,25 @@ describe('GET /api/fridges/:id', () => {
     expect(at('2026-09-14T03:15:00Z')).toMatchObject({ maxC: 3.9 });
     expect(at('2026-09-14T04:00:00Z')).toMatchObject({ minC: null, maxC: null }); // the break
     expect(at('2026-09-14T05:30:00Z')).toMatchObject({ maxC: 4 });
+  });
+
+  it("\"Once a week each branch manager downloads the logger's file\": no gap after the last reading while this week's file isn't due yet", async () => {
+    // Readings up to Sun 20 Sep, 23:45; "now" is Mon 21 Sep, 09:12, before this week's file exists.
+    const fridge = fridgeWithContent('TL-0600', weekFile(20, 23));
+    const { body } = await get(`/api/fridges/${fridge.id}`);
+
+    expect(body.gaps).toEqual([]);
+    expect(body.filesDueUntilUtc).toBe('2026-09-20T21:00:00Z'); // Mon 21 Sep, 00:00 Israel time
+  });
+
+  it('"I never know if the logger died": a file that stops early is still a gap, up to the end of its week', async () => {
+    // The week's file stops on Thursday 17 Sep, 11:45.
+    const fridge = fridgeWithContent('TL-0601', weekFile(17, 11));
+    const { body } = await get(`/api/fridges/${fridge.id}`);
+
+    expect(body.gaps).toEqual([
+      { fromUtc: '2026-09-17T08:45:00Z', toUtc: '2026-09-20T21:00:00Z', minutes: 5055 },
+    ]);
   });
 
   it('"someone opens the door for a delivery … which is fine": the door opening is shown, not counted', async () => {
