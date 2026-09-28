@@ -4,7 +4,7 @@
 
 import { api } from '../../app/api.js';
 
-const READING_TAGS = ['Uploads', 'Overview', 'Fridge'];
+const READING_TAGS = ['Uploads', 'Overview', 'Fridge', 'Inspector'];
 
 const uploadApi = api.enhanceEndpoints({ addTagTypes: READING_TAGS }).injectEndpoints({
   endpoints: (build) => ({

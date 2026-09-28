@@ -1,15 +1,20 @@
-// GET /api/loggers: every logger with the fridge it is in now. Used by the upload screen (which
-// fridge a file belongs to, "Which logger is this file from?"); the Loggers screen adds more.
+// The registry: GET /api/loggers (every logger with the fridge it is in now) and GET
+// /api/branches (branches A–Z with their fridges). Used by the upload screen ("Which logger is
+// this file from?") and the inspector's filters.
 
 import { api } from '../../app/api.js';
 
-const loggersApi = api.enhanceEndpoints({ addTagTypes: ['Loggers'] }).injectEndpoints({
+const loggersApi = api.enhanceEndpoints({ addTagTypes: ['Loggers', 'Branches'] }).injectEndpoints({
   endpoints: (build) => ({
     getLoggers: build.query({
       query: () => 'loggers',
       providesTags: ['Loggers'],
     }),
+    getBranches: build.query({
+      query: () => 'branches',
+      providesTags: ['Branches'],
+    }),
   }),
 });
 
-export const { useGetLoggersQuery } = loggersApi;
+export const { useGetLoggersQuery, useGetBranchesQuery } = loggersApi;
