@@ -4,6 +4,7 @@
   "private": true,
   "description": "Code shared by server and client: Zod schemas, detection thresholds",
   "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": "./src/index.js"
   },

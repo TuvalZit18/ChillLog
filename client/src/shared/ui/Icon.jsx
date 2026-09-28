@@ -58,6 +58,23 @@ const PATHS = {
       <path d="M9 9l6 6M15 9l-6 6" />
     </>
   ),
+  upload: (
+    <>
+      <path d="M12 15V4" />
+      <path d="M7 9l5-5 5 5" />
+      <path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4" />
+    </>
+  ),
+  wifiOff: (
+    <>
+      <path d="M2.5 8.8a14 14 0 0 1 19 0" />
+      <path d="M5.8 12.2a9.5 9.5 0 0 1 12.4 0" />
+      <path d="M9 15.6a4.8 4.8 0 0 1 6 0" />
+      <path d="M12 19h.01" />
+      <path d="M3 3l18 18" />
+    </>
+  ),
+  chevDown: <path d="M6 9l6 6 6-6" />,
   sun: (
     <>
       <circle cx="12" cy="12" r="4" />

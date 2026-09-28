@@ -1,0 +1,22 @@
+.block {
+  max-width: 100%;
+  border-radius: var(--radius-control);
+  background: var(--sunken);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.round {
+  border-radius: var(--radius-pill);
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .block {
+    animation: none;
+  }
+}

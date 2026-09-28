@@ -6,13 +6,16 @@ import { formatDurationShort, formatTemp, formatTempChange } from '../format/for
 
 export { STATUS_ORDER };
 
-/** Word and icon for each status. Icon names match shared/ui/Icon.jsx. */
+/**
+ * Word, icon and color for each status. Icon names match shared/ui/Icon.jsx; color is the
+ * strong status token from tokens.css, for marks drawn outside a pill (chip icons, chart dots).
+ */
 export const STATUS_META = Object.freeze({
-  alert: { label: 'Alert', icon: 'alert' },
-  warming: { label: 'Warming', icon: 'warming' },
-  gap: { label: 'Gap', icon: 'gap' },
-  no_file: { label: 'No file', icon: 'nofile' },
-  ok: { label: 'OK', icon: 'ok' },
+  alert: { label: 'Alert', icon: 'alert', color: 'var(--alert)' },
+  warming: { label: 'Warming', icon: 'warming', color: 'var(--warm)' },
+  gap: { label: 'Gap', icon: 'gap', color: 'var(--gap)' },
+  no_file: { label: 'No file', icon: 'nofile', color: 'var(--nofile)' },
+  ok: { label: 'OK', icon: 'ok', color: 'var(--ok)' },
 });
 
 /**

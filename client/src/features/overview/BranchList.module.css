@@ -1,0 +1,137 @@
+/* Phone: one collapsible row per branch. */
+.list {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.item + .item {
+  border-top: 1px solid var(--line);
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
+  padding: 12px 16px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.summary::-webkit-details-marker {
+  display: none;
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.name {
+  font-weight: 600;
+}
+
+.count {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.chevron {
+  flex: none;
+  color: var(--muted);
+  transition: transform 0.15s;
+}
+
+.item[open] .chevron {
+  transform: rotate(180deg);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 10px;
+  min-height: 52px;
+  padding: 8px 16px;
+  border-top: 1px solid var(--line);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.row:hover {
+  background: var(--bg);
+}
+
+/* The pill keeps its one-line shape and moves under the name when the row is too narrow. */
+.row > :last-child {
+  flex: none;
+}
+
+.rowName {
+  font-weight: 500;
+}
+
+/* Desktop: a card per branch. */
+.grid {
+  display: none;
+}
+
+@media (min-width: 880px) {
+  .list {
+    display: none;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+    gap: 12px;
+  }
+
+  .card {
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    background: var(--surface);
+  }
+
+  .hasProblem {
+    border-color: var(--muted);
+  }
+
+  .cardHead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 14px 16px 10px;
+  }
+
+  .cardName {
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .card .row {
+    min-height: 48px;
+    padding: 6px 16px;
+  }
+
+  /* Branch cards are narrow in the 3–4 column grid; a slightly smaller pill keeps most on one line. */
+  .card .row > :last-child {
+    font-size: 13px;
+  }
+}
+
+@media (min-width: 1240px) {
+  .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

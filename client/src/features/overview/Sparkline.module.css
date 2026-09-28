@@ -1,0 +1,18 @@
+.spark {
+  flex: none;
+}
+
+/* Filled and stroked, so a steady fridge reads as a line and a spike as a thin peak. */
+.line {
+  fill: var(--muted);
+  stroke: var(--muted);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
+
+.limit {
+  stroke: var(--alert);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  opacity: 0.7;
+}
