@@ -54,6 +54,11 @@ export function createBranch(db, name) {
   return { id: Number(lastInsertRowid), name };
 }
 
+/** @returns {Branch | null} */
+export function getBranch(db, id) {
+  return db.prepare('SELECT id, name FROM branches WHERE id = ?').get(id) ?? null;
+}
+
 /** @returns {Branch[]} */
 export function listBranches(db) {
   return db.prepare('SELECT id, name FROM branches ORDER BY name').all();

@@ -58,6 +58,14 @@ export const localDate = z
 /** Overview: any day in the week to show; the last full week when left out. */
 export const overviewQuery = z.object({ week: localDate.optional() });
 
+/** Inspector report: all fridges, one branch, or one fridge, over a range (Israel time). */
+export const inspectorQuery = z.object({
+  branchId: id.optional(),
+  fridgeId: id.optional(),
+  from: localDateTime.optional(),
+  to: localDateTime.optional(),
+});
+
 /** Fridge page: the range to show, Israel time. A date alone in `to` includes that whole day. */
 export const fridgeQuery = z.object({
   from: localDateTime.optional(),

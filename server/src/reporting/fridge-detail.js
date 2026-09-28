@@ -17,12 +17,12 @@ const toUtcIso = (dt) => dt.toUTC().toISO({ suppressMilliseconds: true });
 
 /**
  * The requested range in UTC. `from` and `to` are Israel time; a date alone in `to` includes
- * that whole day ("to 20 Sep" ends at midnight going into the 21st). Defaults to the 7 days
- * up to now.
- * @param {{ now: Date, from?: string, to?: string }} options
+ * that whole day ("to 20 Sep" ends at midnight going into the 21st). Without `from`, the range
+ * starts `defaultDays` before its end; without `to`, it ends now.
+ * @param {{ now: Date, from?: string, to?: string, defaultDays?: number }} options
  * @returns {{ fromUtc: string, toUtc: string } | { error: string }}
  */
-export function resolveRange({ now, from, to }) {
+export function resolveRange({ now, from, to, defaultDays = DEFAULT_RANGE_DAYS }) {
   const local = (text) => DateTime.fromISO(text, { zone: TIME_ZONE });
   const end = to
     ? to.length === 10
@@ -30,7 +30,7 @@ export function resolveRange({ now, from, to }) {
       : local(to)
     : DateTime.fromJSDate(now, { zone: TIME_ZONE }).set({ millisecond: 0 });
   if (!end.isValid) return { error: `${to} is not a real date.` };
-  const start = from ? local(from) : end.minus({ days: DEFAULT_RANGE_DAYS });
+  const start = from ? local(from) : end.minus({ days: defaultDays });
   if (!start.isValid) return { error: `${from} is not a real date.` };
   if (start >= end) return { error: 'The start of the range must be before its end.' };
   if (end.diff(start, 'days').days > MAX_RANGE_DAYS) {
