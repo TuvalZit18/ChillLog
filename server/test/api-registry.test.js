@@ -9,14 +9,17 @@ import { createApp } from '../src/app.js';
 import { ingestFile } from '../src/ingest/ingest.js';
 
 let db;
+let rawDir;
 let api;
 beforeEach(() => {
   db = openDatabase(':memory:');
   migrate(db);
-  api = request(createApp({ db }));
+  rawDir = fs.mkdtempSync(path.join(os.tmpdir(), 'chilllog-raw-'));
+  api = request(createApp({ db, rawDir }));
 });
 afterEach(() => {
   db.close();
+  fs.rmSync(rawDir, { recursive: true, force: true });
 });
 
 /** Tel Aviv with its walk-in and the new display fridge, through the API. */

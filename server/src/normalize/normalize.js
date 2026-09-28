@@ -40,11 +40,7 @@ const WRONG_UNIT_MEDIAN = 20;
  * @returns {NormalizedFile}
  */
 export function normalizeFile(text, { unit = 'C', dateFormat = 'DD/MM', zone = TIME_ZONE } = {}) {
-  const clean = text.replace(/^\uFEFF/, '');
-  const delimiter = guessDelimiter(clean);
-  const rows = Papa.parse(clean, { delimiter, skipEmptyLines: 'greedy' }).data.map((row) =>
-    row.map((cell) => cell.trim()),
-  );
+  const { rows, delimiter } = readTable(text);
 
   const result = {
     readings: [],
@@ -101,6 +97,31 @@ export function normalizeFile(text, { unit = 'C', dateFormat = 'DD/MM', zone = T
 
   result.unitWarning = checkUnit(rawValues, unit);
   return result;
+}
+
+/**
+ * The first data rows exactly as written in the file (time and temperature cells, no
+ * conversion), so Summer can recognize a file before saying which logger it came from.
+ * @param {string} text
+ * @returns {{ time: string, temp: string }[]} empty when no time column can be found
+ */
+export function previewRows(text, count = 3) {
+  const { rows } = readTable(text);
+  const columns = detectColumns(rows);
+  if (!columns) return [];
+  return rows
+    .filter((row) => looksLikeTimestamp(row[columns.time] ?? ''))
+    .slice(0, count)
+    .map((row) => ({ time: row[columns.time], temp: row[columns.temp] ?? '' }));
+}
+
+function readTable(text) {
+  const clean = text.replace(/^\uFEFF/, '');
+  const delimiter = guessDelimiter(clean);
+  const rows = Papa.parse(clean, { delimiter, skipEmptyLines: 'greedy' }).data.map((row) =>
+    row.map((cell) => cell.trim()),
+  );
+  return { rows, delimiter };
 }
 
 function guessDelimiter(text) {

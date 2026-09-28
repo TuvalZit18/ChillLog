@@ -1,3 +1,4 @@
+import { UPLOAD_LIMITS } from '@chilllog/shared';
 import { RegistryError } from '../registry/registry.js';
 import { IngestError } from '../ingest/ingest.js';
 
@@ -52,6 +53,9 @@ export function errorHandler(err, req, res, _next) {
   if ((err instanceof RegistryError || err instanceof IngestError) && STATUS_BY_CODE[err.code]) {
     return res.status(STATUS_BY_CODE[err.code]).json({ error: err.message, code: err.code });
   }
+  if (err.name === 'MulterError') {
+    return res.status(err.code === 'LIMIT_FILE_SIZE' ? 413 : 400).json({ error: uploadMessage(err) });
+  }
   // Body-parser errors (bad JSON, body too large) carry their own 4xx status.
   if (err.expose && err.status >= 400 && err.status < 500) {
     const message =
@@ -60,4 +64,17 @@ export function errorHandler(err, req, res, _next) {
   }
   console.error(err);
   res.status(500).json({ error: 'Something went wrong on the server. Please try again.' });
+}
+
+/** Multer's limits, as a sentence Summer can act on. Nothing from a refused request is kept. */
+function uploadMessage(err) {
+  switch (err.code) {
+    case 'LIMIT_FILE_SIZE':
+      return `Each file must be ${UPLOAD_LIMITS.maxFileBytes / 1024 / 1024} MB or smaller. Nothing was uploaded.`;
+    case 'LIMIT_FILE_COUNT':
+    case 'LIMIT_UNEXPECTED_FILE':
+      return `Upload up to ${UPLOAD_LIMITS.maxFiles} files at a time. Nothing was uploaded.`;
+    default:
+      return 'The upload could not be read. Nothing was uploaded.';
+  }
 }

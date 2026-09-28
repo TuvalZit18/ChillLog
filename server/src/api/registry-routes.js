@@ -11,6 +11,7 @@ import {
 } from '@chilllog/shared';
 import { transaction } from '../db/transaction.js';
 import { recomputeForLogger } from '../detection/store.js';
+import { retryForLogger } from '../ingest/ingest.js';
 import {
   assignLogger,
   createBranch,
@@ -26,8 +27,11 @@ import {
 import { HttpError, validate } from './errors.js';
 import { localToUtc } from './time.js';
 
-/** @param {import('node:sqlite').DatabaseSync} db */
-export function registryRoutes(db) {
+/**
+ * @param {import('node:sqlite').DatabaseSync} db
+ * @param {string} rawDir stored raw files, for retrying files waiting on a logger
+ */
+export function registryRoutes(db, rawDir) {
   const router = express.Router();
 
   /** A logger with where it is now and where it has been, newest first. */
@@ -76,7 +80,9 @@ export function registryRoutes(db) {
       }
       return created;
     });
-    res.status(201).json(loggerDetail(logger.id));
+    // Files that came in before this logger was registered go in now, with no re-upload.
+    const retried = retryForLogger(db, { rawDir, loggerId: logger.id });
+    res.status(201).json({ ...loggerDetail(logger.id), retried });
   });
 
   router.get('/loggers/:id', (req, res) => {
@@ -86,7 +92,9 @@ export function registryRoutes(db) {
   router.patch('/loggers/:id/settings', (req, res) => {
     const { id } = validate(idParam, req.params);
     updateLoggerSettings(db, id, validate(loggerSettingsInput, req.body));
-    res.json(loggerDetail(id));
+    // Files held back because of the old setting (e.g. °F read as °C) go in now.
+    const retried = retryForLogger(db, { rawDir, loggerId: id });
+    res.json({ ...loggerDetail(id), retried });
   });
 
   // A move changes which readings belong to which fridge, so both fridges are recomputed in

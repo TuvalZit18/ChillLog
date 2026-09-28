@@ -3,12 +3,14 @@ import path from 'node:path';
 import express from 'express';
 import { errorHandler } from './api/errors.js';
 import { registryRoutes } from './api/registry-routes.js';
+import { uploadRoutes } from './api/upload-routes.js';
 
 /**
  * Builds the Express app without starting it, so tests can drive it with Supertest.
- * @param {{ db?: import('node:sqlite').DatabaseSync, clientDist?: string }} [options]
+ * @param {{ db?: import('node:sqlite').DatabaseSync, rawDir?: string, clientDist?: string }} [options]
+ *   db and rawDir go together: the data routes are mounted only when both are given.
  */
-export function createApp({ db, clientDist } = {}) {
+export function createApp({ db, rawDir, clientDist } = {}) {
   const app = express();
 
   app.use(express.json());
@@ -19,8 +21,9 @@ export function createApp({ db, clientDist } = {}) {
   api.get('/health', (req, res) => {
     res.json({ status: 'ok' });
   });
-  if (db) {
-    api.use(registryRoutes(db));
+  if (db && rawDir) {
+    api.use(registryRoutes(db, rawDir));
+    api.use(uploadRoutes(db, rawDir));
   }
   app.use('/api', api);
   app.use('/api', (req, res) => {

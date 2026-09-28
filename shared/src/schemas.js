@@ -46,3 +46,6 @@ export const loggerSettingsInput = z
   });
 
 export const moveInput = z.object({ fridgeId: id, from: localDateTime });
+
+/** "Which logger is this file from?" */
+export const assignInput = z.object({ loggerId: id });
