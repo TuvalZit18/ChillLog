@@ -11,12 +11,13 @@ const DERIVED_TABLES = ['excursions', 'door_spikes', 'gaps', 'fridge_status'];
 
 /**
  * A fridge's readings: each logger's readings from the time it was placed in this fridge
- * until it was next moved.
+ * until it was next moved. Optionally only those in [fromUtc, toUtc).
  * @param {Db} db
  * @param {number} fridgeId
+ * @param {{ fromUtc?: string, toUtc?: string }} [range]
  * @returns {Reading[]} sorted by time
  */
-export function fridgeReadings(db, fridgeId) {
+export function fridgeReadings(db, fridgeId, { fromUtc = '', toUtc = '9999' } = {}) {
   return db
     .prepare(
       `SELECT r.ts_utc, r.temp_c, r.is_err
@@ -28,10 +29,10 @@ export function fridgeReadings(db, fridgeId) {
               (SELECT MIN(next.from_utc) FROM logger_assignments next
                WHERE next.logger_id = a.logger_id AND next.from_utc > a.from_utc),
               '9999')
-       WHERE a.fridge_id = ?
+       WHERE a.fridge_id = ? AND r.ts_utc >= ? AND r.ts_utc < ?
        ORDER BY r.ts_utc`,
     )
-    .all(fridgeId)
+    .all(fridgeId, fromUtc, toUtc)
     .map((row) => ({ tsUtc: row.ts_utc, tempC: row.temp_c, isErr: row.is_err === 1 }));
 }
 

@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { transaction } from '../db/transaction.js';
 import { recomputeAll, recomputeForLogger } from '../detection/store.js';
-import { normalizeFile } from '../normalize/normalize.js';
+import { normalizeFile, previewRows } from '../normalize/normalize.js';
 import { findLoggerByCode, getLogger, loggerHistory } from '../registry/registry.js';
 import { findLoggerCode } from './identify.js';
 
@@ -18,10 +18,11 @@ import { findLoggerCode } from './identify.js';
  * @typedef {object} FileReport
  * @property {number | null} uploadId
  * @property {string} fileName
- * @property {'processed' | 'needs_logger' | 'failed' | 'already_uploaded'} status
+ * @property {'processed' | 'needs_logger' | 'failed' | 'already_uploaded' | 'rejected'} status
  *   failed = held back: stored, but nothing was added until the reason is fixed.
+ *   rejected = refused at the door (e.g. not a CSV) and not stored at all.
  * @property {null | 'unknown_logger' | 'no_logger_id' | 'no_readings' | 'looks_fahrenheit'
- *   | 'looks_celsius' | 'error'} reason
+ *   | 'looks_celsius' | 'error' | 'not_csv'} reason
  * @property {number | null} loggerId
  * @property {string | null} loggerCode the file's logger, or the unregistered ID found in it
  * @property {{ added: number, alreadyStored: number, err: number, unreadable: number,
@@ -58,11 +59,19 @@ export function ingestFile(db, { rawDir, fileName, content }) {
   const sha256 = crypto.createHash('sha256').update(content).digest('hex');
   const seen = db.prepare('SELECT id, report_json FROM uploads WHERE sha256 = ?').get(sha256);
   if (seen) {
+    // Describe the file as it was found the first time, but this upload added nothing:
+    // every reading in it is already stored.
+    const first = JSON.parse(seen.report_json);
     return {
-      ...JSON.parse(seen.report_json),
+      ...first,
       uploadId: seen.id,
       fileName,
       status: 'already_uploaded',
+      readings: {
+        ...first.readings,
+        added: 0,
+        alreadyStored: first.readings.added + first.readings.alreadyStored,
+      },
     };
   }
 
@@ -123,6 +132,52 @@ export function assignUploadLogger(db, { rawDir, uploadId, loggerId }) {
  */
 export function retryUpload(db, { rawDir, uploadId }) {
   return reprocess(db, rawDir, uploadId, null);
+}
+
+/**
+ * Retries every file waiting on this logger: files held back with it (e.g. read with the wrong
+ * unit before its setting was fixed) and files waiting for a logger with its ID. Each file in
+ * its own transaction, like a bulk upload.
+ * @returns {FileReport[]}
+ */
+export function retryForLogger(db, { rawDir, loggerId }) {
+  const logger = getLogger(db, loggerId);
+  if (!logger) throw new IngestError('not_found', `Logger ${loggerId} does not exist.`);
+  const rows = db
+    .prepare(
+      `${UPLOAD_ROW}
+       WHERE status != 'processed'
+         AND (logger_id = ?
+              OR (logger_id IS NULL AND json_extract(report_json, '$.loggerCode') = ?))
+       ORDER BY id`,
+    )
+    .all(loggerId, logger.code);
+  return rows.map((row) =>
+    transaction(db, () => updateDerived(db, processStored(db, rawDir, row, null))),
+  );
+}
+
+/**
+ * Recent uploads, newest first, each with the report it got, plus when the last one came in.
+ * @returns {{ lastUploadUtc: string | null, uploads: (FileReport & { uploadedAt: string })[] }}
+ */
+export function listUploads(db, { limit = 100 } = {}) {
+  const rows = db
+    .prepare('SELECT uploaded_at, report_json FROM uploads ORDER BY id DESC LIMIT ?')
+    .all(limit);
+  const { last } = db.prepare('SELECT MAX(uploaded_at) AS last FROM uploads').get();
+  return {
+    lastUploadUtc: last,
+    uploads: rows.map((row) => ({ ...JSON.parse(row.report_json), uploadedAt: row.uploaded_at })),
+  };
+}
+
+/** The first rows of a stored file as written, for "Which logger is this file from?". */
+export function previewUpload(db, { rawDir, uploadId }) {
+  const row = db.prepare(`${UPLOAD_ROW} WHERE id = ?`).get(uploadId);
+  if (!row) throw new IngestError('not_found', `Upload ${uploadId} does not exist.`);
+  const text = decode(fs.readFileSync(rawPath(rawDir, row.sha256)));
+  return { uploadId: row.id, fileName: row.original_name, rows: previewRows(text) };
 }
 
 /**
@@ -221,6 +276,16 @@ function addReadings(db, upload, logger, text) {
     if (!firstPlaced || reading.tsUtc < firstPlaced) report.readings.beforePlacement++;
   }
   return { ...report, status: 'processed' };
+}
+
+/**
+ * The report for a file refused before it was stored.
+ * @param {string} fileName
+ * @param {'not_csv'} reason
+ * @returns {FileReport}
+ */
+export function rejectedReport(fileName, reason) {
+  return { ...blankReport({ id: null, fileName }), status: 'rejected', reason };
 }
 
 function needsLogger(upload, code) {

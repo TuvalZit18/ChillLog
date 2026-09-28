@@ -159,6 +159,20 @@ describe('ingestFile', () => {
     expect(db.prepare('SELECT COUNT(*) AS n FROM uploads').get().n).toBe(1);
   });
 
+  it('reports no readings added for a file that was already uploaded', () => {
+    placedLogger('TL-0417');
+    const file = {
+      rawDir,
+      fileName: 'TL-0417_2026-09-21.csv',
+      content: fixture('tel-aviv-logger-moved.csv'),
+    };
+    expect(ingestFile(db, file).readings.added).toBe(4);
+
+    const again = ingestFile(db, file);
+    expect(again.status).toBe('already_uploaded');
+    expect(again.readings.added).toBe(0);
+  });
+
   it('overlapping files from one logger store each reading once', () => {
     placedLogger('TL-0417');
     ingestFile(db, {

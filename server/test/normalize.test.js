@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, it, expect } from 'vitest';
-import { normalizeFile } from '../src/normalize/normalize.js';
+import { normalizeFile, previewRows } from '../src/normalize/normalize.js';
 
 const fixture = (name) => fs.readFileSync(path.join(import.meta.dirname, 'fixtures', name), 'utf8');
 
@@ -97,6 +97,14 @@ describe('normalizeFile', () => {
       const result = normalizeFile(fixture('err-values.csv'), { unit: 'F' });
       expect(result.unitWarning).toBe('looks_celsius');
     });
+  });
+
+  it('reads a CSV saved by Excel with a byte-order mark', () => {
+    const text = '\uFEFFTime,Temp\n14/09/2026 06:00,3.9\n';
+    expect(normalizeFile(text).readings).toEqual([
+      { tsUtc: '2026-09-14T03:00:00Z', tempC: 3.9, isErr: false },
+    ]);
+    expect(previewRows(text)).toEqual([{ time: '14/09/2026 06:00', temp: '3.9' }]);
   });
 
   it('reads 12-hour times and times with seconds', () => {

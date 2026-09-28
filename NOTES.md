@@ -25,6 +25,8 @@
 - **DD/MM vs MM/DD detected per file**, and °F set per logger, with a warning when values look like the wrong unit instead of a silent guess.
 - **Gaps shown as gaps.** The chart never draws a line across missing data, and zoomed-out charts keep every peak (min/max downsampling), so a short spike can't disappear.
 - **"No file this week" is a status**, so a branch that forgot to send its file is visible too.
+- **"This week" is the last full Monday–Sunday week in Israel time**, because files arrive on Monday for the week before. Earlier weeks can be picked.
+- **A file that stops early is a gap to the end of the week**, so a logger that died on Thursday doesn't look fine for the whole week.
 
 **Her day**
 - **Mobile-first**, phone date pickers, status shown with icon + word + value (not color alone), readable in sunlight.
