@@ -90,11 +90,12 @@ describe('POST /api/uploads', () => {
     expect(res.body.summary).toMatchObject({ readingsAdded: 0, alreadyUploaded: 1 });
   });
 
-  it('keeps a Hebrew file name as it was sent', async () => {
+  it('keeps Hebrew and accented file names as they were sent', async () => {
     const res = await api
       .post('/api/uploads')
-      .attach('files', fixture('err-values.csv'), 'מקרר חלב.csv');
-    expect(res.body.files[0].fileName).toBe('מקרר חלב.csv');
+      .attach('files', fixture('err-values.csv'), 'מקרר חלב.csv')
+      .attach('files', fixture('gap-two-hours.csv'), 'café.csv');
+    expect(res.body.files.map((f) => f.fileName)).toEqual(['מקרר חלב.csv', 'café.csv']);
   });
 
   it('refuses a file over the size limit and stores nothing', async () => {

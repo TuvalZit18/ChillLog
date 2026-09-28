@@ -36,10 +36,11 @@ export function uploadRoutes(db, rawDir) {
     const reports = new Array(files.length);
     const accepted = [];
     files.forEach((file, index) => {
-      if (hasUploadExtension(file.originalname)) {
-        accepted.push({ index, fileName: file.originalname, content: file.buffer });
+      const fileName = decodeFileName(file.originalname);
+      if (hasUploadExtension(fileName)) {
+        accepted.push({ index, fileName, content: file.buffer });
       } else {
-        reports[index] = rejectedReport(file.originalname, 'not_csv');
+        reports[index] = rejectedReport(fileName, 'not_csv');
       }
     });
     ingestFiles(db, { rawDir, files: accepted }).forEach((report, i) => {
@@ -68,6 +69,19 @@ export function uploadRoutes(db, rawDir) {
   });
 
   return router;
+}
+
+const REPLACEMENT_CHAR = String.fromCodePoint(0xfffd);
+
+/**
+ * Multer reads file names as Latin-1, but browsers send them as UTF-8 bytes, so a Hebrew name
+ * like "מקרר חלב.csv" arrives garbled. Re-decode it as UTF-8, unless the name is already
+ * proper Unicode or its bytes aren't valid UTF-8.
+ */
+function decodeFileName(name) {
+  if ([...name].some((ch) => ch.codePointAt(0) > 0xff)) return name;
+  const utf8 = Buffer.from(name, 'latin1').toString('utf8');
+  return utf8.includes(REPLACEMENT_CHAR) ? name : utf8;
 }
 
 /** The line above the file cards: "6 files · 2,004 readings added · 2 need your help". */

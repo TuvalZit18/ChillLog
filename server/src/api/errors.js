@@ -54,7 +54,9 @@ export function errorHandler(err, req, res, _next) {
     return res.status(STATUS_BY_CODE[err.code]).json({ error: err.message, code: err.code });
   }
   if (err.name === 'MulterError') {
-    return res.status(err.code === 'LIMIT_FILE_SIZE' ? 413 : 400).json({ error: uploadMessage(err) });
+    return res
+      .status(err.code === 'LIMIT_FILE_SIZE' ? 413 : 400)
+      .json({ error: uploadMessage(err) });
   }
   // Body-parser errors (bad JSON, body too large) carry their own 4xx status.
   if (err.expose && err.status >= 400 && err.status < 500) {
