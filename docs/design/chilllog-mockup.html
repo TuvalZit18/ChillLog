@@ -1,0 +1,1169 @@
+<title>ChillLog Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Placeholder palette: neutral cool greys + one teal accent. Status colors are separate from the accent. */
+:root {
+  --bg: #F3F5F6;
+  --surface: #FFFFFF;
+  --sunken: #E8ECEE;
+  --ink: #14191D;
+  --muted: #56606A;
+  --line: #D8DEE2;
+  --accent: #0D6776;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #DCEDF0;
+  --ok: #2B7535;      --ok-soft: #E3F1E4;
+  --alert: #B0271F;   --alert-soft: #FBE7E5;
+  --warm: #8F5500;    --warm-soft: #FAEED9;
+  --gap: #5847AE;     --gap-soft: #ECE9F8;
+  --nofile: #4F5963;  --nofile-soft: #E8ECEE;
+  --band: rgba(176, 39, 31, 0.10);
+  --grid: #E4E8EB;
+  --shade: rgba(20, 25, 29, 0.14);
+  --font: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0F1316; --surface: #171C20; --sunken: #20272C; --ink: #E6EAED; --muted: #9BA5AE; --line: #2B3339;
+    --accent: #5CB8C7; --accent-ink: #06282E; --accent-soft: #163439;
+    --ok: #6CC77A; --ok-soft: #173222; --alert: #FF7C72; --alert-soft: #3A1916;
+    --warm: #F2B25C; --warm-soft: #33260F; --gap: #ACA0F5; --gap-soft: #25213F;
+    --nofile: #A7B0B8; --nofile-soft: #20272C;
+    --band: rgba(255, 124, 114, 0.15); --grid: #232B30; --shade: rgba(0, 0, 0, 0.5);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0F1316; --surface: #171C20; --sunken: #20272C; --ink: #E6EAED; --muted: #9BA5AE; --line: #2B3339;
+  --accent: #5CB8C7; --accent-ink: #06282E; --accent-soft: #163439;
+  --ok: #6CC77A; --ok-soft: #173222; --alert: #FF7C72; --alert-soft: #3A1916;
+  --warm: #F2B25C; --warm-soft: #33260F; --gap: #ACA0F5; --gap-soft: #25213F;
+  --nofile: #A7B0B8; --nofile-soft: #20272C;
+  --band: rgba(255, 124, 114, 0.15); --grid: #232B30; --shade: rgba(0, 0, 0, 0.5);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { height: 100%; }
+body { height: 100%; margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+a { color: var(--accent); }
+a:hover { color: var(--ink); }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.mono { font-family: var(--mono); font-size: 0.92em; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.small { font-size: 14px; }
+
+/* ---------- shell ---------- */
+.frame { container-type: inline-size; container-name: app; height: 100%; width: 100%; background: var(--bg); }
+body.phone { display: flex; align-items: center; justify-content: center; background: var(--sunken); padding: 16px; }
+body.phone .frame { max-width: 390px; height: min(844px, 100%); border: 1px solid var(--line); border-radius: 24px; overflow: hidden; box-shadow: 0 14px 44px var(--shade); }
+.layout { height: 100%; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; grid-template-areas: "top" "main" "nav"; }
+
+.top { grid-area: top; display: flex; align-items: center; gap: 12px; padding-inline: 16px; min-height: 54px; background: var(--surface); border-bottom: 1px solid var(--line); position: relative; z-index: 5; }
+.brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 18px; letter-spacing: -0.01em; }
+.brand svg { color: var(--accent); }
+.spacer { flex: 1; }
+.mock-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px dashed var(--muted); background: transparent; color: var(--muted); font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.mock-panel { position: absolute; top: calc(100% + 6px); right: 12px; width: min(320px, calc(100% - 24px)); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 10px 30px var(--shade); padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.mock-panel fieldset { border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 2px; }
+.mock-panel legend { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+.opt { display: flex; align-items: center; gap: 10px; min-height: 40px; font-size: 15px; cursor: pointer; }
+.opt input { width: 18px; height: 18px; accent-color: var(--accent); margin: 0; }
+
+.main { grid-area: main; overflow: auto; min-height: 0; }
+.view { max-width: 1180px; margin-inline: auto; padding-inline: 16px; padding-block: 20px 40px; display: flex; flex-direction: column; gap: 24px; }
+
+.nav { grid-area: nav; display: grid; grid-template-columns: repeat(4, 1fr); background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.nav button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 62px; border: 0; background: none; color: var(--muted); font-size: 12.5px; font-weight: 500; }
+.nav-ico { display: grid; place-items: center; width: 52px; height: 30px; border-radius: 15px; }
+.nav button[aria-current="page"] { color: var(--accent); font-weight: 600; }
+.nav button[aria-current="page"] .nav-ico { background: var(--accent-soft); }
+
+@container app (min-width: 880px) {
+  .layout { grid-template-columns: 224px minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); grid-template-areas: "top top" "nav main"; }
+  .nav { display: flex; flex-direction: column; gap: 4px; padding: 16px 12px; border-top: 0; border-right: 1px solid var(--line); }
+  .nav button { flex-direction: row; justify-content: flex-start; gap: 10px; min-height: 46px; padding: 0 12px; border-radius: 8px; font-size: 15px; }
+  .nav-ico { width: auto; height: auto; }
+  .nav button[aria-current="page"] { background: var(--accent-soft); }
+  .nav button[aria-current="page"] .nav-ico { background: none; }
+  .view { padding-inline: 32px; padding-block: 28px 48px; }
+}
+
+/* ---------- type ---------- */
+.eyebrow { font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.h1 { font-size: 26px; line-height: 1.2; font-weight: 700; letter-spacing: -0.015em; }
+.h2 { font-size: 18px; line-height: 1.3; font-weight: 600; }
+.page-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.page-head > div { display: flex; flex-direction: column; gap: 4px; }
+.section { display: flex; flex-direction: column; gap: 12px; }
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+/* ---------- controls ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font-weight: 600; font-size: 15px; text-decoration: none; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.link { border: 0; background: none; color: var(--accent); padding: 0 4px; }
+.btn.block { width: 100%; }
+.back { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 8px 0 0; border: 0; background: none; color: var(--accent); font-weight: 600; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 15px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.chip b { font-weight: 700; }
+.chip[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.chip.c-alert { color: var(--alert); } .chip.c-warming { color: var(--warm); } .chip.c-gap { color: var(--gap); } .chip.c-nofile { color: var(--nofile); } .chip.c-ok { color: var(--ok); }
+.chip .chip-word { color: var(--ink); }
+
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field label, .lbl { font-size: 14px; font-weight: 600; }
+.field input, .field select { min-height: 46px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font-size: 16px; width: 100%; }
+.field .hint { font-size: 13px; color: var(--muted); }
+
+/* ---------- status pill: icon + word + value ---------- */
+.st { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 8px; border-radius: 999px; font-size: 14px; font-weight: 600; line-height: 1.4; font-variant-numeric: tabular-nums; max-width: 100%; }
+.st svg { flex: none; }
+.st-ok { background: var(--ok-soft); color: var(--ok); }
+.st-alert { background: var(--alert-soft); color: var(--alert); }
+.st-warming { background: var(--warm-soft); color: var(--warm); }
+.st-gap { background: var(--gap-soft); color: var(--gap); }
+.st-nofile { background: var(--nofile-soft); color: var(--nofile); }
+
+/* ---------- cards ---------- */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.pad { padding: 16px; }
+.grid-cards { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); }
+@container app (min-width: 640px) { .grid-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@container app (min-width: 1160px) { .grid-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+.fcard { display: flex; flex-direction: column; gap: 10px; width: 100%; text-align: left; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.fcard:hover { border-color: var(--muted); }
+.fcard-top { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.fname { font-size: 17px; font-weight: 600; line-height: 1.3; }
+.fname .br { display: block; font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.fcard-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.latest { font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.spark { flex: none; }
+.spark .sl { fill: none; stroke: var(--muted); stroke-width: 1.4; stroke-linejoin: round; }
+.spark .sl5 { stroke: var(--alert); stroke-dasharray: 3 3; stroke-width: 1; opacity: 0.7; }
+
+.meta-line { font-size: 14px; color: var(--muted); }
+
+/* branches: collapsible list on phone, card grid on desktop */
+.blist { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); overflow: hidden; }
+.blist details + details { border-top: 1px solid var(--line); }
+.blist summary { list-style: none; display: flex; align-items: center; gap: 12px; padding: 12px 16px; min-height: 60px; cursor: pointer; }
+.blist summary::-webkit-details-marker { display: none; }
+.blist summary .bname { font-weight: 600; }
+.blist summary .bcount { font-size: 14px; color: var(--muted); }
+.blist summary .bmain { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.chev { flex: none; color: var(--muted); transition: transform 0.15s; }
+details[open] .chev { transform: rotate(180deg); }
+.frow { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 52px; padding: 8px 16px; border: 0; border-top: 1px solid var(--line); background: none; text-align: left; }
+.frow:hover { background: var(--bg); }
+.frow .fr-name { font-weight: 500; }
+.bgrid { display: none; }
+@container app (min-width: 880px) {
+  .blist { display: none; }
+  .bgrid { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; }
+  .bcard { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .bcard-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 14px 16px 10px; }
+  .bcard-head .bname { font-weight: 700; font-size: 16px; }
+  .bcard .frow { padding: 6px 16px; min-height: 48px; }
+  .bcard .frow .st { font-size: 13px; }
+  .bcard.has-problem { border-color: var(--muted); }
+}
+@container app (min-width: 1240px) { .bgrid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+/* ---------- fridge detail ---------- */
+.dhead { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.chart-card { padding: 12px 12px 8px; display: flex; flex-direction: column; gap: 6px; }
+.readout { font-size: 14px; color: var(--muted); min-height: 21px; font-variant-numeric: tabular-nums; padding-inline: 4px; }
+.readout b { color: var(--ink); }
+.chart { width: 100%; min-height: 200px; }
+.chart svg { display: block; touch-action: pan-y; }
+.chart .grid line { stroke: var(--grid); }
+.chart .ax { fill: var(--muted); font-size: 12px; font-family: var(--font); }
+.chart .limit { stroke: var(--alert); stroke-dasharray: 6 4; stroke-width: 1.5; }
+.chart .limit-lab { fill: var(--alert); font-size: 12px; font-weight: 700; font-family: var(--font); }
+.chart .band { fill: var(--band); }
+.chart .band-lab { fill: var(--alert); font-size: 12px; font-weight: 600; font-family: var(--font); }
+.chart .line { fill: none; stroke: var(--accent); stroke-width: 1.7; stroke-linejoin: round; stroke-linecap: round; }
+.chart .nolog { fill: var(--sunken); }
+.chart .nolog-lab { fill: var(--muted); font-size: 12px; font-family: var(--font); }
+.chart .gap-mark { stroke: var(--gap); stroke-width: 2; }
+.chart .gap-lab { fill: var(--gap); font-size: 12px; font-weight: 600; font-family: var(--font); }
+.chart .door { fill: var(--surface); stroke: var(--warm); stroke-width: 2; }
+.chart .door-lab { fill: var(--warm); font-size: 12px; font-weight: 600; font-family: var(--font); }
+.chart .hv line { stroke: var(--ink); stroke-opacity: 0.35; }
+.chart .hv circle { fill: var(--accent); stroke: var(--surface); stroke-width: 2; }
+.chart-empty { padding: 32px 12px; text-align: center; color: var(--muted); display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 4px 4px 4px; font-size: 13px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.lg { display: inline-block; width: 18px; height: 10px; }
+.lg-line { border-top: 2px solid var(--accent); height: 0; }
+.lg-limit { border-top: 2px dashed var(--alert); height: 0; }
+.lg-band { background: var(--band); border: 1px solid var(--alert); border-width: 0 1px; }
+.lg-gap { border-top: 2px solid var(--gap); height: 0; }
+.lg-door { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--warm); }
+
+.custom { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; max-width: 420px; }
+
+.xlist { display: flex; flex-direction: column; gap: 10px; }
+.xcard { display: grid; gap: 10px 20px; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 14px 16px; }
+.xcard .kv { display: flex; flex-direction: column; gap: 2px; }
+.kv .k { font-size: 13px; color: var(--muted); font-weight: 500; }
+.kv .v { font-weight: 600; font-variant-numeric: tabular-nums; }
+.xcard .xtitle { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; justify-content: space-between; }
+.xcard .xnote { grid-column: 1 / -1; font-size: 14px; color: var(--muted); }
+@container app (min-width: 640px) { .xcard { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.plain-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; }
+.plain-list li { padding: 10px 0; border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
+.plain-list li:first-child { border-top: 0; padding-top: 0; }
+.note { font-size: 14px; color: var(--muted); display: flex; gap: 8px; align-items: flex-start; }
+.note svg { flex: none; margin-top: 2px; }
+.detail-cols { display: flex; flex-direction: column; gap: 24px; }
+@container app (min-width: 1100px) { .detail-cols { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); align-items: start; } }
+
+/* ---------- upload ---------- */
+.drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 32px 20px; border: 2px dashed var(--line); border-radius: 14px; background: var(--surface); text-align: center; }
+.drop.over { border-color: var(--accent); background: var(--accent-soft); }
+.drop .drop-ico { width: 56px; height: 56px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; }
+.drop .wide-only { display: none; }
+@container app (min-width: 880px) { .drop { padding: 48px 24px; } .drop .wide-only { display: block; } .drop .narrow-only { display: none; } }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.ucard { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; padding: 14px 16px; }
+.u-ico { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; }
+.u-ok .u-ico { background: var(--ok-soft); color: var(--ok); }
+.u-notes .u-ico { background: var(--warm-soft); color: var(--warm); }
+.u-dup .u-ico { background: var(--sunken); color: var(--muted); }
+.u-held .u-ico { background: var(--alert-soft); color: var(--alert); }
+.u-help .u-ico { background: var(--gap-soft); color: var(--gap); }
+.u-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.u-file { font-family: var(--mono); font-size: 14px; font-weight: 500; overflow-wrap: anywhere; }
+.u-word { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+.u-ok .u-word { color: var(--ok); } .u-notes .u-word { color: var(--warm); } .u-dup .u-word { color: var(--muted); } .u-held .u-word { color: var(--alert); } .u-help .u-word { color: var(--gap); }
+.u-lines { margin: 0; padding: 0; list-style: none; font-size: 15px; font-variant-numeric: tabular-nums; }
+.u-body .btn { align-self: flex-start; margin-top: 6px; }
+.u-summary { font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* ---------- inspector ---------- */
+.filters { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 16px; }
+.filters .wide { grid-column: 1 / -1; }
+@container app (min-width: 880px) { .filters { grid-template-columns: repeat(4, minmax(0, 1fr)); } .filters .wide { grid-column: auto; } }
+.answer { padding: 20px; display: flex; flex-direction: column; gap: 10px; border-color: var(--ink); }
+.answer p.big { font-size: 20px; line-height: 1.45; font-weight: 500; text-wrap: pretty; }
+.answer b { font-weight: 700; }
+.tbl-wrap { overflow-x: auto; display: none; }
+.tbl { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; background: var(--surface); }
+.tbl th, .tbl td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.tbl th { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; background: var(--bg); }
+.tbl td.n, .tbl th.n { text-align: right; }
+.tbl tr:last-child td { border-bottom: 0; }
+.icards { display: flex; flex-direction: column; gap: 10px; }
+@container app (min-width: 720px) { .tbl-wrap { display: block; } .icards { display: none; } }
+
+/* ---------- loggers ---------- */
+.lrow { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 64px; padding: 10px 16px; border: 0; border-top: 1px solid var(--line); background: none; text-align: left; }
+.lrow:first-child { border-top: 0; }
+.lrow:hover { background: var(--bg); }
+.lrow .lid { font-family: var(--mono); font-weight: 500; min-width: 76px; }
+.lrow .lwhere { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.lrow .lwhere .sub { font-size: 14px; color: var(--muted); }
+.tag { display: inline-flex; align-items: center; padding: 1px 8px; border-radius: 6px; border: 1px solid var(--line); font-size: 13px; font-weight: 600; color: var(--muted); }
+.tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; padding: 16px; margin: 0; }
+.dl div { display: flex; flex-direction: column; gap: 2px; }
+.dl dt { font-size: 13px; color: var(--muted); font-weight: 500; }
+.dl dd { margin: 0; font-weight: 600; }
+.timeline { list-style: none; margin: 0; padding: 4px 0 0 0; display: flex; flex-direction: column; }
+.timeline li { position: relative; padding: 0 0 18px 26px; display: flex; flex-direction: column; gap: 2px; }
+.timeline li::before { content: ""; position: absolute; left: 6px; top: 7px; width: 10px; height: 10px; border-radius: 50%; background: var(--surface); border: 2px solid var(--muted); }
+.timeline li.now::before { background: var(--accent); border-color: var(--accent); }
+.timeline li::after { content: ""; position: absolute; left: 11px; top: 20px; bottom: 0; width: 2px; background: var(--line); }
+.timeline li:last-child::after { display: none; }
+.timeline .when { font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.brow { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-top: 1px solid var(--line); }
+.brow:first-child { border-top: 0; }
+.brow .bmain { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.brow .sub { font-size: 14px; color: var(--muted); }
+
+/* ---------- states ---------- */
+.sk { background: var(--sunken); border-radius: 8px; animation: pulse 1.4s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: 0.55; } }
+.state-box { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px; padding: 48px 20px; }
+.state-box .state-ico { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
+.state-box.err .state-ico { background: var(--sunken); color: var(--muted); }
+.state-box p { max-width: 36ch; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .sk { animation: none; } .chev { transition: none; } }
+
+/* ---------- dialog / bottom sheet ---------- */
+dialog { border: 0; padding: 0; border-radius: 16px; background: var(--surface); color: var(--ink); width: min(520px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); box-shadow: 0 20px 60px var(--shade); }
+dialog::backdrop { background: rgba(10, 14, 17, 0.5); }
+.dlg { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.dlg .grab { display: none; width: 40px; height: 4px; border-radius: 2px; background: var(--line); align-self: center; margin-top: -8px; }
+.dlg .actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+.preview { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 14px; }
+.preview th, .preview td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+.preview th { font-family: var(--font); font-size: 13px; color: var(--muted); font-weight: 600; }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 640px) {
+  dialog { margin: auto 0 0; width: 100%; max-width: 100%; border-radius: 18px 18px 0 0; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .dlg .grab { display: block; }
+  .dlg .actions .btn { flex: 1; }
+}
+
+.toast { position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); max-width: calc(100vw - 32px); width: max-content; background: var(--ink); color: var(--bg); padding: 12px 16px; border-radius: 10px; font-size: 15px; box-shadow: 0 8px 24px var(--shade); z-index: 50; }
+</style>
+
+<div class="frame" id="frame">
+  <div class="layout">
+    <header class="top">
+      <div class="brand">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 14.8V4.5a2 2 0 1 0-4 0v10.3a4 4 0 1 0 4 0z"/><path d="M12 9v7"/></svg>
+        <span>ChillLog</span>
+      </div>
+      <div class="spacer"></div>
+      <button class="mock-btn" id="mockBtn" aria-expanded="false" aria-controls="mockPanel">
+        Mockup
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="mock-panel" id="mockPanel" hidden>
+        <fieldset>
+          <legend>Show the app as</legend>
+          <label class="opt"><input type="radio" name="mode" id="mode-data" value="data" checked> With sample data</label>
+          <label class="opt"><input type="radio" name="mode" id="mode-empty" value="empty"> First run, no data yet</label>
+          <label class="opt"><input type="radio" name="mode" id="mode-loading" value="loading"> Loading</label>
+          <label class="opt"><input type="radio" name="mode" id="mode-error" value="error"> Can't connect</label>
+        </fieldset>
+        <label class="opt"><input type="checkbox" id="phoneToggle"> Phone width (390 px)</label>
+        <p class="small muted">Every reading here is generated sample data for 12 Squanchy Bakery branches, week of Mon 14 Sep 2026. Colors are placeholders.</p>
+      </div>
+    </header>
+
+    <nav class="nav" id="nav" aria-label="Main">
+      <button data-go="overview"><span class="nav-ico" data-ico="navOverview"></span>Overview</button>
+      <button data-go="upload"><span class="nav-ico" data-ico="navUpload"></span>Upload</button>
+      <button data-go="inspector"><span class="nav-ico" data-ico="navInspector"></span>Inspector</button>
+      <button data-go="loggers"><span class="nav-ico" data-ico="navLoggers"></span>Loggers</button>
+    </nav>
+
+    <main class="main" id="main">
+      <div class="view" id="view"></div>
+    </main>
+  </div>
+</div>
+
+<dialog id="dlg" aria-labelledby="dlgTitle"><div id="dlgBody"></div></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+/* ============================================================
+   Sample data. Times are generated in UTC and always displayed in
+   Asia/Jerusalem, like the real app.
+   ============================================================ */
+const TZ = 'Asia/Jerusalem';
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const STEP = 15 * 60 * 1000;
+// Israel is on IDT (UTC+3) for the whole sample period.
+const local = (y, m, d, h = 0, mi = 0) => Date.UTC(y, m - 1, d, h - 3, mi);
+const T0 = local(2026, 8, 22);          // Sat 22 Aug 00:00
+const N = 30 * 96;                      // 30 days of 15-minute readings
+const LAST = N - 1;                     // Sun 20 Sep 23:45
+const WEEK0 = 23 * 96;                  // Mon 14 Sep 00:00, start of this week's files
+const MOVE_I = 26 * 96 + 40;            // Thu 17 Sep 10:00, TL-0417 moved
+const EXC_I = 27 * 96 + 58;             // Fri 18 Sep 14:30, Rishon cream cakes crosses 5°C
+const SPIKE_I = 24 * 96 + 29;           // Tue 15 Sep 07:15, door opening
+const UPLOADED_AT = local(2026, 9, 21, 9, 12);
+const LIMIT = 5;
+const tAt = i => T0 + i * STEP;
+
+const BRANCH_DEFS = [
+  ['jer', 'Jerusalem',     [['Dairy','TL-0512'], ['Walk-in','TL-0513'], ['Cream cakes','TL-0514']]],
+  ['tlv', 'Tel Aviv',      [['Walk-in','TL-0420'], ['Display 1','TL-0418'], ['Display 2','TL-0417'], ['Cream cakes','TL-0419']]],
+  ['hfa', 'Haifa',         [['Dairy','TL-0231'], ['Walk-in','TL-0232'], ['Display 1','TL-0233']]],
+  ['rsh', 'Rishon LeZion', [['Cream cakes','TL-0388'], ['Dairy','TL-0387'], ['Walk-in','TL-0389']]],
+  ['brs', "Be'er Sheva",   [['Dairy','TL-0601'], ['Walk-in','TL-0602'], ['Display 1','TL-0603']]],
+  ['ntn', 'Netanya',       [['Dairy','TL-0655'], ['Walk-in','TL-0656'], ['Display 1','TL-0657']]],
+  ['hrz', 'Herzliya',      [['Dairy','TL-0702'], ['Cream cakes','TL-0703']]],
+  ['asd', 'Ashdod',        [['Walk-in','TL-0288'], ['Display 1','TL-0290'], ['Dairy','TL-0289'], ['Cream cakes','TL-0291']]],
+  ['ptk', 'Petah Tikva',   [['Dairy','TL-0810'], ['Walk-in','TL-0811'], ['Display 1','TL-0812']]],
+  ['rmg', 'Ramat Gan',     [['Dairy','TL-0840'], ['Cream cakes','TL-0841'], ['Walk-in','TL-0842']]],
+  ['hln', 'Holon',         [['Dairy','TL-0870'], ['Walk-in','TL-0871']]],
+  ['kfs', 'Kfar Saba',     [['Dairy','TL-0901'], ['Walk-in','TL-0902'], ['Display 1','TL-0903'], ['Display 2','TL-0904']]],
+];
+const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const BASE = { 'Dairy': [3.0, 3.6], 'Walk-in': [2.6, 3.3], 'Cream cakes': [3.2, 3.7], 'Display 1': [3.4, 3.9], 'Display 2': [3.4, 3.9] };
+
+function rngFor(str) {
+  let h = 2166136261;
+  for (const c of str) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
+  let a = h >>> 0;
+  return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+const r1 = v => Math.round(v * 10) / 10;
+
+function normalSeries(id, name) {
+  const rng = rngFor(id);
+  const [lo, hi] = BASE[name] || [3.0, 3.6];
+  const base = lo + rng() * (hi - lo), ph = rng() * 6.28, cyc = 4 + Math.floor(rng() * 4);
+  const a = new Float64Array(N);
+  for (let i = 0; i < N; i++) a[i] = r1(base + 0.3 * Math.sin(2 * Math.PI * i / 96 + ph) + 0.25 * ((i % cyc) / cyc) + (rng() - 0.5) * 0.16);
+  return a;
+}
+
+const BRANCHES = [];
+const FRIDGES = [];
+const byId = {};
+for (const [bid, bname, fr] of BRANCH_DEFS) {
+  const b = { id: bid, name: bname, fridges: [] };
+  BRANCHES.push(b);
+  for (const [name] of fr) {
+    const id = `${bid}-${slug(name)}`;
+    const f = { id, bid, branch: bname, name, vals: normalSeries(id, name), err: new Set(), since: 0 };
+    FRIDGES.push(f); b.fridges.push(f); byId[id] = f;
+  }
+}
+const branchById = Object.fromEntries(BRANCHES.map(b => [b.id, b]));
+
+// Scripted cases from Summer's email
+(() => {
+  const f = byId['rsh-cream-cakes'];              // slow warm-up, then a long excursion
+  for (let i = WEEK0; i < N; i++) {
+    let v;
+    if (i < EXC_I) { v = Math.min(3.9 + (i - WEEK0) / (EXC_I - WEEK0) * 1.0 + 0.08 * Math.sin(i / 7), 4.94); }
+    else { v = Math.max(5.1, Math.min(5.15 + (i - EXC_I) / (LAST - EXC_I) * 1.9 + 0.08 * Math.sin(i / 7), 7.04)); }
+    f.vals[i] = r1(v);
+  }
+  f.vals[LAST] = 7.1;
+
+  byId['tlv-walk-in'].vals[SPIKE_I] = 9.4;         // one door-opening reading
+
+  const d2 = byId['tlv-display-2'];                // logger arrived on 17 Sep
+  d2.since = MOVE_I;
+  for (let i = 0; i < MOVE_I; i++) d2.vals[i] = NaN;
+
+  const hd = byId['hfa-dairy'];                    // 2h 15m gap + 3 ERR readings
+  for (let i = WEEK0 + 10; i <= WEEK0 + 18; i++) hd.vals[i] = NaN;
+  for (const i of [WEEK0 + 2 * 96 + 40, WEEK0 + 3 * 96 + 12, WEEK0 + 4 * 96 + 70]) { hd.vals[i] = NaN; hd.err.add(i); }
+
+  const ad = byId['asd-display-1'];                // warming, still under 5°C
+  for (let k = 0; k <= 96; k++) ad.vals[LAST - 96 + k] = r1(3.8 + 0.8 * k / 96 + (k % 3 === 1 ? 0.05 : 0));
+  ad.vals[LAST - 96] = 3.8; ad.vals[LAST] = 4.6;
+
+  for (const f2 of branchById['ntn'].fridges) for (let i = WEEK0; i < N; i++) f2.vals[i] = NaN;   // no file this week
+})();
+
+// Loggers and where they have been
+const INSTALLED = local(2026, 3, 2);
+const LOGGERS = [];
+const loggerById = {};
+function addLogger(lg) { LOGGERS.push(lg); loggerById[lg.id] = lg; }
+for (const [bid, , fr] of BRANCH_DEFS) for (const [name, lid] of fr) {
+  if (lid === 'TL-0417' || lid === 'TL-0420') continue;
+  addLogger({ id: lid, unit: '°C', fmt: 'YYYY-MM-DD', history: [{ fridge: `${bid}-${slug(name)}`, from: INSTALLED, to: null }] });
+}
+addLogger({ id: 'TL-0417', unit: '°C', fmt: 'YYYY-MM-DD', history: [
+  { fridge: 'tlv-walk-in', from: INSTALLED, to: tAt(MOVE_I) },
+  { fridge: 'tlv-display-2', from: tAt(MOVE_I), to: null },
+] });
+addLogger({ id: 'TL-0420', unit: '°C', fmt: 'YYYY-MM-DD', history: [{ fridge: 'tlv-walk-in', from: tAt(MOVE_I), to: null }] });
+addLogger({ id: 'TL-0421', unit: '°C', fmt: 'YYYY-MM-DD', history: [] });
+loggerById['TL-0231'].unit = '°F';
+loggerById['TL-0231'].fmt = 'DD/MM/YYYY';
+LOGGERS.sort((a, b) => a.id.localeCompare(b.id));
+
+const currentOf = lg => lg.history.find(h => h.to === null) || null;
+const loggerIn = fid => LOGGERS.find(lg => { const c = currentOf(lg); return c && c.fridge === fid; }) || null;
+
+/* ============================================================
+   Formatting (Israel time, 24-hour)
+   ============================================================ */
+const pf = new Intl.DateTimeFormat('en-GB', { timeZone: TZ, weekday: 'short', day: 'numeric', month: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+function parts(ms) { const o = {}; for (const p of pf.formatToParts(ms)) o[p.type] = p.value; o.mon = MON[+o.month - 1]; return o; }
+const fmtDT = ms => { const o = parts(ms); return `${o.weekday} ${o.day} ${o.mon}, ${o.hour}:${o.minute}`; };
+const fmtDay = ms => { const o = parts(ms); return `${o.weekday} ${o.day} ${o.mon}`; };
+const fmtD = ms => { const o = parts(ms); return `${o.day} ${o.mon}`; };
+const fmtTime = ms => { const o = parts(ms); return `${o.hour}:${o.minute}`; };
+const isoDate = ms => { const o = parts(ms); return `${o.year}-${o.month.padStart(2, '0')}-${o.day.padStart(2, '0')}`; };
+const fromIso = s => { const [y, m, d] = s.split('-').map(Number); return local(y, m, d); };
+const idxOf = ms => Math.round((ms - T0) / STEP);
+const clampI = i => Math.max(0, Math.min(LAST, i));
+const tC = v => `${v.toFixed(1)}°C`;
+const sameDay = (a, b) => isoDate(a) === isoDate(b);
+
+function durShort(ms) {
+  const m = Math.round(ms / 60000), d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mi = m % 60;
+  if (!d && !h) return `${mi} min`;
+  return [d && `${d}d`, h && `${h}h`, mi && `${mi}m`].filter(Boolean).join(' ');
+}
+function durLong(ms) {
+  const m = Math.round(ms / 60000), d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mi = m % 60;
+  return [d && `${d} ${d === 1 ? 'day' : 'days'}`, h && `${h} h`, mi && `${mi} min`].filter(Boolean).join(' ') || '0 min';
+}
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const nf = new Intl.NumberFormat('en-US');
+
+/* ============================================================
+   Detection (mockup version of the real rules)
+   - above 5°C for 2+ consecutive readings = excursion
+   - a single reading above 5°C = door opening, ignored
+   - 2+ missing readings in a row = gap
+   ============================================================ */
+function analyze(f, a, b) {
+  const exc = [], doors = [], gaps = []; let errs = 0, readings = 0, run = null, hole = null;
+  const closeRun = () => { if (!run) return; if (run.e > run.s) exc.push({ ...run, dur: (run.e - run.s) * STEP, open: run.e === LAST }); else doors.push({ i: run.s, v: run.peak }); run = null; };
+  const closeHole = () => { if (!hole) return; if (hole.e > hole.s) gaps.push({ ...hole, dur: (hole.e - hole.s + 1) * STEP, nofile: hole.e === LAST && hole.e - hole.s >= 95 }); hole = null; };
+  for (let i = a; i <= b; i++) {
+    const v = f.vals[i];
+    if (Number.isNaN(v)) {
+      closeRun();
+      if (f.err.has(i)) { errs++; closeHole(); continue; }
+      if (i < f.since) continue;
+      hole ? (hole.e = i) : (hole = { s: i, e: i });
+      continue;
+    }
+    closeHole(); readings++;
+    if (v > LIMIT) { if (run) { run.e = i; run.peak = Math.max(run.peak, v); } else run = { s: i, e: i, peak: v }; }
+    else closeRun();
+  }
+  closeRun(); closeHole();
+  return { exc, doors, gaps, errs, readings };
+}
+function lastIdx(f) { for (let i = LAST; i >= 0; i--) if (!Number.isNaN(f.vals[i])) return i; return -1; }
+
+const ST = {
+  alert:   { word: 'Alert',   icon: 'alert',   rank: 0 },
+  warming: { word: 'Warming', icon: 'warming', rank: 1 },
+  gap:     { word: 'Gap',     icon: 'gap',     rank: 2 },
+  nofile:  { word: 'No file', icon: 'nofile',  rank: 3 },
+  ok:      { word: 'OK',      icon: 'ok',      rank: 4 },
+};
+function computeStatus(f) {
+  const w = analyze(f, WEEK0, LAST), li = lastIdx(f);
+  f.li = li;
+  if (w.readings === 0) return { code: 'nofile', text: 'No file this week' };
+  if (w.exc.length) { const e = w.exc.reduce((m, x) => x.dur > m.dur ? x : m); return { code: 'alert', text: `Alert · ${tC(e.peak)} · ${durShort(e.dur)}` }; }
+  const prev = li >= 96 ? f.vals[li - 96] : NaN, now = f.vals[li];
+  if (!Number.isNaN(prev) && now - prev >= 0.7 && now <= LIMIT) return { code: 'warming', text: `Warming · ${tC(now)}, +${(now - prev).toFixed(1)}° in 24h` };
+  if (w.gaps.length) return { code: 'gap', text: `Gap · ${durShort(w.gaps.reduce((s, g) => s + g.dur, 0))} missing` };
+  return { code: 'ok', text: `OK · ${tC(now)}` };
+}
+function computeAll() { for (const f of FRIDGES) f.st = computeStatus(f); }
+computeAll();
+const worstOf = list => list.reduce((w, f) => (!w || ST[f.st.code].rank < ST[w.st.code].rank) ? f : w, null);
+
+/* ============================================================
+   Icons (stroke, 24 grid)
+   ============================================================ */
+const IC = {
+  ok: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  alert: '<path d="M12 3.8L2.8 20h18.4L12 3.8z"/><path d="M12 10v4.2"/><path d="M12 17.2h.01"/>',
+  warming: '<path d="M6 18L18 6"/><path d="M9.5 6H18v8.5"/>',
+  gap: '<path d="M4.5 12h.01M12 12h.01M19.5 12h.01" stroke-width="3.4"/>',
+  nofile: '<circle cx="12" cy="12" r="8.5"/><path d="M9 9l6 6M15 9l-6 6"/>',
+  info: '<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5"/><path d="M12 8h.01"/>',
+  dup: '<path d="M20 11a8 8 0 0 0-14.3-4.9L4 8"/><path d="M4 4v4h4"/><path d="M4 13a8 8 0 0 0 14.3 4.9L20 16"/><path d="M20 20v-4h-4"/>',
+  help: '<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.4a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.7"/><path d="M12 17h.01"/>',
+  back: '<path d="M15 5l-7 7 7 7"/>',
+  chevDown: '<path d="M6 9l6 6 6-6"/>',
+  chevRight: '<path d="M9 5l7 7-7 7"/>',
+  upload: '<path d="M12 15V4"/><path d="M7 9l5-5 5 5"/><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/>',
+  wifi: '<path d="M2.5 8.8a14 14 0 0 1 19 0"/><path d="M5.8 12.2a9.5 9.5 0 0 1 12.4 0"/><path d="M9 15.6a4.8 4.8 0 0 1 6 0"/><path d="M12 19h.01"/><path d="M3 3l18 18"/>',
+  history: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  navOverview: '<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>',
+  navUpload: '<path d="M12 15V4"/><path d="M7 9l5-5 5 5"/><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/>',
+  navInspector: '<path d="M9 4h6v3H9z"/><path d="M15 5.5h2.5a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1V6.5a1 1 0 0 1 1-1H9"/><path d="M9 14l2 2 4-4.5"/>',
+  navLoggers: '<path d="M14 14.8V4.5a2 2 0 1 0-4 0v10.3a4 4 0 1 0 4 0z"/><path d="M12 9v7"/>',
+  share: '<path d="M12 4v11"/><path d="M8 8l4-4 4 4"/><path d="M5 12v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7"/>',
+  download: '<path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 19h14"/>',
+};
+const icon = (n, s = 18) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]}</svg>`;
+const pill = (code, text) => `<span class="st st-${code}">${icon(ST[code].icon, 16)}<span>${esc(text)}</span></span>`;
+document.querySelectorAll('[data-ico]').forEach(el => { el.innerHTML = icon(el.dataset.ico, 22); });
+
+/* ============================================================
+   App state
+   ============================================================ */
+const S = {
+  view: 'overview', mode: 'data', fridgeId: null, loggerId: null, filter: null,
+  range: '7d', cFrom: '2026-09-14', cTo: '2026-09-20',
+  insp: { branch: 'rsh', fridge: 'rsh-cream-cakes', from: '2026-09-01', to: '2026-09-21' },
+  upload: { stage: 'idle', files: [], picked: 0 },
+};
+
+/* ---------- small pieces ---------- */
+function spark(f) {
+  const W = 112, H = 36, lo = 1, hi = 8, a = WEEK0;
+  const y = v => (H - 3 - (Math.min(hi, Math.max(lo, v)) - lo) / (hi - lo) * (H - 6)).toFixed(1);
+  let d = '', pen = false, lastX = null, lastV = null;
+  for (let i = a; i <= LAST; i += 2) {
+    const v = f.vals[i], x = ((i - a) / (LAST - a) * (W - 4)).toFixed(1);
+    if (Number.isNaN(v)) { pen = false; continue; }
+    d += `${pen ? 'L' : 'M'}${x} ${y(v)}`; pen = true; lastX = x; lastV = v;
+  }
+  const dot = lastX !== null ? `<circle cx="${lastX}" cy="${y(lastV)}" r="3" fill="var(--${f.st.code === 'ok' ? 'ok' : f.st.code === 'warming' ? 'warm' : f.st.code})"/>` : '';
+  return `<svg class="spark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><line class="sl5" x1="0" x2="${W}" y1="${y(LIMIT)}" y2="${y(LIMIT)}"/>${d ? `<path class="sl" d="${d}"/>` : ''}${dot}</svg>`;
+}
+function latestLine(f) {
+  if (f.li < 0) return 'No readings yet';
+  return `Latest ${tC(f.vals[f.li])} · ${fmtDT(tAt(f.li))}`;
+}
+function fridgeCard(f) {
+  return `<button class="fcard" data-fridge="${f.id}">
+    <div class="fcard-top"><span class="fname"><span class="br">${esc(f.branch)}</span>${esc(f.name)}</span>${pill(f.st.code, f.st.text)}</div>
+    <div class="fcard-foot"><span class="latest">${latestLine(f)}</span>${spark(f)}</div>
+  </button>`;
+}
+function fridgeRow(f) {
+  return `<button class="frow" data-fridge="${f.id}"><span class="fr-name">${esc(f.name)}</span>${pill(f.st.code, f.st.text)}</button>`;
+}
+function skeleton(kind) {
+  const card = `<div class="card pad" style="display:flex;flex-direction:column;gap:12px"><div class="sk" style="height:14px;width:40%"></div><div class="sk" style="height:20px;width:65%"></div><div class="sk" style="height:28px;width:55%;border-radius:999px"></div></div>`;
+  return `<div class="section"><div class="sk" style="height:28px;width:180px"></div><div class="chips">${'<div class="sk" style="height:44px;width:96px;border-radius:999px"></div>'.repeat(4)}</div></div>
+    <div class="grid-cards">${card.repeat(kind === 'short' ? 2 : 4)}</div>
+    <div class="card" style="height:220px;display:flex;flex-direction:column;gap:14px;padding:16px">${'<div class="sk" style="height:22px"></div>'.repeat(5)}</div>`;
+}
+function errorBox() {
+  return `<div class="card state-box err"><div class="state-ico">${icon('wifi', 30)}</div><h2 class="h2">Couldn't load</h2><p>Check your connection, then try again. Nothing you uploaded is lost.</p><button class="btn primary" data-action="retry">Retry</button></div>`;
+}
+function emptyBox(title, text) {
+  return `<div class="card state-box"><div class="state-ico">${icon('upload', 30)}</div><h2 class="h2">${title}</h2><p>${text}</p><button class="btn primary" data-go="upload">Upload your first files</button></div>`;
+}
+
+/* ============================================================
+   Screen 1: Overview
+   ============================================================ */
+function vOverview() {
+  const head = `<div class="page-head"><div><h1 class="h1">Every fridge, this week</h1><p class="meta-line num">Readings for Mon 14 Sep to Sun 20 Sep · Last upload ${fmtDT(UPLOADED_AT)}</p></div></div>`;
+  if (S.mode === 'empty') return `<div class="page-head"><div><h1 class="h1">Every fridge, this week</h1></div></div>` + emptyBox('No readings yet', "Upload the logger files from your branches. Each fridge will show up here with its temperature and status.");
+  const counts = { alert: 0, warming: 0, gap: 0, nofile: 0, ok: 0 };
+  FRIDGES.forEach(f => counts[f.st.code]++);
+  const strip = `<div class="chips" role="group" aria-label="Filter by status">
+    ${Object.keys(ST).map(c => `<button class="chip c-${c}" data-filter="${c}" aria-pressed="${S.filter === c}">${icon(ST[c].icon, 16)}<b>${counts[c]}</b> <span class="chip-word">${ST[c].word}</span></button>`).join('')}
+  </div>`;
+
+  if (S.filter) {
+    const list = FRIDGES.filter(f => f.st.code === S.filter);
+    return `${head}${strip}<section class="section"><div class="section-head"><h2 class="h2">${ST[S.filter].word} · ${list.length} ${list.length === 1 ? 'fridge' : 'fridges'}</h2><button class="btn link" data-filter="${S.filter}">Show everything</button></div>
+      <div class="grid-cards">${list.map(fridgeCard).join('') || '<p class="muted">Nothing here.</p>'}</div></section>`;
+  }
+
+  const problems = FRIDGES.filter(f => f.st.code !== 'ok').sort((a, b) => ST[a.st.code].rank - ST[b.st.code].rank);
+  const cards = []; const doneNofile = new Set();
+  for (const f of problems) {
+    if (f.st.code === 'nofile') {
+      if (doneNofile.has(f.bid)) continue; doneNofile.add(f.bid);
+      const group = branchById[f.bid].fridges.filter(x => x.st.code === 'nofile');
+      if (group.length > 1) {
+        const li = Math.max(...group.map(x => x.li));
+        cards.push(`<button class="fcard" data-filter="nofile">
+          <div class="fcard-top"><span class="fname"><span class="br">${esc(f.branch)}</span>All ${group.length} fridges</span>${pill('nofile', 'No file this week')}</div>
+          <div class="fcard-foot"><span class="latest">Last reading ${fmtDT(tAt(li))} · ask the branch to send this week's files</span></div>
+        </button>`);
+        continue;
+      }
+    }
+    cards.push(fridgeCard(f));
+  }
+
+  const blist = BRANCHES.map(b => {
+    const w = worstOf(b.fridges);
+    return `<details><summary><span class="bmain"><span class="bname">${esc(b.name)}</span><span class="bcount">${b.fridges.length} fridges</span></span>${pill(w.st.code, w.st.code === 'ok' ? 'All OK' : w.st.text)}<span class="chev">${icon('chevDown', 20)}</span></summary>
+      ${b.fridges.map(fridgeRow).join('')}</details>`;
+  }).join('');
+  const bgrid = BRANCHES.map(b => {
+    const w = worstOf(b.fridges);
+    return `<div class="bcard ${w.st.code !== 'ok' ? 'has-problem' : ''}"><div class="bcard-head"><span class="bname">${esc(b.name)}</span><span class="small muted">${b.fridges.length} fridges</span></div>${b.fridges.map(fridgeRow).join('')}</div>`;
+  }).join('');
+
+  return `${head}${strip}
+    <section class="section"><div class="section-head"><h2 class="h2">Needs attention</h2><span class="small muted">Worst first</span></div><div class="grid-cards">${cards.join('')}</div></section>
+    <section class="section"><div class="section-head"><h2 class="h2">All branches</h2><span class="small muted">12 branches · ${FRIDGES.length} fridges</span></div><div class="blist">${blist}</div><div class="bgrid">${bgrid}</div></section>`;
+}
+
+/* ============================================================
+   Screen 2: Fridge detail
+   ============================================================ */
+function rangeIdx() {
+  if (S.range === '24h') return [LAST - 95, LAST];
+  if (S.range === '7d') return [WEEK0, LAST];
+  if (S.range === '30d') return [0, LAST];
+  let a = clampI(idxOf(fromIso(S.cFrom))), b = clampI(idxOf(fromIso(S.cTo)) + 95);
+  if (a > b) [a, b] = [b, a];
+  return [a, b];
+}
+function fridgeLabel(fid, relativeTo) {
+  const f = byId[fid]; if (!f) return 'Not in a fridge';
+  return relativeTo && relativeTo === f.bid ? f.name : `${f.branch} · ${f.name}`;
+}
+function loggerNotes(f) {
+  const out = [];
+  for (const lg of LOGGERS) lg.history.forEach((h, k) => {
+    if (h.fridge !== f.id) return;
+    const prev = lg.history[k - 1], next = lg.history[k + 1];
+    let s = prev ? `${lg.id} moved here from ${fridgeLabel(prev.fridge, f.bid)} on ${fmtD(h.from)}` : `${lg.id} installed here on ${fmtD(h.from)}`;
+    if (next) s += `, then moved to ${fridgeLabel(next.fridge, f.bid)} on ${fmtD(h.to)}`;
+    out.push({ at: h.from, s: s + '.' });
+  });
+  return out.sort((a, b) => a.at - b.at).map(x => x.s);
+}
+function excCard(e, f, withName) {
+  return `<article class="card xcard">
+    <div class="xtitle">${withName ? `<span class="fname" style="font-size:16px">${esc(f.branch)} · ${esc(f.name)}</span>` : ''}${pill('alert', `Above 5°C · ${durShort(e.dur)}`)}</div>
+    <div class="kv"><span class="k">Started</span><span class="v">${fmtDT(tAt(e.s))}</span></div>
+    <div class="kv"><span class="k">Ended</span><span class="v">${fmtDT(tAt(e.e))}</span></div>
+    <div class="kv"><span class="k">Duration</span><span class="v">${durShort(e.dur)}</span></div>
+    <div class="kv"><span class="k">Peak</span><span class="v">${tC(e.peak)}</span></div>
+    ${e.open ? '<p class="xnote">Still above 5°C at the last reading in the file.</p>' : ''}
+  </article>`;
+}
+function vFridge() {
+  const f = byId[S.fridgeId];
+  const back = `<button class="back" data-go="overview">${icon('back', 18)}Overview</button>`;
+  if (S.mode === 'empty') return back + emptyBox('No readings for this fridge', 'Upload a logger file to see its history here.');
+  const lg = loggerIn(f.id);
+  const [a, b] = rangeIdx();
+  const an = analyze(f, a, b);
+  const ranges = [['24h', 'Last 24h'], ['7d', '7 days'], ['30d', '30 days'], ['custom', 'Custom']];
+  const notes = loggerNotes(f);
+  const gapsHtml = an.gaps.length || an.errs ? `<section class="section"><h2 class="h2">Gaps in data</h2><div class="card pad"><ul class="plain-list">
+      ${an.gaps.map(g => `<li>${pill('gap', g.nofile ? 'No file' : `Gap · ${durShort(g.dur)}`)}<span>${fmtDT(tAt(g.s))} to ${g.nofile ? 'now' : (sameDay(tAt(g.s), tAt(g.e + 1)) ? fmtTime(tAt(g.e + 1)) : fmtDT(tAt(g.e + 1)))}</span></li>`).join('')}
+      ${an.errs ? `<li><span class="tag">ERR</span><span>${an.errs} unreadable ${an.errs === 1 ? 'reading' : 'readings'} skipped</span></li>` : ''}
+    </ul></div></section>` : '';
+  const doorHtml = an.doors.length ? `<p class="note">${icon('info', 16)}<span>${an.doors.length === 1 ? 'One single reading' : `${an.doors.length} single readings`} above 5°C ignored as a door opening: ${an.doors.map(d => `${fmtDT(tAt(d.i))} · ${tC(d.v)}`).join('; ')}.</span></p>` : '';
+
+  return `${back}
+    <header class="dhead">
+      <p class="eyebrow">${esc(f.branch)}</p>
+      <h1 class="h1">${esc(f.name)}</h1>
+      ${pill(f.st.code, f.st.text)}
+      <p class="meta-line num">Logger <span class="mono">${lg ? lg.id : 'none'}</span> · ${latestLine(f)}</p>
+    </header>
+    <div class="section">
+      <div class="chips" role="group" aria-label="Date range">${ranges.map(([k, l]) => `<button class="chip" data-range="${k}" aria-pressed="${S.range === k}">${l}</button>`).join('')}</div>
+      ${S.range === 'custom' ? `<div class="custom"><div class="field"><label for="cFrom">From</label><input type="date" id="cFrom" value="${S.cFrom}" min="2026-08-22" max="2026-09-20"></div><div class="field"><label for="cTo">To</label><input type="date" id="cTo" value="${S.cTo}" min="2026-08-22" max="2026-09-20"></div></div>` : ''}
+    </div>
+    <div class="detail-cols">
+      <div class="section">
+        <div class="card chart-card">
+          <p class="readout" id="readout">Touch or hover the chart to read a value</p>
+          <div class="chart" id="chart"></div>
+          <div class="legend"><span><i class="lg lg-line"></i>Temperature</span><span><i class="lg lg-limit"></i>5°C limit</span><span><i class="lg lg-band"></i>Above 5°C</span><span><i class="lg lg-gap"></i>Gap</span><span><i class="lg lg-door"></i>Door opening</span></div>
+        </div>
+        ${doorHtml}
+      </div>
+      <div class="section">
+        <section class="section"><h2 class="h2">Time above 5°C</h2>
+          <div class="xlist">${an.exc.length ? an.exc.map(e => excCard(e, f)).join('') : `<div class="card pad">${pill('ok', 'None in this range')}</div>`}</div>
+        </section>
+        ${gapsHtml}
+        ${notes.length ? `<p class="note">${icon('history', 16)}<span><b>Logger history.</b> ${notes.join(' ')}</span></p>` : ''}
+        <button class="btn primary" data-insp="${f.id}">Inspector report for this fridge</button>
+      </div>
+    </div>`;
+}
+
+function drawChart() {
+  const host = document.getElementById('chart'); if (!host) return;
+  const f = byId[S.fridgeId]; const [a, b] = rangeIdx();
+  let lo = Infinity, hi = -Infinity;
+  for (let i = a; i <= b; i++) { const v = f.vals[i]; if (!Number.isNaN(v)) { lo = Math.min(lo, v); hi = Math.max(hi, v); } }
+  if (lo === Infinity) {
+    host.innerHTML = `<div class="chart-empty"><p>No readings for this fridge in this range.</p>${f.st.code === 'nofile' ? '<p>This week\'s file hasn\'t been uploaded yet.</p><button class="btn" data-go="upload">Go to Upload</button>' : ''}</div>`;
+    return;
+  }
+  const W = Math.max(260, Math.floor(host.clientWidth)), H = W < 560 ? 230 : 300;
+  const L = 34, R = 10, T = 22, B = 26, pw = W - L - R, ph = H - T - B;
+  const yMin = Math.floor(Math.min(lo, 3) - 0.5), yMax = Math.ceil(Math.max(hi, LIMIT) + 1);
+  const x = i => L + (i - a) / Math.max(1, b - a) * pw;
+  const y = v => T + (yMax - v) / (yMax - yMin) * ph;
+  const an = analyze(f, a, b);
+  let s = '';
+
+  // horizontal grid + y labels
+  const ys = yMax - yMin > 8 ? 2 : 1;
+  s += '<g class="grid">';
+  for (let v = Math.ceil(yMin / ys) * ys; v <= yMax; v += ys) s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/>`;
+  s += '</g>';
+  for (let v = Math.ceil(yMin / ys) * ys; v <= yMax; v += ys) if (v !== LIMIT) s += `<text class="ax" x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${v}°</text>`;
+
+  // x ticks at local midnights (or every 6h for 24h)
+  const span = b - a;
+  const ticks = [];
+  for (let i = a; i <= b; i++) {
+    if (span <= 100) { if (i % 24 === 0) ticks.push([i, fmtTime(tAt(i))]); continue; }   // 24h: every 6 hours
+    if (i % 96 !== 0) continue;                                                          // otherwise: midnights only
+    const day = i / 96;
+    if (span <= 800) ticks.push([i, fmtDay(tAt(i)).replace(/ \w+$/, '')]);                // 7 days: "Mon 14"
+    else if ((day - 2) % 7 === 0) ticks.push([i, fmtD(tAt(i))]);                         // 30 days: Mondays, "24 Aug"
+  }
+  for (const [i, l] of ticks) s += `<line x1="${x(i)}" x2="${x(i)}" y1="${T}" y2="${T + ph}" stroke="var(--grid)"/><text class="ax" x="${x(i)}" y="${H - 7}" text-anchor="middle">${l}</text>`;
+
+  // logger not installed yet
+  if (f.since > a) {
+    const xe = x(Math.min(f.since, b));
+    s += `<rect class="nolog" x="${L}" y="${T}" width="${xe - L}" height="${ph}"/>`;
+    if (xe - L > 120) s += `<text class="nolog-lab" x="${(L + xe) / 2}" y="${T + ph / 2}" text-anchor="middle">No logger in this fridge yet</text>`;
+  }
+  // excursion bands
+  for (const e of an.exc) {
+    const x1 = x(e.s), x2 = Math.max(x(e.e), x1 + 2);
+    s += `<rect class="band" x="${x1}" y="${T}" width="${x2 - x1}" height="${ph}"/>`;
+    if (x2 - x1 > 90) s += `<text class="band-lab" x="${x1 + 6}" y="${T + 14}">Above 5°C · ${durShort(e.dur)}</text>`;
+  }
+  // 5°C limit
+  s += `<line class="limit" x1="${L}" x2="${W - R}" y1="${y(LIMIT)}" y2="${y(LIMIT)}"/><text class="limit-lab" x="${L - 6}" y="${y(LIMIT) + 4}" text-anchor="end">5°C</text>`;
+
+  // line, broken at missing readings
+  let d = '', pen = false;
+  for (let i = a; i <= b; i++) { const v = f.vals[i]; if (Number.isNaN(v)) { pen = false; continue; } d += `${pen ? 'L' : 'M'}${x(i).toFixed(1)} ${y(v).toFixed(1)}`; pen = true; }
+  s += `<path class="line" d="${d}"/>`;
+
+  // gap markers
+  for (const g of an.gaps) {
+    const x1 = x(Math.max(a, g.s - 1)), x2 = x(Math.min(b, g.e + 1));
+    const ref = f.vals[g.s - 1]; const gy = Math.max(T + 26, (Number.isNaN(ref) || ref === undefined ? y(4) : y(ref)) - 14);
+    s += `<line class="gap-mark" x1="${x1}" x2="${Math.max(x2, x1 + 4)}" y1="${gy}" y2="${gy}"/>`;
+    const lab = g.nofile ? 'No file' : `Gap ${durShort(g.dur)}`;
+    const mid = (x1 + x2) / 2, anchor = mid > W - 70 ? 'end' : mid < L + 50 ? 'start' : 'middle';
+    s += `<text class="gap-lab" x="${anchor === 'end' ? Math.min(x2, W - R) : anchor === 'start' ? x1 : mid}" y="${gy - 6}" text-anchor="${anchor}">${lab}</text>`;
+  }
+  // door openings
+  for (const dd of an.doors) {
+    const cx = x(dd.i), cy = y(dd.v), right = cx + 150 < W - R;
+    s += `<circle class="door" cx="${cx}" cy="${cy}" r="5"/><text class="door-lab" x="${right ? cx + 10 : cx - 10}" y="${cy + 4}" text-anchor="${right ? 'start' : 'end'}">Door opening, ignored</text>`;
+  }
+  s += `<g class="hv" id="hv" style="display:none"><line id="hvL" y1="${T}" y2="${T + ph}"/><circle id="hvC" r="4.5"/></g>`;
+  s += `<rect id="hit" x="${L}" y="${T}" width="${pw}" height="${ph}" fill="transparent"/>`;
+
+  const label = `Temperature of ${f.branch} ${f.name} from ${fmtDT(tAt(a))} to ${fmtDT(tAt(b))}. Range ${tC(lo)} to ${tC(hi)}. ${an.exc.length} ${an.exc.length === 1 ? 'period' : 'periods'} above 5°C.`;
+  host.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">${s}</svg>`;
+
+  const svg = host.querySelector('svg'), hv = document.getElementById('hv'), hvL = document.getElementById('hvL'), hvC = document.getElementById('hvC'), ro = document.getElementById('readout');
+  const move = ev => {
+    const r = svg.getBoundingClientRect();
+    const px = Math.min(W - R, Math.max(L, ev.clientX - r.left));
+    const i = Math.round(a + (px - L) / pw * (b - a));
+    const v = f.vals[i]; const cx = x(i);
+    hv.style.display = ''; hvL.setAttribute('x1', cx); hvL.setAttribute('x2', cx);
+    if (Number.isNaN(v)) { hvC.style.display = 'none'; ro.innerHTML = `<b>${fmtDT(tAt(i))}</b> · ${f.err.has(i) ? 'unreadable reading (ERR)' : i < f.since ? 'no logger yet' : 'no reading'}`; }
+    else { hvC.style.display = ''; hvC.setAttribute('cx', cx); hvC.setAttribute('cy', y(v)); ro.innerHTML = `<b>${fmtDT(tAt(i))}</b> · <b>${tC(v)}</b>${v > LIMIT ? ' · above 5°C' : ''}`; }
+  };
+  svg.addEventListener('pointermove', move);
+  svg.addEventListener('pointerdown', move);
+  svg.addEventListener('pointerleave', () => { hv.style.display = 'none'; ro.textContent = 'Touch or hover the chart to read a value'; });
+}
+
+/* ============================================================
+   Screen 3: Upload (+ Screen 4: assign logger sheet)
+   ============================================================ */
+const SAMPLE_FILES = () => [
+  { name: 'TL-0512_2026-09-21.csv', kind: 'ok', where: 'Jerusalem · Dairy', added: 672, lines: ['672 readings added'] },
+  { name: 'TL-0388_2026-09-21.csv', kind: 'ok', where: 'Rishon LeZion · Cream cakes', added: 672, lines: ['672 readings added', 'Above 5°C from Fri 18 Sep, 14:30 for 2d 9h 15m'], fridge: 'rsh-cream-cakes' },
+  { name: 'TL-0231_2026-09-21.csv', kind: 'notes', where: 'Haifa · Dairy', added: 660, lines: ['660 readings added', '3 ERR readings skipped', '1 gap: Mon 14 Sep, 02:30 to 04:45 (2h 15m)'], fridge: 'hfa-dairy' },
+  { name: 'TL-0417_2026-09-21.csv', kind: 'dup', where: 'Tel Aviv · Display 2', added: 0, lines: ['96 duplicates skipped (already uploaded)', 'No new readings'] },
+  { name: 'TL-0703_2026-09-21.csv', kind: 'held', where: 'Herzliya · Cream cakes', added: 0, lines: ['Temperatures look like °F (readings between 37.9 and 40.3). Check this logger\'s settings.', '672 readings held back until you confirm'], logger: 'TL-0703' },
+  { name: 'export_0921.csv', kind: 'help', where: 'No logger ID in the file', added: 0, lines: ['Needs logger assignment', '672 readings waiting'], assign: true },
+];
+const UKIND = {
+  ok: { icon: 'ok', word: 'Added' }, notes: { icon: 'info', word: 'Added, with notes' }, dup: { icon: 'dup', word: 'Already uploaded' },
+  held: { icon: 'alert', word: 'Held back' }, help: { icon: 'help', word: 'Needs your help' },
+};
+function vUpload() {
+  const U = S.upload;
+  const head = `<div class="page-head"><div><h1 class="h1">Upload logger files</h1><p class="meta-line num">Last upload ${fmtDT(UPLOADED_AT)} · 34 files</p></div></div>`;
+  const drop = `<label class="drop" id="drop" for="fileIn">
+      <span class="drop-ico">${icon('upload', 28)}</span>
+      <span class="h2 wide-only">Drop CSV files here</span>
+      <span class="btn primary" aria-hidden="true">Choose files</span>
+      <span class="small muted">CSV files from the loggers. You can pick many at once.</span>
+    </label>
+    <input type="file" id="fileIn" class="sr" accept=".csv,text/csv" multiple>
+    <p class="small muted">No files at hand? <button class="btn link" data-action="sample-upload" style="min-height:auto;display:inline;padding:0">Try this week's sample files</button></p>`;
+  if (U.stage === 'idle') return head + `<div class="section">${drop}</div>`;
+  if (U.stage === 'working') return head + `<div class="card state-box"><div class="sk" style="width:64px;height:64px;border-radius:50%"></div><h2 class="h2">Reading ${U.picked || 6} files…</h2><p>Checking dates, units and duplicates.</p></div>`;
+  const added = U.files.reduce((s, f) => s + f.added, 0), help = U.files.filter(f => f.kind === 'help' || f.kind === 'held').length;
+  const cards = U.files.map((f, k) => {
+    const K = UKIND[f.kind];
+    let action = '';
+    if (f.assign) action = `<button class="btn primary" data-assign="${k}">Choose logger</button>`;
+    else if (f.logger) action = `<button class="btn" data-logger="${f.logger}">Open logger settings</button>`;
+    else if (f.fridge) action = `<button class="btn" data-fridge="${f.fridge}">Open fridge</button>`;
+    return `<article class="card ucard u-${f.kind}"><span class="u-ico">${icon(K.icon, 20)}</span><div class="u-body">
+      <span class="u-word">${K.word}</span><span class="u-file">${esc(f.name)}</span><span class="small muted">${esc(f.where)}</span>
+      <ul class="u-lines">${f.lines.map(l => `<li>${esc(l)}</li>`).join('')}</ul>${action}</div></article>`;
+  }).join('');
+  return head + `
+    ${U.picked ? `<p class="note">${icon('info', 16)}<span>This mockup doesn't read your files. It shows a sample batch so you can see the report.</span></p>` : ''}
+    <div class="card pad" style="display:flex;flex-direction:column;gap:4px"><p class="u-summary">${U.files.length} files · ${nf.format(added)} readings added · ${help ? `${help} ${help === 1 ? 'needs' : 'need'} your help` : 'nothing needs your help'}</p><p class="small muted">Uploaded ${fmtDT(UPLOADED_AT)}</p></div>
+    <div class="grid-cards">${cards}</div>
+    <div class="row"><button class="btn" data-action="upload-more">Upload more files</button><button class="btn link" data-go="overview">See the overview</button></div>`;
+}
+function runUpload(n) {
+  S.upload = { stage: 'working', files: [], picked: n };
+  render();
+  setTimeout(() => { S.upload.stage = 'done'; S.upload.files = SAMPLE_FILES(); render(); }, 900);
+}
+function openAssign(k) {
+  const file = S.upload.files[k];
+  const opts = LOGGERS.map(lg => { const c = currentOf(lg); return `<option value="${lg.id}" ${lg.id === 'TL-0417' ? 'selected' : ''}>${lg.id} · ${c ? esc(fridgeLabel(c.fridge)) : 'not in a fridge'}</option>`; }).join('');
+  openDialog(`<form class="dlg" id="assignForm" data-k="${k}">
+    <span class="grab"></span>
+    <div><h2 class="h2" id="dlgTitle">Which logger is this file from?</h2><p class="small muted">The file has no logger ID. Choose it once and the readings go to that logger's fridge.</p></div>
+    <p class="u-file">${esc(file.name)}</p>
+    <table class="preview"><thead><tr><th>Time in file</th><th>Temperature</th></tr></thead><tbody>
+      <tr><td>2026-09-14 00:00</td><td>3.6</td></tr><tr><td>2026-09-14 00:15</td><td>3.7</td></tr><tr><td>2026-09-14 00:30</td><td>3.7</td></tr>
+    </tbody></table>
+    <div class="field"><label for="assignLogger">Logger</label><select id="assignLogger">${opts}</select></div>
+    <div class="actions"><button type="button" class="btn" data-close>Cancel</button><button type="submit" class="btn primary">Assign and process</button></div>
+  </form>`);
+}
+
+/* ============================================================
+   Screen 5: Inspector report
+   ============================================================ */
+function inspScope() {
+  const I = S.insp;
+  if (I.branch === 'all') return FRIDGES;
+  const b = branchById[I.branch];
+  return I.fridge === 'all' ? b.fridges : [byId[I.fridge]];
+}
+function vInspector() {
+  const I = S.insp;
+  const head = `<div class="page-head"><div><h1 class="h1">Inspector report</h1><p class="meta-line">When did a fridge go above 5°C, and for how long?</p></div></div>`;
+  const bOpts = `<option value="all" ${I.branch === 'all' ? 'selected' : ''}>All branches</option>` + BRANCHES.map(b => `<option value="${b.id}" ${I.branch === b.id ? 'selected' : ''}>${esc(b.name)}</option>`).join('');
+  const fList = I.branch === 'all' ? [] : branchById[I.branch].fridges;
+  const fOpts = `<option value="all" ${I.fridge === 'all' ? 'selected' : ''}>All fridges</option>` + fList.map(f => `<option value="${f.id}" ${I.fridge === f.id ? 'selected' : ''}>${esc(f.name)}</option>`).join('');
+  const filters = `<div class="card filters">
+    <div class="field wide"><label for="iBranch">Branch</label><select id="iBranch">${bOpts}</select></div>
+    <div class="field wide"><label for="iFridge">Fridge</label><select id="iFridge" ${I.branch === 'all' ? 'disabled' : ''}>${fOpts}</select></div>
+    <div class="field"><label for="iFrom">From</label><input type="date" id="iFrom" value="${I.from}" max="2026-09-21"></div>
+    <div class="field"><label for="iTo">To</label><input type="date" id="iTo" value="${I.to}" max="2026-09-21"></div>
+  </div>`;
+  if (S.mode === 'empty') return head + filters + emptyBox('Nothing to report yet', 'Once logger files are uploaded, this page answers the inspector in one sentence.');
+
+  let a = clampI(idxOf(fromIso(I.from))), b = clampI(idxOf(fromIso(I.to)) + 95);
+  if (a > b) [a, b] = [b, a];
+  const scope = inspScope();
+  const rows = [], gaps = []; let errs = 0;
+  for (const f of scope) { const an = analyze(f, a, b); an.exc.forEach(e => rows.push({ f, e })); an.gaps.forEach(g => gaps.push({ f, g })); if (an.errs) errs += an.errs, gaps.push({ f, errs: an.errs }); }
+  rows.sort((p, q) => p.e.s - q.e.s);
+  const total = rows.reduce((s, r) => s + r.e.dur, 0), n = rows.length;
+  const fromTxt = fmtD(fromIso(I.from < I.to ? I.from : I.to)), toTxt = fmtD(fromIso(I.from < I.to ? I.to : I.from));
+  const single = scope.length === 1;
+  const who = single ? `<b>${esc(scope[0].branch)} · ${esc(scope[0].name)}</b> was` : I.branch === 'all' ? `Fridges across all 12 branches were` : `Fridges in <b>${esc(branchById[I.branch].name)}</b> were`;
+  const sentence = n ? `${who} above 5°C <b>${n} ${n === 1 ? 'time' : 'times'}</b> between ${fromTxt} and ${toTxt}, for a total of <b>${durLong(total)}</b>.` : `${who} not above 5°C between ${fromTxt} and ${toTxt}.`;
+  const early = fromIso(I.from) < T0 || fromIso(I.to) < T0;
+
+  const table = `<div class="tbl-wrap card"><table class="tbl"><thead><tr><th>Branch</th><th>Fridge</th><th>Started</th><th>Ended</th><th>Duration</th><th class="n">Peak °C</th></tr></thead><tbody>
+    ${rows.map(({ f, e }) => `<tr><td>${esc(f.branch)}</td><td>${esc(f.name)}</td><td>${fmtDT(tAt(e.s))}</td><td>${fmtDT(tAt(e.e))}</td><td>${durShort(e.dur)}</td><td class="n">${e.peak.toFixed(1)}</td></tr>`).join('')}
+  </tbody></table></div>`;
+  const cardsHtml = `<div class="icards">${rows.map(({ f, e }) => excCard(e, f, true)).join('')}</div>`;
+  const gapsHtml = gaps.length ? `<section class="section"><h2 class="h2">Gaps in data</h2><div class="card pad"><ul class="plain-list">${gaps.map(x => x.errs
+      ? `<li><span class="tag">ERR</span><span>${esc(x.f.branch)} · ${esc(x.f.name)}: ${x.errs} unreadable ${x.errs === 1 ? 'reading' : 'readings'} skipped</span></li>`
+      : `<li>${pill('gap', x.g.nofile ? 'No file' : `Gap · ${durShort(x.g.dur)}`)}<span>${esc(x.f.branch)} · ${esc(x.f.name)}: ${fmtDT(tAt(x.g.s))} to ${x.g.nofile ? 'end of range' : fmtDT(tAt(x.g.e + 1))}</span></li>`).join('')}</ul></div></section>` : '';
+
+  return head + filters + `
+    <div class="card answer"><p class="eyebrow">Answer</p><p class="big">${sentence}</p>${early ? '<p class="small muted">Sample data starts on 22 Aug, so the report covers 22 Aug onwards.</p>' : ''}</div>
+    ${n ? `<section class="section"><h2 class="h2">Every time above 5°C</h2>${table}${cardsHtml}</section>` : ''}
+    <p class="note">${icon('info', 16)}<span>Single readings above 5°C, such as a door opening, are not counted. Gaps in the data are listed separately.</span></p>
+    ${gapsHtml}
+    <div class="row"><button class="btn primary" data-action="export">${icon('download', 18)}Export CSV</button><button class="btn" data-action="share">${icon('share', 18)}Share</button></div>`;
+}
+
+/* ============================================================
+   Screen 6: Loggers (registry) + logger detail
+   ============================================================ */
+function vLoggers() {
+  const rows = LOGGERS.map(lg => {
+    const c = currentOf(lg);
+    const tags = [lg.unit === '°F' && '<span class="tag">°F</span>', lg.fmt !== 'YYYY-MM-DD' && `<span class="tag">Dates ${lg.fmt.slice(0, 5)}</span>`].filter(Boolean).join('');
+    return `<button class="lrow" data-logger="${lg.id}"><span class="lid">${lg.id}</span><span class="lwhere"><span>${c ? esc(fridgeLabel(c.fridge)) : '<span class="muted">Not in a fridge</span>'}</span><span class="sub num">${c ? `since ${fmtD(c.from)}` : 'Spare logger'}</span></span>${tags ? `<span class="tags">${tags}</span>` : ''}<span class="muted">${icon('chevRight', 18)}</span></button>`;
+  }).join('');
+  const branches = BRANCHES.map(b => `<div class="brow"><span class="bmain"><span style="font-weight:600">${esc(b.name)}</span><span class="sub">${b.fridges.map(f => esc(f.name)).join(', ')}</span></span><button class="btn" data-action="add-fridge" data-branch="${b.id}">${icon('plus', 16)}Add fridge</button></div>`).join('');
+  return `<div class="page-head"><div><h1 class="h1">Loggers</h1><p class="meta-line">Which logger sits in which fridge. Set it once; uploads use it from then on.</p></div><button class="btn primary" data-action="add-logger">${icon('plus', 18)}Add logger</button></div>
+    <section class="section"><div class="section-head"><h2 class="h2">${LOGGERS.length} loggers</h2></div><div class="card">${rows}</div></section>
+    <section class="section"><div class="section-head"><h2 class="h2">Branches and fridges</h2></div><div class="card">${branches}</div></section>`;
+}
+function vLogger() {
+  const lg = loggerById[S.loggerId]; const c = currentOf(lg);
+  const hist = [...lg.history].reverse().map(h => `<li class="${h.to === null ? 'now' : ''}"><span style="font-weight:600">${esc(fridgeLabel(h.fridge))}</span><span class="when">${h.to === null ? `From ${fmtDay(h.from)} · now` : `${fmtD(h.from)} to ${fmtD(h.to)}`}</span></li>`).join('');
+  return `<button class="back" data-go="loggers">${icon('back', 18)}Loggers</button>
+    <header class="dhead"><p class="eyebrow">Logger</p><h1 class="h1 mono" style="font-size:26px">${lg.id}</h1></header>
+    <div class="card"><dl class="dl">
+      <div><dt>Current fridge</dt><dd>${c ? esc(fridgeLabel(c.fridge)) : 'Not in a fridge'}</dd></div>
+      <div><dt>In this fridge since</dt><dd class="num">${c ? fmtDay(c.from) : '–'}</dd></div>
+      <div><dt>Unit in its files</dt><dd>${lg.unit}</dd></div>
+      <div><dt>Date format in its files</dt><dd class="mono">${lg.fmt}</dd></div>
+    </dl></div>
+    <div class="row"><button class="btn primary" data-action="move-logger">Move to another fridge</button><button class="btn" data-action="edit-logger">Change file settings</button>${c ? `<button class="btn link" data-fridge="${c.fridge}">Open fridge</button>` : ''}</div>
+    <section class="section"><h2 class="h2">Move history</h2><div class="card pad">${hist ? `<ol class="timeline">${hist}</ol>` : '<p class="muted">Not placed in a fridge yet.</p>'}</div></section>`;
+}
+
+/* ---------- dialogs ---------- */
+const dlg = document.getElementById('dlg');
+function openDialog(html) { document.getElementById('dlgBody').innerHTML = html; dlg.showModal(); }
+function fridgeSelect(id, bid, withNone) {
+  const b = branchById[bid];
+  return `<select id="${id}">${withNone ? '<option value="">Not in a fridge yet</option>' : ''}${b.fridges.map(f => `<option value="${f.id}">${esc(f.name)}</option>`).join('')}</select>`;
+}
+const branchSelect = (id, sel) => `<select id="${id}">${BRANCHES.map(b => `<option value="${b.id}" ${b.id === sel ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}</select>`;
+function openMove() {
+  const lg = loggerById[S.loggerId]; const c = currentOf(lg); const bid = c ? byId[c.fridge].bid : 'jer';
+  openDialog(`<form class="dlg" id="moveForm"><span class="grab"></span>
+    <div><h2 class="h2" id="dlgTitle">Move ${lg.id}</h2><p class="small muted">Readings from the chosen date go to the new fridge. Earlier readings stay where they were.</p></div>
+    <div class="field"><label for="mBranch">New branch</label>${branchSelect('mBranch', bid)}</div>
+    <div class="field"><label for="mFridge">New fridge</label><span id="mFridgeWrap">${fridgeSelect('mFridge', bid)}</span></div>
+    <div class="field"><label for="mFrom">From date</label><input type="date" id="mFrom" value="2026-09-21" required></div>
+    <div class="actions"><button type="button" class="btn" data-close>Cancel</button><button type="submit" class="btn primary">Move logger</button></div></form>`);
+}
+function openEditLogger() {
+  const lg = loggerById[S.loggerId];
+  openDialog(`<form class="dlg" id="editForm"><span class="grab"></span>
+    <div><h2 class="h2" id="dlgTitle">File settings for ${lg.id}</h2><p class="small muted">How this logger writes its files. ChillLog converts everything to °C.</p></div>
+    <div class="two"><div class="field"><label for="eUnit">Unit</label><select id="eUnit"><option ${lg.unit === '°C' ? 'selected' : ''}>°C</option><option ${lg.unit === '°F' ? 'selected' : ''}>°F</option></select></div>
+    <div class="field"><label for="eFmt">Date format</label><select id="eFmt">${['YYYY-MM-DD', 'DD/MM/YYYY', 'MM/DD/YYYY'].map(x => `<option ${lg.fmt === x ? 'selected' : ''}>${x}</option>`).join('')}</select></div></div>
+    <div class="actions"><button type="button" class="btn" data-close>Cancel</button><button type="submit" class="btn primary">Save settings</button></div></form>`);
+}
+function openAddLogger() {
+  openDialog(`<form class="dlg" id="addLoggerForm"><span class="grab"></span>
+    <h2 class="h2" id="dlgTitle">Add logger</h2>
+    <div class="field"><label for="nId">Logger ID</label><input id="nId" required placeholder="TL-0000" pattern="TL-[0-9]{4}" autocomplete="off"><span class="hint">Printed on the logger, e.g. TL-0512</span></div>
+    <div class="two"><div class="field"><label for="nBranch">Branch</label>${branchSelect('nBranch', 'jer')}</div><div class="field"><label for="nFridge">Fridge</label><span id="nFridgeWrap">${fridgeSelect('nFridge', 'jer', true)}</span></div></div>
+    <div class="two"><div class="field"><label for="nUnit">Unit</label><select id="nUnit"><option>°C</option><option>°F</option></select></div><div class="field"><label for="nFmt">Date format</label><select id="nFmt"><option>YYYY-MM-DD</option><option>DD/MM/YYYY</option><option>MM/DD/YYYY</option></select></div></div>
+    <div class="actions"><button type="button" class="btn" data-close>Cancel</button><button type="submit" class="btn primary">Add logger</button></div></form>`);
+}
+function openAddFridge(bid) {
+  openDialog(`<form class="dlg" id="addFridgeForm" data-branch="${bid}"><span class="grab"></span>
+    <h2 class="h2" id="dlgTitle">Add a fridge in ${esc(branchById[bid].name)}</h2>
+    <div class="field"><label for="nfName">Fridge name</label><input id="nfName" required placeholder="e.g. Display 3" autocomplete="off"></div>
+    <div class="actions"><button type="button" class="btn" data-close>Cancel</button><button type="submit" class="btn primary">Add fridge</button></div></form>`);
+}
+
+/* ============================================================
+   Render + events
+   ============================================================ */
+const view = document.getElementById('view'), mainEl = document.getElementById('main');
+let toastTimer;
+function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 3200); }
+
+function render() {
+  const tab = { overview: 'overview', fridge: 'overview', upload: 'upload', inspector: 'inspector', loggers: 'loggers', logger: 'loggers' }[S.view];
+  document.querySelectorAll('#nav button').forEach(b => b.dataset.go === tab ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
+  if (S.view !== 'upload' && S.mode === 'loading') { view.innerHTML = skeleton(); return; }
+  if (S.view !== 'upload' && S.mode === 'error') { view.innerHTML = errorBox(); return; }
+  view.innerHTML = ({ overview: vOverview, fridge: vFridge, upload: vUpload, inspector: vInspector, loggers: vLoggers, logger: vLogger })[S.view]();
+  if (S.view === 'fridge' && S.mode === 'data') drawChart();
+}
+function go(v, extra = {}) { Object.assign(S, { view: v }, extra); render(); mainEl.scrollTop = 0; }
+function setMode(m) { S.mode = m; const r = document.getElementById(`mode-${m}`); if (r) r.checked = true; render(); }
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('button, [data-go]');
+  const panel = document.getElementById('mockPanel'), mb = document.getElementById('mockBtn');
+  if (!e.target.closest('#mockPanel') && !e.target.closest('#mockBtn') && !panel.hidden) { panel.hidden = true; mb.setAttribute('aria-expanded', 'false'); }
+  if (!el) return;
+  const d = el.dataset;
+  if (el.id === 'mockBtn') { panel.hidden = !panel.hidden; mb.setAttribute('aria-expanded', String(!panel.hidden)); return; }
+  if ('close' in d) { dlg.close(); return; }
+  if (d.go) { go(d.go, d.go === 'overview' ? { filter: null } : {}); return; }
+  if (d.fridge) { go('fridge', { fridgeId: d.fridge }); return; }
+  if (d.logger) { go('logger', { loggerId: d.logger }); return; }
+  if (d.filter) { S.filter = S.filter === d.filter ? null : d.filter; render(); return; }
+  if (d.range) { S.range = d.range; render(); return; }
+  if (d.insp) { const f = byId[d.insp]; go('inspector', { insp: { branch: f.bid, fridge: f.id, from: '2026-09-01', to: '2026-09-21' } }); return; }
+  if (d.assign !== undefined) { openAssign(+d.assign); return; }
+  switch (d.action) {
+    case 'retry': S.mode = 'loading'; document.getElementById('mode-loading').checked = true; render(); setTimeout(() => setMode('data'), 900); break;
+    case 'sample-upload': runUpload(0); break;
+    case 'upload-more': S.upload = { stage: 'idle', files: [], picked: 0 }; render(); break;
+    case 'export': toast('In the real app this downloads the report as a CSV file.'); break;
+    case 'share': toast("In the real app this opens your phone's share menu."); break;
+    case 'add-logger': openAddLogger(); break;
+    case 'add-fridge': openAddFridge(d.branch); break;
+    case 'move-logger': openMove(); break;
+    case 'edit-logger': openEditLogger(); break;
+  }
+});
+
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.name === 'mode') { setMode(t.value); return; }
+  if (t.id === 'phoneToggle') { document.body.classList.toggle('phone', t.checked); requestAnimationFrame(render); return; }
+  if (t.id === 'fileIn' && t.files.length) { runUpload(t.files.length); return; }
+  if (t.id === 'iBranch') { S.insp.branch = t.value; S.insp.fridge = 'all'; render(); return; }
+  if (t.id === 'iFridge') { S.insp.fridge = t.value; render(); return; }
+  if (t.id === 'iFrom' && t.value) { S.insp.from = t.value; render(); return; }
+  if (t.id === 'iTo' && t.value) { S.insp.to = t.value; render(); return; }
+  if (t.id === 'cFrom' && t.value) { S.cFrom = t.value; render(); return; }
+  if (t.id === 'cTo' && t.value) { S.cTo = t.value; render(); return; }
+  if (t.id === 'mBranch') { document.getElementById('mFridgeWrap').innerHTML = fridgeSelect('mFridge', t.value); return; }
+  if (t.id === 'nBranch') { document.getElementById('nFridgeWrap').innerHTML = fridgeSelect('nFridge', t.value, true); return; }
+});
+
+document.addEventListener('submit', e => {
+  e.preventDefault();
+  const form = e.target;
+  if (form.id === 'assignForm') {
+    const lid = document.getElementById('assignLogger').value, c = currentOf(loggerById[lid]);
+    const file = S.upload.files[+form.dataset.k];
+    Object.assign(file, { kind: 'ok', assign: false, where: `${lid} · ${c ? fridgeLabel(c.fridge) : 'not in a fridge'}`, added: 672, lines: ['672 readings added'] });
+    dlg.close(); render(); toast(`${file.name} assigned to ${lid}.`);
+  }
+  if (form.id === 'moveForm') {
+    const lg = loggerById[S.loggerId], fid = document.getElementById('mFridge').value, from = fromIso(document.getElementById('mFrom').value);
+    const cur = currentOf(lg);
+    if (cur && cur.fridge === fid) { dlg.close(); toast(`${lg.id} is already in that fridge.`); return; }
+    const other = loggerIn(fid); if (other) currentOf(other).to = from;
+    if (cur) cur.to = from;
+    lg.history.push({ fridge: fid, from, to: null });
+    dlg.close(); render(); toast(`${lg.id} moved to ${fridgeLabel(fid)} from ${fmtD(from)}.${other ? ` ${other.id} is now a spare.` : ''}`);
+  }
+  if (form.id === 'editForm') {
+    const lg = loggerById[S.loggerId];
+    lg.unit = document.getElementById('eUnit').value; lg.fmt = document.getElementById('eFmt').value;
+    const held = S.upload.files.find(f => f.logger === lg.id && f.kind === 'held');
+    if (held && lg.unit === '°F') Object.assign(held, { kind: 'ok', added: 672, lines: ['672 readings added, converted from °F'] });
+    dlg.close(); render(); toast(`Saved. ${lg.id} files are read as ${lg.unit}, dates ${lg.fmt}.${held && held.kind === 'ok' ? ' The held file was added.' : ''}`);
+  }
+  if (form.id === 'addLoggerForm') {
+    const id = document.getElementById('nId').value.trim().toUpperCase();
+    if (loggerById[id]) { toast(`${id} is already in the list.`); return; }
+    const fid = document.getElementById('nFridge').value;
+    const other = fid ? loggerIn(fid) : null; if (other) currentOf(other).to = local(2026, 9, 21);
+    addLogger({ id, unit: document.getElementById('nUnit').value, fmt: document.getElementById('nFmt').value, history: fid ? [{ fridge: fid, from: local(2026, 9, 21), to: null }] : [] });
+    LOGGERS.sort((a, b) => a.id.localeCompare(b.id));
+    dlg.close(); render(); toast(`${id} added${fid ? ` to ${fridgeLabel(fid)}` : ''}.`);
+  }
+  if (form.id === 'addFridgeForm') {
+    const b = branchById[form.dataset.branch], name = document.getElementById('nfName').value.trim();
+    const id = `${b.id}-${slug(name)}`;
+    if (!name || byId[id]) { toast('That fridge already exists.'); return; }
+    const f = { id, bid: b.id, branch: b.name, name, vals: new Float64Array(N).fill(NaN), err: new Set(), since: N };
+    FRIDGES.push(f); b.fridges.push(f); byId[id] = f; f.st = computeStatus(f);
+    dlg.close(); render(); toast(`${name} added to ${b.name}. It shows "No file" until a logger file arrives.`);
+  }
+});
+
+// drag and drop on the upload area
+document.addEventListener('dragover', e => { const z = e.target.closest && e.target.closest('#drop'); if (z) { e.preventDefault(); z.classList.add('over'); } });
+document.addEventListener('dragleave', e => { const z = e.target.closest && e.target.closest('#drop'); if (z) z.classList.remove('over'); });
+document.addEventListener('drop', e => { const z = e.target.closest && e.target.closest('#drop'); if (z) { e.preventDefault(); runUpload(e.dataTransfer.files.length || 1); } });
+
+// redraw the chart when its width changes
+let lastW = 0;
+new ResizeObserver(() => { const c = document.getElementById('chart'); if (c && Math.abs(c.clientWidth - lastW) > 4) { lastW = c.clientWidth; drawChart(); } }).observe(mainEl);
+
+render();
+</script>
