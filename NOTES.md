@@ -33,7 +33,12 @@
 
 **Scope**
 - **No login** in this version: it runs locally for one user. It's the first thing to add before real use.
-- **Detection parameters:** **[TO FILL during `feat/detection`: minimum excursion duration, spike rule, warming-trend rule, and why]**
+- **Detection parameters** (all in one file, `shared/src/thresholds.js`):
+  - **Above 5°C** means strictly above: 5.0 is fine.
+  - **Excursion = 2 or more readings in a row above 5°C.** One reading alone is a door opening and is ignored, as the email says. It matches her sample: Tel Aviv's single 9.4 is fine, Rishon's 5.4 → 6.3 → 7.1 is not.
+  - **Duration runs until the first reading back at or below 5°C**, not until the last reading above it, so the answer to the inspector never under-reports. An ERR reading doesn't end an excursion. A gap does, and then the end is the last reading above 5°C, marked as such. So is an excursion still going when the data stops.
+  - **Gap = more than 1 hour without a valid reading** (4 or more missed 15-minute readings). ERR counts as missing. One or two missed saves stay quiet; her "couple of hours" is always caught.
+  - **Slowly warming = the median of the last 24 hours is at least 0.5°C above the median of the 24 hours before.** Medians, so door openings can't trigger it. It needs at least 12 hours of data in each day, or it gives no verdict rather than a guess. On a Rishon-like fridge warming by 0.75°C a day, it flags about 20 hours before the fridge goes above 5°C.
 
 ## What I'd ask Summer before this goes live
 

@@ -6,6 +6,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { transaction } from '../db/transaction.js';
+import { recomputeAll, recomputeForLogger } from '../detection/store.js';
 import { normalizeFile } from '../normalize/normalize.js';
 import { findLoggerByCode, getLogger, loggerHistory } from '../registry/registry.js';
 import { findLoggerCode } from './identify.js';
@@ -83,7 +84,10 @@ export function ingestFile(db, { rawDir, fileName, content }) {
       )
       .run(sha256, fileName, nowUtc());
     const upload = { id: Number(lastInsertRowid), fileName };
-    return save(db, logger ? addReadings(db, upload, logger, text) : needsLogger(upload, code));
+    return updateDerived(
+      db,
+      save(db, logger ? addReadings(db, upload, logger, text) : needsLogger(upload, code)),
+    );
   });
 }
 
@@ -138,7 +142,9 @@ export function rebuildReadings(db, { rawDir }) {
   }
   return transaction(db, () => {
     db.exec('DELETE FROM readings');
-    return rows.map((row) => processStored(db, rawDir, row, null));
+    const reports = rows.map((row) => processStored(db, rawDir, row, null));
+    recomputeAll(db);
+    return reports;
   });
 }
 
@@ -148,7 +154,13 @@ function reprocess(db, rawDir, uploadId, loggerId) {
   if (row.status === 'processed') {
     throw new IngestError('already_processed', `${row.original_name} is already in.`);
   }
-  return transaction(db, () => processStored(db, rawDir, row, loggerId));
+  return transaction(db, () => updateDerived(db, processStored(db, rawDir, row, loggerId)));
+}
+
+/** New readings change the fridges this logger has been in: recompute them in the same transaction. */
+function updateDerived(db, report) {
+  if (report.status === 'processed') recomputeForLogger(db, report.loggerId);
+  return report;
 }
 
 /** Processes a stored raw file again. The caller owns the transaction. */
