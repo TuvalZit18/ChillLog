@@ -1,0 +1,93 @@
+.card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--kind-soft);
+  color: var(--kind-strong);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.word {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--kind-strong);
+}
+
+.file {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.lines {
+  margin: 0;
+  padding: 0;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  list-style: none;
+}
+
+.error {
+  font-size: 14px;
+  color: var(--alert);
+}
+
+.action {
+  align-self: flex-start;
+  margin-top: 6px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+/* Each kind's colors; the word and icon always say the same thing, so color is never alone. */
+.added {
+  --kind-strong: var(--ok);
+  --kind-soft: var(--ok-soft);
+}
+
+.notes {
+  --kind-strong: var(--warm);
+  --kind-soft: var(--warm-soft);
+}
+
+.duplicate,
+.rejected {
+  --kind-strong: var(--muted);
+  --kind-soft: var(--sunken);
+}
+
+.held {
+  --kind-strong: var(--alert);
+  --kind-soft: var(--alert-soft);
+}
+
+.help {
+  --kind-strong: var(--gap);
+  --kind-soft: var(--gap-soft);
+}
