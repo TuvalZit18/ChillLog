@@ -1,0 +1,1238 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ChillLog API</title>
+    <style>
+      :root {
+        --bg: #f6f7f8;
+        --surface: #ffffff;
+        --ink: #14191d;
+        --muted: #56606a;
+        --line: #d8dee2;
+        --code-bg: #f0f3f5;
+        --get: #1f5fa8;
+        --post: #2b7535;
+        --patch: #8f5500;
+        --err: #b0271f;
+        color-scheme: light;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f1316;
+          --surface: #171c20;
+          --ink: #e6eaed;
+          --muted: #9ba5ae;
+          --line: #2b3339;
+          --code-bg: #20272c;
+          --get: #6ea8ea;
+          --post: #6cc77a;
+          --patch: #f2b25c;
+          --err: #ff7c72;
+          color-scheme: dark;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 24px 16px 64px;
+        background: var(--bg);
+        color: var(--ink);
+        font:
+          16px/1.5 system-ui,
+          -apple-system,
+          'Segoe UI',
+          sans-serif;
+      }
+      main {
+        max-width: 960px;
+        margin: 0 auto;
+      }
+      h1 {
+        margin: 0 0 4px;
+        font-size: 28px;
+      }
+      h2 {
+        margin: 40px 0 12px;
+        font-size: 20px;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 6px;
+      }
+      h3 {
+        margin: 20px 0 8px;
+        font-size: 15px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+      }
+      p,
+      li {
+        max-width: 72ch;
+      }
+      a {
+        color: var(--get);
+      }
+      code,
+      pre {
+        font-family: ui-monospace, Consolas, 'SFMono-Regular', monospace;
+        font-size: 13.5px;
+      }
+      p code,
+      li code,
+      td code {
+        background: var(--code-bg);
+        padding: 1px 5px;
+        border-radius: 4px;
+      }
+      pre {
+        margin: 6px 0 12px;
+        padding: 12px 14px;
+        background: var(--code-bg);
+        border-radius: 8px;
+        overflow-x: auto;
+        line-height: 1.45;
+      }
+      .lead {
+        color: var(--muted);
+        margin-top: 0;
+      }
+      .toc {
+        columns: 2 280px;
+        padding-left: 18px;
+      }
+      .toc li {
+        break-inside: avoid;
+      }
+      details.endpoint {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        margin: 10px 0;
+      }
+      details.endpoint > summary {
+        cursor: pointer;
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 14px;
+      }
+      details.endpoint > summary::-webkit-details-marker {
+        display: none;
+      }
+      details.endpoint[open] > summary {
+        border-bottom: 1px solid var(--line);
+      }
+      .body {
+        padding: 4px 16px 12px;
+      }
+      .method {
+        display: inline-block;
+        min-width: 64px;
+        text-align: center;
+        padding: 3px 8px;
+        border-radius: 6px;
+        color: #fff;
+        font:
+          700 13px/1.4 ui-monospace,
+          Consolas,
+          monospace;
+      }
+      @media (prefers-color-scheme: dark) {
+        .method {
+          color: #0f1316;
+        }
+      }
+      .get {
+        background: var(--get);
+      }
+      .post {
+        background: var(--post);
+      }
+      .patch {
+        background: var(--patch);
+      }
+      .path {
+        font:
+          600 15px/1.4 ui-monospace,
+          Consolas,
+          monospace;
+        word-break: break-all;
+      }
+      .summary {
+        color: var(--muted);
+      }
+      .status {
+        display: inline-block;
+        font:
+          700 13px/1.4 ui-monospace,
+          Consolas,
+          monospace;
+        padding: 1px 7px;
+        border-radius: 5px;
+        border: 1px solid var(--line);
+      }
+      .status.ok {
+        color: var(--post);
+      }
+      .status.bad {
+        color: var(--err);
+      }
+      .table-wrap {
+        overflow-x: auto;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 6px 0 12px;
+        font-size: 14.5px;
+      }
+      th,
+      td {
+        text-align: left;
+        vertical-align: top;
+        padding: 6px 10px;
+        border-bottom: 1px solid var(--line);
+      }
+      th {
+        color: var(--muted);
+        font-weight: 600;
+      }
+      .note {
+        color: var(--muted);
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>ChillLog API</h1>
+      <p class="lead">
+        The REST API behind ChillLog, the fridge-temperature monitor for Squanchy Bakery. Every
+        example below is a real request and response, captured from the app running on the demo data
+        (<code>npm run seed</code>, then this week's files uploaded). Long lists are trimmed.
+      </p>
+
+      <h2 id="conventions">Conventions</h2>
+      <ul>
+        <li>
+          <strong>Base URL:</strong> <code>http://127.0.0.1:3000/api</code> after
+          <code>npm start</code>. In <code>npm run dev</code>, the Vite dev server forwards
+          <code>/api</code> to the same server.
+        </li>
+        <li>
+          <strong>JSON in, JSON out</strong>, except uploads (<code>multipart/form-data</code>) and
+          the CSV export.
+        </li>
+        <li>
+          <strong>Times in responses are UTC</strong>, ISO 8601, in fields ending in
+          <code>Utc</code> (<code>2026-09-27T20:45:00Z</code>). The app shows them in Israel time.
+        </li>
+        <li>
+          <strong>Dates you send are Israel time</strong>: <code>2026-09-17</code> or
+          <code>2026-09-17T10:00</code>, the way a date picker gives them. A date alone means the
+          start of that day, except <code>to</code> in a range, which includes the whole day.
+        </li>
+        <li>
+          <strong>Temperatures are °C.</strong> °F logger files are converted when they come in.
+        </li>
+        <li>
+          <strong>No login.</strong> The app runs locally for one user; the server listens on
+          <code>127.0.0.1</code> unless <code>HOST</code> is set.
+        </li>
+        <li>
+          The rules behind the numbers (above 5°C, door openings, gaps, warming) are in
+          <code>NOTES.md</code>, "Detection parameters".
+        </li>
+      </ul>
+
+      <h2 id="errors">Errors</h2>
+      <p>
+        Every error is JSON with a sentence that can be shown to the user as-is. Conflicts with
+        stored data add a machine-readable <code>code</code>:
+      </p>
+      <pre>
+{
+  "error": "A branch called \"Haifa\" already exists.",
+  "code": "duplicate"
+}</pre>
+      <div class="table-wrap">
+        <table>
+          <tr>
+            <th>Status</th>
+            <th>When</th>
+          </tr>
+          <tr>
+            <td><span class="status bad">400</span></td>
+            <td>
+              Invalid input. Form errors add <code>issues</code>, one per field:
+              <code>{ "path": "name", "message": "Enter a name." }</code>. Also bad JSON, a date
+              that doesn't exist, a range that ends before it starts, too many files.
+            </td>
+          </tr>
+          <tr>
+            <td><span class="status bad">404</span></td>
+            <td>The branch, fridge, logger, upload or route doesn't exist.</td>
+          </tr>
+          <tr>
+            <td><span class="status bad">409</span></td>
+            <td>
+              Conflicts with what's stored: <code>duplicate</code>, <code>invalid_move</code>,
+              <code>already_processed</code>.
+            </td>
+          </tr>
+          <tr>
+            <td><span class="status bad">413</span></td>
+            <td>An uploaded file is over 5 MB. Nothing from that request is kept.</td>
+          </tr>
+          <tr>
+            <td><span class="status bad">500</span></td>
+            <td>
+              A server fault. The response says only "Something went wrong on the server. Please try
+              again."; the details go to the server log.
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <h2 id="endpoints">Endpoints</h2>
+      <ul class="toc">
+        <li><a href="#health">GET /health</a></li>
+        <li><a href="#branches-list">GET /branches</a></li>
+        <li><a href="#branches-create">POST /branches</a></li>
+        <li><a href="#fridges-create">POST /fridges</a></li>
+        <li><a href="#loggers-list">GET /loggers</a></li>
+        <li><a href="#loggers-create">POST /loggers</a></li>
+        <li><a href="#loggers-get">GET /loggers/:id</a></li>
+        <li><a href="#loggers-settings">PATCH /loggers/:id/settings</a></li>
+        <li><a href="#loggers-move">POST /loggers/:id/moves</a></li>
+        <li><a href="#uploads-create">POST /uploads</a></li>
+        <li><a href="#uploads-list">GET /uploads</a></li>
+        <li><a href="#uploads-preview">GET /uploads/:id/preview</a></li>
+        <li><a href="#uploads-assign">POST /uploads/:id/assign</a></li>
+        <li><a href="#uploads-retry">POST /uploads/:id/retry</a></li>
+        <li><a href="#overview">GET /overview</a></li>
+        <li><a href="#fridge-detail">GET /fridges/:id</a></li>
+        <li><a href="#inspector">GET /inspector</a></li>
+        <li><a href="#inspector-export">GET /inspector/export</a></li>
+      </ul>
+
+      <!-- ─────────────────────────────── System ─────────────────────────────── -->
+      <h2 id="system">System</h2>
+
+      <details class="endpoint" id="health">
+        <summary>
+          <span class="method get">GET</span><span class="path">/api/health</span
+          ><span class="summary">Is the server up?</span>
+        </summary>
+        <div class="body">
+          <pre>curl http://127.0.0.1:3000/api/health</pre>
+          <h3>Response <span class="status ok">200</span></h3>
+          <pre>{ "status": "ok" }</pre>
+          <h3>Any unknown <code>/api</code> route <span class="status bad">404</span></h3>
+          <pre>{ "error": "Not found" }</pre>
+        </div>
+      </details>
+
+      <!-- ────────────────────────────── Registry ────────────────────────────── -->
+      <h2 id="registry">Branches, fridges and loggers</h2>
+      <p>
+        The registry is set up once and replaces Summer typing logger, branch and fridge on every
+        row. A logger belongs to a fridge <em>from a date</em>, so a reading goes to the fridge the
+        logger was in at that moment.
+      </p>
+
+      <details class="endpoint" id="branches-list">
+        <summary>
+          <span class="method get">GET</span><span class="path">/api/branches</span
+          ><span class="summary">All branches, A–Z, each with its fridges</span>
+        </summary>
+        <div class="body">
+          <pre>curl http://127.0.0.1:3000/api/branches</pre>
+          <h3>
+            Response <span class="status ok">200</span> <span class="note">(2 of 12 branches)</span>
+          </h3>
+          <pre>
+[
+  {
+    "id": 6,
+    "name": "Ashdod",
+    "fridges": [
+      { "id": 13, "name": "Dairy" },
+      { "id": 14, "name": "Walk-in" }
+    ]
+  },
+  {
+    "id": 8,
+    "name": "Beersheba",
+    "fridges": [
+      { "id": 17, "name": "Dairy" },
+      { "id": 18, "name": "Walk-in" }
+    ]
+  }
+]</pre>
+        </div>
+      </details>
+
+      <details class="endpoint" id="branches-create">
+        <summary>
+          <span class="method post">POST</span><span class="path">/api/branches</span
+          ><span class="summary">Add a branch</span>
+        </summary>
+        <div class="body">
+          <div class="table-wrap">
+            <table>
+              <tr>
+                <th>Body field</th>
+                <th>Type</th>
+                <th>Notes</th>
+              </tr>
+              <tr>
+                <td><code>name</code></td>
+                <td>string, required</td>
+                <td>1–80 characters, trimmed. Unique.</td>
+              </tr>
+            </table>
+          </div>
+          <pre>
+curl -X POST http://127.0.0.1:3000/api/branches \
+  -H "Content-Type: application/json" -d '{"name":"Kfar Saba"}'</pre>
+          <h3>Response <span class="status ok">201</span></h3>
+          <pre>{ "id": 13, "name": "Kfar Saba" }</pre>
+          <h3>Name taken <span class="status bad">409</span></h3>
+          <pre>{ "error": "A branch called \"Haifa\" already exists.", "code": "duplicate" }</pre>
+        </div>
+      </details>
+
+      <details class="endpoint" id="fridges-create">
+        <summary>
+          <span class="method post">POST</span><span class="path">/api/fridges</span
+          ><span class="summary">Add a fridge to a branch</span>
+        </summary>
+        <div class="body">
+          <div class="table-wrap">
+            <table>
+              <tr>
+                <th>Body field</th>
+                <th>Type</th>
+                <th>Notes</th>
+              </tr>
+              <tr>
+                <td><code>branchId</code></td>
+                <td>integer, required</td>
+                <td>404 if the branch doesn't exist.</td>
+              </tr>
+              <tr>
+                <td><code>name</code></td>
+                <td>string, required</td>
+                <td>
+                  1–80 characters. Unique within the branch (two branches can both have "Dairy").
+                </td>
+              </tr>
+            </table>
+          </div>
+          <pre>
+curl -X POST http://127.0.0.1:3000/api/fridges \
+  -H "Content-Type: application/json" -d '{"branchId":13,"name":"Dairy"}'</pre>
+          <h3>Response <span class="status ok">201</span></h3>
+          <pre>{ "id": 31, "branchId": 13, "name": "Dairy" }</pre>
+          <h3>Invalid form <span class="status bad">400</span></h3>
+          <p class="note">Request body: <code>{"branchId":"x","name":" "}</code></p>
+          <pre>
+{
+  "error": "Some fields need fixing.",
+  "issues": [
+    { "path": "branchId", "message": "Invalid input: expected number, received NaN" },
+    { "path": "name", "message": "Enter a name." }
+  ]
+}</pre>
+        </div>
+      </details>
+
+      <details class="endpoint" id="loggers-list">
+        <summary>
+          <span class="method get">GET</span><span class="path">/api/loggers</span
+          ><span class="summary">All loggers by ID, each with the fridge it is in now</span>
+        </summary>
+        <div class="body">
+          <p>
+            <code>current</code> is <code>null</code> for a logger that has never been placed.
+            <code>unit</code> is <code>C</code> or <code>F</code>; <code>dateFormat</code> is
+            <code>DD/MM</code> or <code>MM/DD</code>, used when a file's dates could be read either
+            way.
+          </p>
+          <pre>curl http://127.0.0.1:3000/api/loggers</pre>
+          <h3>Response <span class="status ok">200</span> <span class="note">(2 of 30)</span></h3>
+          <pre>
+[
+  {
+    "id": 5,
+    "code": "TL-0231",
+    "unit": "F",
+    "dateFormat": "DD/MM",
+    "current": {
+      "fridgeId": 6,
+      "fridgeName": "Dairy",
+      "branchName": "Haifa",
+      "fromUtc": "2026-08-30T21:00:00Z"
+    }
+  },
+  {
+    "id": 6,
+    "code": "TL-0232",
+    "unit": "C",
+    "dateFormat": "DD/MM",
+    "current": {
+      "fridgeId": 7,
+      "fridgeName": "Walk-in",
+      "branchName": "Haifa",
+      "fromUtc": "2026-08-30T21:00:00Z"
+    }
+  }
+]</pre>
+        </div>
+      </details>
+
+      <details class="endpoint" id="loggers-create">
+        <summary>
+          <span class="method post">POST</span><span class="path">/api/loggers</span
+          ><span class="summary">Register a logger, optionally placing it in a fridge</span>
+        </summary>
+        <div class="body">
+          <div class="table-wrap">
+            <table>
+              <tr>
+                <th>Body field</th>
+                <th>Type</th>
+                <th>Notes</th>
+              </tr>
+              <tr>
+                <td><code>code</code></td>
+                <td>string, required</td>
+                <td>
+                  The ID printed on the logger. Stored upper-case: <code>tl-0800</code> →
+                  <code>TL-0800</code>.
+                </td>
+              </tr>
+              <tr>
+                <td><code>unit</code></td>
+                <td><code>"C"</code> | <code>"F"</code></td>
+                <td>Default <code>C</code>.</td>
+              </tr>
+              <tr>
+                <td><code>dateFormat</code></td>
+                <td><code>"DD/MM"</code> | <code>"MM/DD"</code></td>
+                <td>Default <code>DD/MM</code>.</td>
+              </tr>
+              <tr>
+                <td><code>fridgeId</code>, <code>from</code></td>
+                <td>integer, Israel date</td>
+                <td>Give both or neither. The logger is in that fridge from that date.</td>
+              </tr>
+            </table>
+          </div>
+          <p>
+            Files that were uploaded before this logger existed and are waiting for it are processed
+            straight away; what happened to them is in <code>retried</code>.
+          </p>
+          <pre>
+curl -X POST http://127.0.0.1:3000/api/loggers \
+  -H "Content-Type: application/json" \
+  -d '{"code":"tl-0800","unit":"C","fridgeId":31,"from":"2026-09-01"}'</pre>
+          <h3>Response <span class="status ok">201</span></h3>
+          <pre>
+{
+  "id": 31,
+  "code": "TL-0800",
+  "unit": "C",
+  "dateFormat": "DD/MM",
+  "current": {
+    "id": 32,
+    "fridgeId": 31,
+    "fridgeName": "Dairy",
+    "branchName": "Kfar Saba",
+    "fromUtc": "2026-08-31T21:00:00Z"
+  },
+  "history": [
+    {
+      "id": 32,
+      "fridgeId": 31,
+      "fridgeName": "Dairy",
+      "branchName": "Kfar Saba",
+      "fromUtc": "2026-08-31T21:00:00Z"
+    }
+  ],
+  "retried": []
+}</pre>
+          <p class="note">
+            <code>2026-09-01</code> in Israel is <code>2026-08-31T21:00:00Z</code> (UTC+3 in
+            summer).
+          </p>
+        </div>
+      </details>
+
+      <details class="endpoint" id="loggers-get">
+        <summary>
+          <span class="method get">GET</span><span class="path">/api/loggers/:id</span
+          ><span class="summary">One logger with its move history, newest first</span>
+        </summary>
+        <div class="body">
+          <p>The Tel Aviv logger that was moved into the new display fridge:</p>
+          <pre>curl http://127.0.0.1:3000/api/loggers/1</pre>
+          <h3>Response <span class="status ok">200</span></h3>
+          <pre>
+{
+  "id": 1,
+  "code": "TL-0417",
+  "unit": "C",
+  "dateFormat": "DD/MM",
+  "current": {
+    "id": 2,
+    "fridgeId": 3,
+    "fridgeName": "Display 2",
+    "branchName": "Tel Aviv",
+    "fromUtc": "2026-09-23T15:00:00Z"
+  },
+  "history": [
+    { "id": 2, "fridgeId": 3, "fridgeName": "Display 2", "branchName": "Tel Aviv", "fromUtc": "2026-09-23T15:00:00Z" },
+    { "id": 1, "fridgeId": 1, "fridgeName": "Walk-in", "branchName": "Tel Aviv", "fromUtc": "2026-08-30T21:00:00Z" }
+  ]
+}</pre>
+        </div>
+      </details>
+
+      <details class="endpoint" id="loggers-settings">
+        <summary>
+          <span class="method patch">PATCH</span><span class="path">/api/loggers/:id/settings</span
+          ><span class="summary">Change how this logger's files are read</span>
+        </summary>
+        <div class="body">
+          <p>
+            Send <code>unit</code>, <code>dateFormat</code>, or both. Files held back because of the
+            old setting (for example °F values read as °C) are tried again straight away and listed
+            in <code>retried</code>.
+          </p>
+          <pre>
+curl -X PATCH http://127.0.0.1:3000/api/loggers/5/settings \
+  -H "Content-Type: application/json" -d '{"unit":"F"}'</pre>
+          <h3>Response <span class="status ok">200</span></h3>
+          <pre>
+{
+  "id": 5,
+  "code": "TL-0231",
+  "unit": "F",
+  "dateFormat": "DD/MM",
+  "current": { "id": 6, "fridgeId": 6, "fridgeName": "Dairy", "branchName": "Haifa", "fromUtc": "2026-08-30T21:00:00Z" },
+  "history": [ … ],
+  "retried": []
+}</pre>
+          <p class="note">
+            An empty body (<code>{}</code>) is a <span class="status bad">400</span>.
+          </p>
+        </div>
+      </details>
+
+      <details class="endpoint" id="loggers-move">
+        <summary>
+          <span class="method post">POST</span><span class="path">/api/loggers/:id/moves</span
+          ><span class="summary">Move a logger to another fridge from a date</span>
+        </summary>
+        <div class="body">
+          <p>
+            The move must be later than the logger's current placement, and to a different fridge. A
+            move changes which readings belong to which fridge, so both fridges' excursions, gaps
+            and status are recalculated in the same transaction.
+          </p>
+          <div class="table-wrap">
+            <table>
+              <tr>
+                <th>Body field</th>
+                <th>Type</th>
+                <th>Notes</th>
+              </tr>
+              <tr>
+                <td><code>fridgeId</code></td>
+                <td>integer, required</td>
+                <td>The fridge it moves into.</td>
+              </tr>
+              <tr>
+                <td><code>from</code></td>
+                <td>Israel date or date-time, required</td>
+                <td><code>2026-09-20T10:00</code></td>
+              </tr>
+            </table>
+          </div>
+          <pre>
+curl -X POST http://127.0.0.1:3000/api/loggers/31/moves \
+  -H "Content-Type: application/json" -d '{"fridgeId":32,"from":"2026-09-20T10:00"}'</pre>
+          <h3>Response <span class="status ok">201</span></h3>
+          <pre>
+{
+  "id": 31,
+  "code": "TL-0800",
+  "unit": "C",
+  "dateFormat": "DD/MM",
+  "current": { "id": 33, "fridgeId": 32, "fridgeName": "Walk-in", "branchName": "Kfar Saba", "fromUtc": "2026-09-20T07:00:00Z" },
+  "history": [
+    { "id": 33, "fridgeId": 32, "fridgeName": "Walk-in", "branchName": "Kfar Saba", "fromUtc": "2026-09-20T07:00:00Z" },
+    { "id": 32, "fridgeId": 31, "fridgeName": "Dairy", "branchName": "Kfar Saba", "fromUtc": "2026-08-31T21:00:00Z" }
+  ]
+}</pre>
+          <h3>Move dated before the current placement <span class="status bad">409</span></h3>
+          <pre>
+{
+  "error": "The move must be after 2026-09-20T07:00:00Z, when the logger was last placed.",
+  "code": "invalid_move"
+}</pre>
+        </div>
+      </details>
+
+      <!-- ─────────────────────────────── Uploads ─────────────────────────────── -->
+      <h2 id="uploads">Uploads</h2>
+      <p>
+        Single and bulk upload are one pipeline. Each file is stored unchanged (named by its
+        SHA-256), its logger is found from a line inside the file (<code>Logger ID: TL-0231</code>)
+        or its name (<code>TL-0417_2026-09-21.csv</code>), and its readings are added in its own
+        transaction, so one bad file never stops the rest. Uploading the same file again is always
+        safe.
+      </p>
+
+      <details class="endpoint" id="uploads-create">
+        <summary>
+          <span class="method post">POST</span><span class="path">/api/uploads</span
+          ><span class="summary">Upload one or many logger files, get a report per file</span>
+        </summary>
+        <div class="body">
+          <p>
+            <code>multipart/form-data</code> with one or more files in the <code>files</code> field.
+            Limits: 5 MB per file, 50 files per upload, <code>.csv</code> / <code>.txt</code> /
+            <code>.tsv</code>.
+          </p>
+          <div class="table-wrap">
+            <table>
+              <tr>
+                <th>File <code>status</code></th>
+                <th>Meaning (<code>reason</code>)</th>
+              </tr>
+              <tr>
+                <td><code>processed</code></td>
+                <td>Readings added.</td>
+              </tr>
+              <tr>
+                <td><code>already_uploaded</code></td>
+                <td>Same file as before (same bytes). Nothing added.</td>
+              </tr>
+              <tr>
+                <td><code>needs_logger</code></td>
+                <td>
+                  Stored, waiting for Summer to say which logger it is from:
+                  <code>no_logger_id</code> (none found) or <code>unknown_logger</code> (an ID that
+                  isn't registered; <code>loggerCode</code> says which).
+                </td>
+              </tr>
+              <tr>
+                <td><code>failed</code></td>
+                <td>
+                  Held back: stored, nothing added until fixed. <code>looks_fahrenheit</code> /
+                  <code>looks_celsius</code> (values look like the other unit),
+                  <code>no_readings</code>, or <code>error</code>.
+                </td>
+              </tr>
+              <tr>
+                <td><code>rejected</code></td>
+                <td><code>not_csv</code>: wrong file type. Not stored.</td>
+              </tr>
+            </table>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <tr>
+                <th>Report field</th>
+                <th>Meaning</th>
+              </tr>
+              <tr>
+                <td><code>readings.added</code></td>
+                <td>New readings stored by this upload.</td>
+              </tr>
+              <tr>
+                <td><code>readings.alreadyStored</code></td>
+                <td>Readings that were already in (overlapping files).</td>
+              </tr>
+              <tr>
+                <td><code>readings.err</code></td>
+                <td>ERR readings: kept as a reading with no temperature.</td>
+              </tr>
+              <tr>
+                <td><code>readings.unreadable</code></td>
+                <td>Rows that couldn't be read. Counted, never guessed.</td>
+              </tr>
+              <tr>
+                <td><code>readings.duplicatesInFile</code></td>
+                <td>Rows repeated inside the file.</td>
+              </tr>
+              <tr>
+                <td><code>readings.beforePlacement</code></td>
+                <td>Readings from before the logger was placed in any fridge.</td>
+              </tr>
+              <tr>
+                <td><code>range</code></td>
+                <td>First and last reading in the file.</td>
+              </tr>
+              <tr>
+                <td><code>notes</code></td>
+                <td>
+                  <code>out_of_order</code> (rows weren't in time order),
+                  <code>date_format_differs</code> (the file's day/month order isn't the logger's
+                  setting).
+                </td>
+              </tr>
+            </table>
+          </div>
+          <pre>
+curl http://127.0.0.1:3000/api/uploads \
+  -F "files=@TL-0800_2026-09-28.csv" \
+  -F "files=@TL-0415_2026-09-28.csv" \
+  -F "files=@week 39.pdf"</pre>
+          <h3>Response <span class="status ok">200</span></h3>
+          <pre>
+{
+  "summary": { "files": 3, "readingsAdded": 2, "alreadyUploaded": 1, "needYourHelp": 1 },
+  "files": [
+    {
+      "uploadId": 116,
+      "fileName": "TL-0800_2026-09-28.csv",
+      "status": "processed",
+      "reason": null,
+      "loggerId": 31,
+      "loggerCode": "TL-0800",
+      "readings": { "added": 2, "alreadyStored": 0, "err": 0, "unreadable": 0, "duplicatesInFile": 0, "beforePlacement": 0 },
+      "range": { "fromUtc": "2026-09-21T05:00:00Z", "toUtc": "2026-09-21T05:15:00Z" },
+      "notes": []
+    },
+    {
+      "uploadId": 97,
+      "fileName": "TL-0415_2026-09-28.csv",
+      "status": "already_uploaded",
+      "reason": null,
+      "loggerId": 2,
+      "loggerCode": "TL-0415",
+      "readings": { "added": 0, "alreadyStored": 672, "err": 0, "unreadable": 0, "duplicatesInFile": 0, "beforePlacement": 0 },
+      "range": { "fromUtc": "2026-09-20T21:00:00Z", "toUtc": "2026-09-27T20:45:00Z" },
+      "notes": []
+    },
+    {
+      "uploadId": null,
+      "fileName": "week 39.pdf",
+      "status": "rejected",
+      "reason": "not_csv",
+      "loggerId": null,
+      "loggerCode": null,
+      "readings": { "added": 0, "alreadyStored": 0, "err": 0, "unreadable": 0, "duplicatesInFile": 0, "beforePlacement": 0 },
+      "range": null,
+      "notes": []
+    }
+  ]
+}</pre>
+          <h3>Errors</h3>
+          <div class="table-wrap">
+            <table>
+              <tr>
+                <td><span class="status bad">400</span></td>
+                <td><code>{ "error": "Choose at least one file to upload." }</code></td>
+              </tr>
+              <tr>
+                <td><span class="status bad">400</span></td>
+                <td>
+                  <code>{ "error": "Upload up to 50 files at a time. Nothing was uploaded." }</code>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="status bad">413</span></td>
+                <td>
+                  <code
+                    >{ "error": "Each file must be 5 MB or smaller. Nothing was uploaded." }</code
+                  >
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </details>
+
+      <details class="endpoint" id="uploads-list">
+        <summary>
+          <span class="method get">GET</span><span class="path">/api/uploads</span
+          ><span class="summary">The last 100 uploads, newest first</span>
+        </summary>
+        <div class="body">
+          <p>Each item is the file's report plus <code>uploadedAt</code>.</p>
+          <pre>curl http://127.0.0.1:3000/api/uploads</pre>
+          <h3>Response <span class="status ok">200</span> <span class="note">(1 of 100)</span></h3>
+          <pre>
+{
+  "lastUploadUtc": "2026-09-28T09:46:45Z",
+  "uploads": [
+    {
+      "uploadId": 116,
+      "fileName": "TL-0800_2026-09-28.csv",
+      "status": "processed",
+      "reason": null,
+      "loggerId": 31,
+      "loggerCode": "TL-0800",
+      "readings": { "added": 2, "alreadyStored": 0, "err": 0, "unreadable": 0, "duplicatesInFile": 0, "beforePlacement": 0 },
+      "range": { "fromUtc": "2026-09-21T05:00:00Z", "toUtc": "2026-09-21T05:15:00Z" },
+      "notes": [],
+      "uploadedAt": "2026-09-28T09:46:45Z"
+    }
+  ]
+}</pre>
+        </div>
+      </details>
+
+      <details class="endpoint" id="uploads-preview">
+        <summary>
+          <span class="method get">GET</span><span class="path">/api/uploads/:id/preview</span
+          ><span class="summary">First rows of a stored file, exactly as written</span>
+        </summary>
+        <div class="body">
+          <p>For "Which logger is this file from?": time and temperature cells, no conversion.</p>
+          <pre>curl http://127.0.0.1:3000/api/uploads/90/preview</pre>
+          <h3>
+            Response <span class="status ok">200</span> <span class="note">(2 of 3 rows)</span>
+          </h3>
+          <pre>
+{
+  "uploadId": 90,
+  "fileName": "export_2026-09-28.csv",
+  "rows": [
+    { "time": "21.09.2026 00:00", "temp": "2.5" },
+    { "time": "21.09.2026 00:15", "temp": "2.6" }
+  ]
+}</pre>
+        </div>
+      </details>
+
+      <details class="endpoint" id="uploads-assign">
+        <summary>
+          <span class="method post">POST</span><span class="path">/api/uploads/:id/assign</span
+          ><span class="summary">Say which logger a waiting file is from, and process it</span>
+        </summary>
+        <div class="body">
+          <p>Uses the stored copy: no re-upload. Body: <code>{ "loggerId": 15 }</code>.</p>
+          <pre>
+curl -X POST http://127.0.0.1:3000/api/uploads/90/assign \
+  -H "Content-Type: application/json" -d '{"loggerId":15}'</pre>
+          <h3>Response <span class="status ok">200</span></h3>
+          <pre>
+{
+  "uploadId": 90,
+  "fileName": "export_2026-09-28.csv",
+  "status": "processed",
+  "reason": null,
+  "loggerId": 15,
+  "loggerCode": "TL-0602",
+  "readings": { "added": 672, "alreadyStored": 0, "err": 0, "unreadable": 0, "duplicatesInFile": 0, "beforePlacement": 0 },
+  "range": { "fromUtc": "2026-09-20T21:00:00Z", "toUtc": "2026-09-27T20:45:00Z" },
+  "notes": []
+}</pre>
+        </div>
+      </details>
+
+      <details class="endpoint" id="uploads-retry">
+        <summary>
+          <span class="method post">POST</span><span class="path">/api/uploads/:id/retry</span
+          ><span class="summary">Try a held-back or waiting file again</span>
+        </summary>
+        <div class="body">
+          <p>
+            For example after fixing its logger's unit. Returns the file's new report. A file that
+            is already in can't be processed twice:
+          </p>
+          <pre>curl -X POST http://127.0.0.1:3000/api/uploads/90/retry</pre>
+          <h3>Already processed <span class="status bad">409</span></h3>
+          <pre>
+{ "error": "export_2026-09-28.csv is already in.", "code": "already_processed" }</pre>
+        </div>
+      </details>
+
+      <!-- ─────────────────────────────── Overview ─────────────────────────────── -->
+      <h2 id="overview-section">Overview</h2>
+
+      <details class="endpoint" id="overview">
+        <summary>
+          <span class="method get">GET</span><span class="path">/api/overview</span
+          ><span class="summary">Every fridge's status for one week, worst first</span>
+        </summary>
+        <div class="body">
+          <p>
+            "This week" is the last full Monday–Sunday week in Israel time, because files arrive on
+            Monday for the week before. <code>?week=2026-09-14</code> (any day in a week) shows
+            another week.
+          </p>
+          <div class="table-wrap">
+            <table>
+              <tr>
+                <th><code>status</code></th>
+                <th>When (worst first)</th>
+              </tr>
+              <tr>
+                <td><code>alert</code></td>
+                <td>
+                  Time above 5°C in the week (2+ readings in a row). <code>alert</code> has count,
+                  peak, total minutes.
+                </td>
+              </tr>
+              <tr>
+                <td><code>warming</code></td>
+                <td>Median of the last 24 h ≥ 0.5°C above the 24 h before, at the last reading.</td>
+              </tr>
+              <tr>
+                <td><code>gap</code></td>
+                <td>
+                  More than 1 hour with no valid reading, including a file that stops early.
+                  <code>gap</code> has count and total minutes.
+                </td>
+              </tr>
+              <tr>
+                <td><code>no_file</code></td>
+                <td>
+                  No readings this week. <code>noLogger: true</code> if the fridge never had a
+                  logger.
+                </td>
+              </tr>
+              <tr>
+                <td><code>ok</code></td>
+                <td>None of the above. <code>latest</code> is the last reading.</td>
+              </tr>
+            </table>
+          </div>
+          <p>
+            <code>sparkline</code> is the week in 3-hour buckets, each with its minimum and maximum,
+            so a single high reading still shows.
+          </p>
+          <pre>curl http://127.0.0.1:3000/api/overview</pre>
+          <h3>
+            Response <span class="status ok">200</span>
+            <span class="note">(1 of 32 fridges, 2 of 56 sparkline points)</span>
+          </h3>
+          <pre>
+{
+  "week": {
+    "startUtc": "2026-09-20T21:00:00Z",
+    "endUtc": "2026-09-27T21:00:00Z",
+    "firstDay": "2026-09-21",
+    "lastDay": "2026-09-27"
+  },
+  "lastUploadUtc": "2026-09-28T09:46:45Z",
+  "counts": { "alert": 1, "warming": 1, "gap": 3, "no_file": 3, "ok": 24 },
+  "fridges": [
+    {
+      "fridgeId": 8,
+      "fridgeName": "Cream cakes",
+      "branchId": 4,
+      "branchName": "Rishon LeZion",
+      "noLogger": false,
+      "latest": { "tsUtc": "2026-09-27T20:45:00Z", "tempC": 6.1 },
+      "alert": { "count": 1, "peakC": 6.1, "totalMinutes": 2040 },
+      "warming": { "latestC": 6.1, "medianC": 5.75, "riseC": 0.75 },
+      "gap": null,
+      "sparkline": [
+        { "tsUtc": "2026-09-20T21:00:00Z", "minC": 3.1, "maxC": 3.3 },
+        { "tsUtc": "2026-09-21T00:00:00Z", "minC": 3.3, "maxC": 3.5 }
+      ],
+      "status": "alert"
+    }
+  ]
+}</pre>
+          <p class="note">
+            Other fridges in the same response: <code>Petah Tikva / Display 1</code> is
+            <code>warming</code> (<code>latest 4.9°C, riseC 0.7</code>);
+            <code>Ashdod / Dairy</code> is <code>gap</code> (<code>totalMinutes 4935</code>, its
+            file stops on Thursday).
+          </p>
+        </div>
+      </details>
+
+      <!-- ─────────────────────────────── Fridges ─────────────────────────────── -->
+      <h2 id="fridges">Fridge page</h2>
+
+      <details class="endpoint" id="fridge-detail">
+        <summary>
+          <span class="method get">GET</span><span class="path">/api/fridges/:id?from=&amp;to=</span
+          ><span class="summary">One fridge over a range: chart data, time above 5°C, gaps</span>
+        </summary>
+        <div class="body">
+          <div class="table-wrap">
+            <table>
+              <tr>
+                <th>Query</th>
+                <th>Notes</th>
+              </tr>
+              <tr>
+                <td><code>from</code>, <code>to</code></td>
+                <td>
+                  Israel dates or date-times. <code>to=2026-09-27</code> includes that whole day.
+                  Default: the last 7 days up to now. At most 366 days.
+                </td>
+              </tr>
+            </table>
+          </div>
+          <p>
+            <code>series.points</code> holds at most 300 buckets with the minimum and maximum of
+            each (never an average, which would hide a spike). Bucket size grows with the range: 15
+            min for a day, 1 h for a week, 3 h for 30 days. A bucket with no reading has
+            <code>null</code> values, so the chart line breaks there. <code>placements</code> says
+            which logger was in the fridge when; <code>weekStatus</code> is this fridge's entry from
+            the overview.
+          </p>
+          <pre>curl "http://127.0.0.1:3000/api/fridges/8?from=2026-09-21&amp;to=2026-09-27"</pre>
+          <h3>
+            Response <span class="status ok">200</span> <span class="note">(2 of 168 points)</span>
+          </h3>
+          <pre>
+{
+  "fridge": { "id": 8, "branchId": 4, "branchName": "Rishon LeZion", "name": "Cream cakes" },
+  "range": { "fromUtc": "2026-09-20T21:00:00Z", "toUtc": "2026-09-27T21:00:00Z" },
+  "weekStatus": { "status": "alert", "alert": { "count": 1, "peakC": 6.1, "totalMinutes": 2040 }, … },
+  "latest": { "tsUtc": "2026-09-27T20:45:00Z", "tempC": 6.1 },
+  "currentLogger": { "loggerId": 7, "loggerCode": "TL-0388", "fromUtc": "2026-08-30T21:00:00Z", "toUtc": null },
+  "placements": [
+    { "loggerId": 7, "loggerCode": "TL-0388", "fromUtc": "2026-08-30T21:00:00Z", "toUtc": null }
+  ],
+  "series": {
+    "bucketMinutes": 60,
+    "points": [
+      { "tsUtc": "2026-09-20T21:00:00Z", "minC": 3.2, "maxC": 3.3 },
+      { "tsUtc": "2026-09-20T22:00:00Z", "minC": 3.1, "maxC": 3.3 }
+    ]
+  },
+  "excursions": [
+    {
+      "startUtc": "2026-09-26T10:45:00Z",
+      "endUtc": "2026-09-27T20:45:00Z",
+      "durationMinutes": 2040,
+      "peakC": 6.1,
+      "readings": 137,
+      "endReason": "data_ends"
+    }
+  ],
+  "doorSpikes": [ { "tsUtc": "2026-09-22T06:15:00Z", "tempC": 7.8 } ],
+  "gaps": [],
+  "errCount": 0
+}</pre>
+          <p class="note">
+            <code>endReason</code>: <code>back_in_range</code> (ends at the first reading back at or
+            below 5°C), <code>gap</code> (the data stops for more than an hour), or
+            <code>data_ends</code> (still above 5°C at the last reading).
+            <code>doorSpikes</code> are single readings above 5°C: shown, never counted.
+          </p>
+          <h3>Range that ends before it starts <span class="status bad">400</span></h3>
+          <pre>{ "error": "The start of the range must be before its end." }</pre>
+        </div>
+      </details>
+
+      <!-- ─────────────────────────────── Inspector ─────────────────────────────── -->
+      <h2 id="inspector-section">Inspector report</h2>
+      <p>
+        "When did this fridge go above five degrees, and for how long?" The screen and the CSV are
+        built from the same report, so they always agree.
+      </p>
+
+      <details class="endpoint" id="inspector">
+        <summary>
+          <span class="method get">GET</span
+          ><span class="path">/api/inspector?branchId=&amp;fridgeId=&amp;from=&amp;to=</span
+          ><span class="summary">Time above 5°C for all fridges, a branch, or one fridge</span>
+        </summary>
+        <div class="body">
+          <p>
+            All query fields are optional. <code>from</code>/<code>to</code> as on the fridge page;
+            default: the last 30 days. Excursions are whole (real start and end, even past the range
+            edges), oldest first. <code>gaps</code> uses the same rules as everywhere else;
+            <code>fridgesWithoutData</code> lists fridges with no readings at all in the range.
+          </p>
+          <pre>
+curl "http://127.0.0.1:3000/api/inspector?fridgeId=8&amp;from=2026-09-01&amp;to=2026-09-27"</pre>
+          <h3>Response <span class="status ok">200</span></h3>
+          <pre>
+{
+  "range": { "fromUtc": "2026-08-31T21:00:00Z", "toUtc": "2026-09-27T21:00:00Z" },
+  "limitC": 5,
+  "summary": { "count": 1, "totalMinutes": 2040 },
+  "excursions": [
+    {
+      "fridgeId": 8,
+      "branchName": "Rishon LeZion",
+      "fridgeName": "Cream cakes",
+      "startUtc": "2026-09-26T10:45:00Z",
+      "endUtc": "2026-09-27T20:45:00Z",
+      "durationMinutes": 2040,
+      "peakC": 6.1,
+      "endReason": "data_ends"
+    }
+  ],
+  "gaps": [],
+  "fridgesWithoutData": []
+}</pre>
+          <p class="note">
+            All fridges, same range (<code>/api/inspector?from=2026-09-01&amp;to=2026-09-27</code>),
+            2 of 3 gaps:
+          </p>
+          <pre>
+"gaps": [
+  { "fridgeId": 13, "branchName": "Ashdod", "fridgeName": "Dairy",
+    "fromUtc": "2026-09-24T10:45:00Z", "toUtc": "2026-09-27T21:00:00Z", "minutes": 4935 },
+  { "fridgeId": 17, "branchName": "Beersheba", "fridgeName": "Dairy",
+    "fromUtc": "2026-09-20T20:45:00Z", "toUtc": "2026-09-27T21:00:00Z", "minutes": 10095 }
+],
+"fridgesWithoutData": [
+  { "fridgeId": 31, "branchName": "Kfar Saba", "fridgeName": "Dairy" }
+]</pre>
+          <h3>Errors</h3>
+          <p class="note">
+            <span class="status bad">404</span> unknown <code>branchId</code> or
+            <code>fridgeId</code> · <span class="status bad">400</span> "That fridge is not in the
+            chosen branch."
+          </p>
+        </div>
+      </details>
+
+      <details class="endpoint" id="inspector-export">
+        <summary>
+          <span class="method get">GET</span
+          ><span class="path">/api/inspector/export?branchId=&amp;fridgeId=&amp;from=&amp;to=</span
+          ><span class="summary">The same list as a CSV download for Excel</span>
+        </summary>
+        <div class="body">
+          <p>
+            Same query as <code>/api/inspector</code>. Times are in Israel time so Excel shows them
+            as the files did. The file starts with a UTF-8 byte-order mark (so Excel reads °C and
+            Hebrew names correctly) and uses CRLF line ends. Text cells that start like a formula
+            (<code>=</code>, <code>+</code>, <code>-</code>, <code>@</code>, tab, CR) get a leading
+            <code>'</code>, so a name like <code>=HYPERLINK(…)</code> can't run when the file is
+            opened.
+          </p>
+          <pre>
+curl -OJ "http://127.0.0.1:3000/api/inspector/export?from=2026-09-01&amp;to=2026-09-27"</pre>
+          <h3>Response <span class="status ok">200</span></h3>
+          <pre>
+Content-Type: text/csv; charset=utf-8
+Content-Disposition: attachment; filename="chilllog-above-5C_2026-09-01_to_2026-09-27.csv"
+
+Branch,Fridge,Started (Israel time),Ended (Israel time),Duration (minutes),Duration,Peak °C,How the end is known
+Rishon LeZion,Cream cakes,2026-09-26 13:45,2026-09-27 23:45,2040,1 day 10 h,6.1,Still above 5°C at the last reading</pre>
+        </div>
+      </details>
+
+      <p class="note" style="margin-top: 40px">
+        Generated from the running app on the demo data, 28 Sep 2026. The code that serves these
+        routes is in <code>server/src/api/</code>; the input rules are the Zod schemas in
+        <code>shared/src/schemas.js</code>.
+      </p>
+    </main>
+  </body>
+</html>
