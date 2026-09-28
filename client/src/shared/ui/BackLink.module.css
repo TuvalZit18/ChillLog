@@ -1,0 +1,15 @@
+.back {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding-right: 8px;
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.back:hover {
+  color: var(--ink);
+}

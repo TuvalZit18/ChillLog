@@ -2,17 +2,20 @@
 // phones and a left sidebar from 880px. Only the main area scrolls.
 
 import { useEffect, useRef } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router';
+import { Link, matchPath, Outlet, useLocation } from 'react-router';
 import { Icon } from '../ui/Icon.jsx';
 import { ThemeMenu } from './ThemeMenu.jsx';
 import styles from './AppShell.module.css';
 
+// `paths` are the screens that belong to each tab: the fridge page sits under Overview.
 const TABS = [
-  { to: '/', label: 'Overview', icon: 'navOverview', end: true },
-  { to: '/upload', label: 'Upload', icon: 'navUpload' },
-  { to: '/inspector', label: 'Inspector', icon: 'navInspector' },
-  { to: '/loggers', label: 'Loggers', icon: 'navLoggers' },
+  { to: '/', label: 'Overview', icon: 'navOverview', paths: ['/', '/fridges/*'] },
+  { to: '/upload', label: 'Upload', icon: 'navUpload', paths: ['/upload/*'] },
+  { to: '/inspector', label: 'Inspector', icon: 'navInspector', paths: ['/inspector/*'] },
+  { to: '/loggers', label: 'Loggers', icon: 'navLoggers', paths: ['/loggers/*'] },
 ];
+
+const isActive = (tab, pathname) => tab.paths.some((path) => matchPath(path, pathname));
 
 export function AppShell() {
   const mainRef = useRef(null);
@@ -35,12 +38,17 @@ export function AppShell() {
 
       <nav className={styles.nav} aria-label="Main">
         {TABS.map((tab) => (
-          <NavLink key={tab.to} to={tab.to} end={tab.end} className={styles.navItem}>
+          <Link
+            key={tab.to}
+            to={tab.to}
+            className={styles.navItem}
+            aria-current={isActive(tab, pathname) ? 'page' : undefined}
+          >
             <span className={styles.navIcon}>
               <Icon name={tab.icon} size={22} />
             </span>
             {tab.label}
-          </NavLink>
+          </Link>
         ))}
       </nav>
 

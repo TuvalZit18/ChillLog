@@ -75,6 +75,21 @@ const PATHS = {
     </>
   ),
   chevDown: <path d="M6 9l6 6 6-6" />,
+  back: <path d="M15 5l-7 7 7 7" />,
+  info: (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 11v5" />
+      <path d="M12 8h.01" />
+    </>
+  ),
+  history: (
+    <>
+      <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
+      <path d="M3 3v5h5" />
+      <path d="M12 7v5l3 2" />
+    </>
+  ),
   sun: (
     <>
       <circle cx="12" cy="12" r="4" />

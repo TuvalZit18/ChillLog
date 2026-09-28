@@ -1,0 +1,12 @@
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.icon {
+  flex: none;
+  margin-top: 2px;
+}

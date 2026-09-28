@@ -8,6 +8,8 @@ import {
   formatDurationShort,
   formatTemp,
   formatTempChange,
+  formatTime,
+  toIsraelLocal,
 } from './format.js';
 
 describe('formatDateTime', () => {
@@ -34,6 +36,26 @@ describe('formatDate and formatDay', () => {
   it('reads a plain Israel date (the week\'s "firstDay") as that same day', () => {
     expect(formatDay('2026-09-14')).toBe('Mon 14 Sep');
     expect(formatDay('2026-09-20')).toBe('Sun 20 Sep');
+  });
+});
+
+describe('formatTime', () => {
+  it('writes the Israel time of day as "04:45"', () => {
+    expect(formatTime('2026-09-14T01:45:00Z')).toBe('04:45');
+  });
+});
+
+describe('toIsraelLocal', () => {
+  it('writes a moment as the Israel date and time the API reads: "2026-09-28T12:30"', () => {
+    expect(toIsraelLocal(new Date('2026-09-28T09:30:00Z'))).toBe('2026-09-28T12:30');
+  });
+
+  it('follows winter time too', () => {
+    expect(toIsraelLocal(new Date('2026-12-01T10:00:00Z'))).toBe('2026-12-01T12:00');
+  });
+
+  it('gives the Israel date, which can differ from the UTC date near midnight', () => {
+    expect(toIsraelLocal(new Date('2026-09-20T22:30:00Z'))).toBe('2026-09-21T01:30');
   });
 });
 

@@ -43,6 +43,31 @@ export function formatDate(value) {
   return `${p.day} ${p.month}`;
 }
 
+/** "04:45" */
+export function formatTime(value) {
+  const p = parts(value);
+  return `${p.hour}:${p.minute}`;
+}
+
+const numericFormatter = new Intl.DateTimeFormat('en-US', {
+  timeZone: TIME_ZONE,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+});
+
+/**
+ * A moment as Israel local time in the form the API reads: "2026-09-28T12:30".
+ * @param {Date} date
+ */
+export function toIsraelLocal(date) {
+  const p = Object.fromEntries(numericFormatter.formatToParts(date).map((x) => [x.type, x.value]));
+  return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}`;
+}
+
 const oneDecimal = (n) => (Math.round(n * 10) / 10).toFixed(1);
 
 /** "7.1°C" */
