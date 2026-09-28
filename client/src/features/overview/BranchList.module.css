@@ -88,10 +88,12 @@
     display: none;
   }
 
+  /* Every card the same size: cards stretch to their row, and every row is as tall as the
+     tallest card, so a branch with 2 fridges lines up with one with 4. */
   .grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    align-items: start;
+    grid-auto-rows: 1fr;
     gap: 12px;
   }
 
@@ -102,8 +104,22 @@
     background: var(--surface);
   }
 
-  .hasProblem {
-    border-color: var(--muted);
+  /* A branch with a problem: its worst status's color (--tone, set on the card) on the edge,
+     with a thicker stripe along the top; the header repeats it as the status icon. */
+  .toned {
+    border-color: var(--tone);
+    box-shadow: inset 0 3px 0 var(--tone);
+  }
+
+  .cardMeta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .worstIcon {
+    display: inline-flex;
+    color: var(--tone);
   }
 
   .cardHead {
@@ -119,13 +135,19 @@
     font-weight: 700;
   }
 
-  .card .row {
-    min-height: 48px;
-    padding: 6px 16px;
+  /* Branch cards are narrow in the 3–4 column grid, so every row has the same shape: the name,
+     then its pill (compact wording, slightly smaller) on the line below. */
+  .card .stacked {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 4px;
+    min-height: 64px;
+    padding: 8px 16px;
   }
 
-  /* Branch cards are narrow in the 3–4 column grid; a slightly smaller pill keeps most on one line. */
-  .card .row > :last-child {
+  .card .stacked > :last-child {
     font-size: 13px;
   }
 }

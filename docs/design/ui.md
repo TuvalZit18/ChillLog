@@ -63,11 +63,16 @@ color (pill background).
 | OK | `#2B7535` / `#E3F1E4` | `#6CC77A` / `#173222` |
 | Alert | `#B0271F` / `#FBE7E5` | `#FF7C72` / `#3A1916` |
 | Warming | `#8F5500` / `#FAEED9` | `#F2B25C` / `#33260F` |
-| Gap | `#5847AE` / `#ECE9F8` | `#ACA0F5` / `#25213F` |
+| Gap | `#1F5FA8` / `#E3EEF9` | `#7EB6F2` / `#16283B` |
 | No file | `#4F5963` / `#E8ECEE` | `#A7B0B8` / `#20272C` |
 
 Token names: `--ok`, `--ok-soft`, `--alert`, `--alert-soft`, `--warm`, `--warm-soft`, `--gap`, `--gap-soft`,
 `--nofile`, `--nofile-soft`.
+
+Gap was purple with a three-dots icon in the mockup. While building the UI I changed it to blue with
+a broken-line icon (the same idea as the chart's line breaking at missing data); the blue stays
+clear of alert red, warming amber, OK green, no-file grey and the teal accent. The mockup still
+shows the old look. Contrast of strong on soft: 5.5:1 light, 7.0:1 dark.
 
 ### Typography
 
@@ -141,7 +146,7 @@ The mockup follows the device setting only. The app adds a switch.
 |---|---|---|
 | Alert | triangle with ! | `Alert · 7.1°C · 2d 9h 15m` (peak, duration) |
 | Warming | arrow up-right | `Warming · 4.6°C, +0.8° in 24h` |
-| Gap | three dots | `Gap · 2h 15m missing` |
+| Gap | broken line | `Gap · 2h 15m missing` |
 | No file | circle with × | `No file this week` |
 | OK | check | `OK · 3.9°C` (latest reading) |
 

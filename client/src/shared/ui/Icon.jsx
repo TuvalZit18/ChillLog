@@ -51,7 +51,15 @@ const PATHS = {
       <path d="M9.5 6H18v8.5" />
     </>
   ),
-  gap: <path d="M4.5 12h.01M12 12h.01M19.5 12h.01" strokeWidth="3.4" />,
+  // A line with a piece missing: the same idea as the chart, where the line breaks at a gap.
+  gap: (
+    <>
+      <path d="M3 12h6" />
+      <path d="M15 12h6" />
+      <path d="M9 8.5v7" />
+      <path d="M15 8.5v7" />
+    </>
+  ),
   nofile: (
     <>
       <circle cx="12" cy="12" r="8.5" />

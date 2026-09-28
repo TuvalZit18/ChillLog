@@ -53,6 +53,24 @@ describe('describeStatus', () => {
   });
 });
 
+describe('describeStatus, compact', () => {
+  it('drops the words that repeat what the pill already says, for small branch cards', () => {
+    const gap = entry({ status: 'gap', gap: { count: 1, totalMinutes: 4935 } });
+    expect(describeStatus(gap, { compact: true })).toBe('Gap · 3d 10h 15m');
+    const warming = entry({
+      status: 'warming',
+      warming: { latestC: 4.9, medianC: 4.6, riseC: 0.7 },
+    });
+    expect(describeStatus(warming, { compact: true })).toBe('Warming · 4.9°C, +0.7°');
+  });
+
+  it('keeps the other statuses as they are', () => {
+    const alert = entry({ status: 'alert', alert: { count: 1, peakC: 6.1, totalMinutes: 2040 } });
+    expect(describeStatus(alert, { compact: true })).toBe('Alert · 6.1°C · 1d 10h');
+    expect(describeStatus(entry({ status: 'ok' }), { compact: true })).toBe('OK · 3.9°C');
+  });
+});
+
 describe('STATUS_META', () => {
   it('has a word and an icon for every status, so none is shown by color alone', () => {
     for (const status of ['alert', 'warming', 'gap', 'no_file', 'ok']) {

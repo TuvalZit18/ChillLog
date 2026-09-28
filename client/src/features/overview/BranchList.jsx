@@ -4,16 +4,23 @@
 import { Link } from 'react-router';
 import { Icon } from '../../shared/ui/Icon.jsx';
 import { StatusPill } from '../../shared/status/StatusPill.jsx';
-import { describeStatus } from '../../shared/status/status.js';
+import { describeStatus, STATUS_META } from '../../shared/status/status.js';
 import styles from './BranchList.module.css';
 
 const fridgeCount = (n) => `${n} ${n === 1 ? 'fridge' : 'fridges'}`;
 
-function FridgeRow({ fridge }) {
+/**
+ * One fridge in a branch. In the narrow desktop cards (`stacked`) the pill always sits under the
+ * name, with the compact wording, so every row has the same shape.
+ */
+function FridgeRow({ fridge, stacked = false }) {
   return (
-    <Link to={`/fridges/${fridge.fridgeId}`} className={styles.row}>
+    <Link
+      to={`/fridges/${fridge.fridgeId}`}
+      className={`${styles.row} ${stacked ? styles.stacked : ''}`}
+    >
       <span className={styles.rowName}>{fridge.fridgeName}</span>
-      <StatusPill status={fridge.status} text={describeStatus(fridge)} />
+      <StatusPill status={fridge.status} text={describeStatus(fridge, { compact: stacked })} />
     </Link>
   );
 }
@@ -44,21 +51,35 @@ export function BranchList({ branches }) {
       </div>
 
       <div className={styles.grid}>
-        {branches.map((branch) => (
-          <section
-            key={branch.branchId}
-            className={`${styles.card} ${branch.worst.status === 'ok' ? '' : styles.hasProblem}`}
-            aria-label={branch.branchName}
-          >
-            <div className={styles.cardHead}>
-              <span className={styles.cardName}>{branch.branchName}</span>
-              <span className="small muted">{fridgeCount(branch.fridges.length)}</span>
-            </div>
-            {branch.fridges.map((fridge) => (
-              <FridgeRow key={fridge.fridgeId} fridge={fridge} />
-            ))}
-          </section>
-        ))}
+        {branches.map((branch) => {
+          // A branch with a problem takes its worst status's color on the card's edge, and its
+          // icon in the header, so the color never stands alone.
+          const worst = branch.worst.status === 'ok' ? null : STATUS_META[branch.worst.status];
+          return (
+            <section
+              key={branch.branchId}
+              className={`${styles.card} ${worst ? styles.toned : ''}`}
+              style={worst ? { '--tone': worst.color } : undefined}
+              aria-label={branch.branchName}
+            >
+              <div className={styles.cardHead}>
+                <span className={styles.cardName}>{branch.branchName}</span>
+                <span className={styles.cardMeta}>
+                  {worst && (
+                    <span className={styles.worstIcon}>
+                      <Icon name={worst.icon} size={16} />
+                      <span className="visually-hidden">Worst: {worst.label}. </span>
+                    </span>
+                  )}
+                  <span className="small muted">{fridgeCount(branch.fridges.length)}</span>
+                </span>
+              </div>
+              {branch.fridges.map((fridge) => (
+                <FridgeRow key={fridge.fridgeId} fridge={fridge} stacked />
+              ))}
+            </section>
+          );
+        })}
       </div>
     </>
   );

@@ -25,15 +25,21 @@ export const STATUS_META = Object.freeze({
  *   alert: { peakC: number, totalMinutes: number } | null,
  *   warming: { latestC: number, riseC: number } | null,
  *   gap: { totalMinutes: number } | null }} fridge
+ * @param {{ compact?: boolean }} [options] compact drops "missing" and "in 24h", for pills in
+ *   narrow places (the overview's branch cards); the facts stay the same
  */
-export function describeStatus(fridge) {
+export function describeStatus(fridge, { compact = false } = {}) {
   switch (fridge.status) {
     case 'alert':
       return `Alert · ${formatTemp(fridge.alert.peakC)} · ${formatDurationShort(fridge.alert.totalMinutes)}`;
-    case 'warming':
-      return `Warming · ${formatTemp(fridge.warming.latestC)}, ${formatTempChange(fridge.warming.riseC)} in ${THRESHOLDS.warming.windowHours}h`;
-    case 'gap':
-      return `Gap · ${formatDurationShort(fridge.gap.totalMinutes)} missing`;
+    case 'warming': {
+      const rise = `Warming · ${formatTemp(fridge.warming.latestC)}, ${formatTempChange(fridge.warming.riseC)}`;
+      return compact ? rise : `${rise} in ${THRESHOLDS.warming.windowHours}h`;
+    }
+    case 'gap': {
+      const missing = `Gap · ${formatDurationShort(fridge.gap.totalMinutes)}`;
+      return compact ? missing : `${missing} missing`;
+    }
     case 'no_file':
       return fridge.noLogger ? 'No file · no logger yet' : 'No file this week';
     default:
