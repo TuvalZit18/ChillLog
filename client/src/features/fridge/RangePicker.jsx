@@ -3,6 +3,7 @@
 
 import { toIsraelLocal } from '../../shared/format/format.js';
 import { Chip, ChipGroup } from '../../shared/ui/Chip.jsx';
+import field from '../../shared/ui/field.module.css';
 import { RANGE_PRESETS } from './rangeModel.js';
 import styles from './RangePicker.module.css';
 
@@ -44,7 +45,7 @@ export function RangePicker({ range, onChange }) {
 
       {range.kind === 'custom' && (
         <div className={styles.custom}>
-          <div className={styles.field}>
+          <div className={field.field}>
             <label htmlFor="range-from">From</label>
             <input
               id="range-from"
@@ -54,7 +55,7 @@ export function RangePicker({ range, onChange }) {
               onChange={(e) => onChange({ ...range, from: e.target.value }, { replace: true })}
             />
           </div>
-          <div className={styles.field}>
+          <div className={field.field}>
             <label htmlFor="range-to">To</label>
             <input
               id="range-to"

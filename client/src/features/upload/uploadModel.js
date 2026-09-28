@@ -127,6 +127,41 @@ export function checkFiles(files) {
   return null;
 }
 
+/** "Which logger is this file from?" options: by logger ID, each with the fridge it is in now. */
+export function loggerOptions(loggers) {
+  return [...loggers]
+    .sort((a, b) => a.code.localeCompare(b.code))
+    .map((l) => ({
+      value: l.id,
+      label: l.current
+        ? `${l.code} · ${l.current.branchName} · ${l.current.fridgeName}`
+        : `${l.code} · not in a fridge`,
+    }));
+}
+
+/** The sentence under "Which logger is this file from?", saying why it's asked. */
+export function assignIntro(report) {
+  const then = "the readings go to that logger's fridge.";
+  return report.reason === 'unknown_logger'
+    ? `The file says ${report.loggerCode}, which isn't in ChillLog. Choose the logger it's from, and ${then}`
+    : `The file has no logger ID. Choose it once and ${then}`;
+}
+
+/**
+ * The "Waiting from earlier uploads" list: files still waiting, plus any Summer handled on this
+ * screen (shown with their new report, so the card changes instead of vanishing), minus the
+ * files already shown in the batch just uploaded.
+ * @param {object[]} uploads GET /api/uploads, newest first
+ * @param {Record<number, object>} handled new reports by uploadId, from this visit
+ * @param {Set<number>} shownIds
+ */
+export function earlierFiles(uploads, handled, shownIds) {
+  return uploads
+    .filter((u) => !shownIds.has(u.uploadId))
+    .filter((u) => handled[u.uploadId] || waitingUploads([u]).length > 0)
+    .map((u) => handled[u.uploadId] ?? u);
+}
+
 /** Earlier uploads still waiting for Summer: a logger to choose, or a held-back file. */
 export function waitingUploads(uploads) {
   return uploads.filter((u) => u.status === 'needs_logger' || u.status === 'failed');

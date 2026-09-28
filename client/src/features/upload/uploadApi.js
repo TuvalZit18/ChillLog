@@ -20,6 +20,17 @@ const uploadApi = api.enhanceEndpoints({ addTagTypes: READING_TAGS }).injectEndp
       },
       invalidatesTags: READING_TAGS,
     }),
+    getUploadPreview: build.query({
+      query: (uploadId) => `uploads/${uploadId}/preview`,
+    }),
+    assignUpload: build.mutation({
+      query: ({ uploadId, loggerId }) => ({
+        url: `uploads/${uploadId}/assign`,
+        method: 'POST',
+        body: { loggerId },
+      }),
+      invalidatesTags: READING_TAGS,
+    }),
     retryUpload: build.mutation({
       query: (uploadId) => ({ url: `uploads/${uploadId}/retry`, method: 'POST' }),
       invalidatesTags: READING_TAGS,
@@ -27,4 +38,10 @@ const uploadApi = api.enhanceEndpoints({ addTagTypes: READING_TAGS }).injectEndp
   }),
 });
 
-export const { useGetUploadsQuery, useUploadFilesMutation, useRetryUploadMutation } = uploadApi;
+export const {
+  useGetUploadsQuery,
+  useUploadFilesMutation,
+  useRetryUploadMutation,
+  useGetUploadPreviewQuery,
+  useAssignUploadMutation,
+} = uploadApi;

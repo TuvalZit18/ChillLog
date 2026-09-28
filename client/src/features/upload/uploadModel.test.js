@@ -3,7 +3,10 @@
 
 import { describe, expect, it } from 'vitest';
 import {
+  assignIntro,
   checkFiles,
+  earlierFiles,
+  loggerOptions,
   fileKind,
   fileLines,
   fileWhere,
@@ -216,6 +219,57 @@ describe('checkFiles', () => {
     expect(checkFiles([file('huge.csv', 6 * 1024 * 1024)])).toBe(
       'huge.csv is bigger than 5 MB. Nothing was uploaded.',
     );
+  });
+});
+
+describe('loggerOptions', () => {
+  it('lists loggers by ID with the fridge each is in now: "TL-0417 · Tel Aviv · Display 2"', () => {
+    const options = loggerOptions([
+      { id: 9, code: 'TL-0700', current: null },
+      {
+        id: 3,
+        code: 'TL-0417',
+        current: { fridgeId: 2, fridgeName: 'Display 2', branchName: 'Tel Aviv' },
+      },
+    ]);
+    expect(options).toEqual([
+      { value: 3, label: 'TL-0417 · Tel Aviv · Display 2' },
+      { value: 9, label: 'TL-0700 · not in a fridge' },
+    ]);
+  });
+});
+
+describe('assignIntro', () => {
+  it('explains why the file needs a logger', () => {
+    expect(assignIntro(report({ status: 'needs_logger', reason: 'no_logger_id' }))).toBe(
+      "The file has no logger ID. Choose it once and the readings go to that logger's fridge.",
+    );
+    expect(
+      assignIntro(
+        report({ status: 'needs_logger', reason: 'unknown_logger', loggerCode: 'TL-0999' }),
+      ),
+    ).toBe(
+      "The file says TL-0999, which isn't in ChillLog. Choose the logger it's from, and the readings go to that logger's fridge.",
+    );
+  });
+});
+
+describe('earlierFiles', () => {
+  const uploads = [
+    report({ uploadId: 5, status: 'processed' }), // assigned just now; the server lists it as done
+    report({ uploadId: 4, status: 'needs_logger' }),
+    report({ uploadId: 3, status: 'failed' }), // part of the batch on screen
+    report({ uploadId: 2, status: 'processed' }), // done long ago
+  ];
+
+  it('keeps a file handled on this screen in place, with its new result, instead of dropping it', () => {
+    const handled = { 5: report({ uploadId: 5, status: 'processed', fileName: 'export.csv' }) };
+    const files = earlierFiles(uploads, handled, new Set([3]));
+    expect(files.map((f) => [f.uploadId, f.status])).toEqual([
+      [5, 'processed'],
+      [4, 'needs_logger'],
+    ]);
+    expect(files[0].fileName).toBe('export.csv');
   });
 });
 
