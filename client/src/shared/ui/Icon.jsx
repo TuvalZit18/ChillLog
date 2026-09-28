@@ -37,6 +37,27 @@ const PATHS = {
     </>
   ),
   check: <path d="M5 12.5l4.5 4.5L19 7.5" />,
+  ok: <path d="M5 12.5l4.5 4.5L19 7.5" />,
+  alert: (
+    <>
+      <path d="M12 3.8L2.8 20h18.4L12 3.8z" />
+      <path d="M12 10v4.2" />
+      <path d="M12 17.2h.01" />
+    </>
+  ),
+  warming: (
+    <>
+      <path d="M6 18L18 6" />
+      <path d="M9.5 6H18v8.5" />
+    </>
+  ),
+  gap: <path d="M4.5 12h.01M12 12h.01M19.5 12h.01" strokeWidth="3.4" />,
+  nofile: (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M9 9l6 6M15 9l-6 6" />
+    </>
+  ),
   sun: (
     <>
       <circle cx="12" cy="12" r="4" />
