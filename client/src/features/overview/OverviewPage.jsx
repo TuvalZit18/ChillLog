@@ -7,6 +7,7 @@ import { formatDateTime, formatDay } from '../../shared/format/format.js';
 import { StatusPill } from '../../shared/status/StatusPill.jsx';
 import button from '../../shared/ui/button.module.css';
 import { StateBox } from '../../shared/ui/StateBox.jsx';
+import { useGetBranchesQuery } from '../loggers/loggersApi.js';
 import { BranchList } from './BranchList.jsx';
 import { BranchNoFileCard, FridgeCard } from './FridgeCard.jsx';
 import { OverviewSkeleton } from './OverviewSkeleton.jsx';
@@ -29,6 +30,8 @@ const plural = (n, one, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
 export function OverviewPage() {
   const { data, isError, isFetching, refetch } = useGetOverviewQuery();
+  // The filters list the branches in the database, including one with no fridges yet.
+  const { data: allBranches = [] } = useGetBranchesQuery();
   const [searchParams, setSearchParams] = useSearchParams();
   const filter = readStatusFilter(searchParams.get('status'));
 
@@ -104,6 +107,7 @@ export function OverviewPage() {
   const narrowed = place.branchId !== null || place.type !== null || filter !== null;
   const branches = groupBranches(fridges);
   const clearAll = () => setParams({ branch: null, type: null, status: null });
+  const chosenBranch = allBranches.find((b) => b.id === place.branchId);
 
   return (
     <div className={styles.page}>
@@ -118,7 +122,7 @@ export function OverviewPage() {
       <StatusChips counts={countByStatus(inPlace)} selected={filter} onToggle={toggleFilter} />
 
       <PlaceFilters
-        {...placeFilterOptions(data.fridges, place)}
+        {...placeFilterOptions(allBranches, place)}
         branchId={place.branchId}
         type={place.type}
         onChange={(name, value) => setParams({ [name]: value })}
@@ -127,7 +131,14 @@ export function OverviewPage() {
 
       {fridges.length === 0 ? (
         <div className={styles.allOk}>
-          <p>No fridges match these filters.</p>
+          {chosenBranch?.fridges.length === 0 ? (
+            <p>
+              {chosenBranch.name} has no fridges yet.{' '}
+              <Link to="/loggers?tab=branches">Add them in Setup</Link>.
+            </p>
+          ) : (
+            <p>No fridges match these filters.</p>
+          )}
           <button type="button" className={`${button.button} ${button.link}`} onClick={clearAll}>
             Clear filters
           </button>

@@ -3,7 +3,6 @@
 
 import { describe, expect, it } from 'vitest';
 import {
-  branchOptions,
   branchSummary,
   countByStatus,
   filterFridges,
@@ -11,7 +10,6 @@ import {
   groupBranches,
   placeFilterOptions,
   readPlaceFilter,
-  typeOptions,
   needsAttention,
   readStatusFilter,
   sortWorstFirst,
@@ -142,24 +140,6 @@ describe('fridgeType', () => {
   });
 });
 
-describe('filter options', () => {
-  const all = [
-    fridge('Tel Aviv', 'Display 2', 'ok'),
-    fridge('Haifa', 'Dairy', 'ok'),
-    fridge('Tel Aviv', 'Display 1', 'ok'),
-    fridge('Ashdod', 'Walk-in', 'gap'),
-  ];
-
-  it('lists each type once, A–Z', () => {
-    expect(typeOptions(all)).toEqual(['Dairy', 'Display', 'Walk-in']);
-  });
-
-  it('lists each branch once, A–Z', () => {
-    expect(branchOptions(all).map((b) => b.name)).toEqual(['Ashdod', 'Haifa', 'Tel Aviv']);
-    expect(branchOptions(all)[2]).toEqual({ id: branchId('Tel Aviv'), name: 'Tel Aviv' });
-  });
-});
-
 describe('filterFridges and countByStatus', () => {
   const all = [
     fridge('Rishon LeZion', 'Cream cakes', 'alert'),
@@ -210,24 +190,33 @@ describe('filterFridges and countByStatus', () => {
 });
 
 describe('placeFilterOptions', () => {
-  const all = [
-    fridge('Beersheba', 'Dairy', 'no_file'),
-    fridge('Beersheba', 'Walk-in', 'no_file'),
-    fridge('Tel Aviv', 'Display 1', 'ok'),
-    fridge('Tel Aviv', 'Walk-in', 'ok'),
+  // The branches as GET /api/branches returns them (from the database), each with its fridges:
+  // Yoqneam Illit was just added in Setup and has no fridges yet.
+  const branches = [
+    { id: 3, name: 'Tel Aviv', fridges: [{ name: 'Display 1' }, { name: 'Walk-in' }] },
+    { id: 1, name: 'Beersheba', fridges: [{ name: 'Dairy' }, { name: 'Walk-in' }] },
+    { id: 9, name: 'Yoqneam Illit', fridges: [] },
   ];
+  const names = (list) => list.map((b) => b.name);
+
+  it('lists every branch in the database, A–Z, even one with no fridges yet', () => {
+    const options = placeFilterOptions(branches, { branchId: null, type: null });
+    expect(names(options.branches)).toEqual(['Beersheba', 'Tel Aviv', 'Yoqneam Illit']);
+    expect(options.branches[1]).toEqual({ id: 3, name: 'Tel Aviv' });
+    expect(options.types).toEqual(['Dairy', 'Display', 'Walk-in']);
+  });
 
   it('only offers what the other filter allows, so no choice leads to nothing', () => {
-    const forBeersheba = placeFilterOptions(all, { branchId: branchId('Beersheba'), type: null });
+    const forBeersheba = placeFilterOptions(branches, { branchId: 1, type: null });
     expect(forBeersheba.types).toEqual(['Dairy', 'Walk-in']);
-    const forDisplays = placeFilterOptions(all, { branchId: null, type: 'Display' });
-    expect(forDisplays.branches.map((b) => b.name)).toEqual(['Tel Aviv']);
+    const forDisplays = placeFilterOptions(branches, { branchId: null, type: 'Display' });
+    expect(names(forDisplays.branches)).toEqual(['Tel Aviv']);
   });
 
   it('always keeps the chosen values, even an impossible pair from a bookmarked URL', () => {
-    const options = placeFilterOptions(all, { branchId: branchId('Beersheba'), type: 'Display' });
+    const options = placeFilterOptions(branches, { branchId: 1, type: 'Display' });
     // Tel Aviv has displays; Beersheba doesn't, but stays because it's the one chosen.
-    expect(options.branches.map((b) => b.name)).toEqual(['Beersheba', 'Tel Aviv']);
+    expect(names(options.branches)).toEqual(['Beersheba', 'Tel Aviv']);
     expect(options.types).toEqual(['Dairy', 'Display', 'Walk-in']);
   });
 });
