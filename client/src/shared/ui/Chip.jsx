@@ -2,10 +2,19 @@
 
 import styles from './Chip.module.css';
 
-/** @param {{ pressed: boolean, onClick: () => void, children: React.ReactNode }} props */
-export function Chip({ pressed, onClick, children }) {
+/**
+ * @param {{ pressed: boolean, onClick: () => void, tone?: string, children: React.ReactNode }} props
+ *   tone: a color (e.g. the chip's status color) for the border on hover; grey when not given
+ */
+export function Chip({ pressed, onClick, tone, children }) {
   return (
-    <button type="button" className={styles.chip} aria-pressed={pressed} onClick={onClick}>
+    <button
+      type="button"
+      className={styles.chip}
+      style={tone ? { '--chip-tone': tone } : undefined}
+      aria-pressed={pressed}
+      onClick={onClick}
+    >
       {children}
     </button>
   );

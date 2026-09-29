@@ -135,12 +135,13 @@ export function placeFilterOptions(fridges, place) {
   return { branches, types };
 }
 
-/** The fridges in the chosen branch and of the chosen type (null = any). */
-export function filterFridges(fridges, { branchId, type }) {
+/** The fridges in the chosen branch, of the chosen type and with the chosen status (null = any). */
+export function filterFridges(fridges, { branchId, type, status = null }) {
   return fridges.filter(
     (f) =>
       (branchId === null || f.branchId === branchId) &&
-      (type === null || fridgeType(f.fridgeName) === type),
+      (type === null || fridgeType(f.fridgeName) === type) &&
+      (status === null || f.status === status),
   );
 }
 

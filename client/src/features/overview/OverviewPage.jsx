@@ -5,7 +5,6 @@
 import { Link, useSearchParams } from 'react-router';
 import { formatDateTime, formatDay } from '../../shared/format/format.js';
 import { StatusPill } from '../../shared/status/StatusPill.jsx';
-import { STATUS_META } from '../../shared/status/status.js';
 import button from '../../shared/ui/button.module.css';
 import { StateBox } from '../../shared/ui/StateBox.jsx';
 import { BranchList } from './BranchList.jsx';
@@ -20,7 +19,6 @@ import {
   placeFilterOptions,
   readPlaceFilter,
   readStatusFilter,
-  sortWorstFirst,
 } from './overviewModel.js';
 import { PlaceFilters } from './PlaceFilters.jsx';
 import { StatusChips } from './StatusChips.jsx';
@@ -98,12 +96,14 @@ export function OverviewPage() {
   }
 
   const { week, lastUploadUtc } = data;
-  // Branch and Type narrow everything below them: the chip counts and both sections.
+  // Branch and Type set the chip counts; the chip (status) then narrows both sections the same
+  // way, so Needs attention and the branch cards always show the same fridges.
   const place = readPlaceFilter(searchParams);
-  const narrowed = place.branchId !== null || place.type !== null;
-  const fridges = filterFridges(data.fridges, place);
+  const inPlace = filterFridges(data.fridges, place);
+  const fridges = filterFridges(inPlace, { branchId: null, type: null, status: filter });
+  const narrowed = place.branchId !== null || place.type !== null || filter !== null;
   const branches = groupBranches(fridges);
-  const clearPlace = () => setParams({ branch: null, type: null });
+  const clearAll = () => setParams({ branch: null, type: null, status: null });
 
   return (
     <div className={styles.page}>
@@ -115,29 +115,23 @@ export function OverviewPage() {
         </p>
       </div>
 
-      <StatusChips counts={countByStatus(fridges)} selected={filter} onToggle={toggleFilter} />
+      <StatusChips counts={countByStatus(inPlace)} selected={filter} onToggle={toggleFilter} />
 
       <PlaceFilters
         {...placeFilterOptions(data.fridges, place)}
         branchId={place.branchId}
         type={place.type}
         onChange={(name, value) => setParams({ [name]: value })}
-        onClear={clearPlace}
+        onClear={() => setParams({ branch: null, type: null })}
       />
 
       {fridges.length === 0 ? (
         <div className={styles.allOk}>
           <p>No fridges match these filters.</p>
-          <button type="button" className={`${button.button} ${button.link}`} onClick={clearPlace}>
+          <button type="button" className={`${button.button} ${button.link}`} onClick={clearAll}>
             Clear filters
           </button>
         </div>
-      ) : filter ? (
-        <FilteredList
-          status={filter}
-          fridges={sortWorstFirst(fridges.filter((f) => f.status === filter))}
-          onClear={() => toggleFilter(filter)}
-        />
       ) : (
         <>
           <NeedsAttention fridges={fridges} narrowed={narrowed} />
@@ -180,30 +174,6 @@ function NeedsAttention({ fridges, narrowed }) {
               <FridgeCard key={item.fridge.fridgeId} fridge={item.fridge} />
             ),
           )}
-        </div>
-      )}
-    </section>
-  );
-}
-
-function FilteredList({ status, fridges, onClear }) {
-  return (
-    <section className={styles.section} aria-labelledby="filtered">
-      <div className={styles.sectionHead}>
-        <h2 id="filtered">
-          {STATUS_META[status].label} · {plural(fridges.length, 'fridge')}
-        </h2>
-        <button type="button" className={`${button.button} ${button.link}`} onClick={onClear}>
-          Show everything
-        </button>
-      </div>
-      {fridges.length === 0 ? (
-        <p className="muted">No fridges with this status this week.</p>
-      ) : (
-        <div className={styles.cards}>
-          {fridges.map((fridge) => (
-            <FridgeCard key={fridge.fridgeId} fridge={fridge} />
-          ))}
         </div>
       )}
     </section>

@@ -185,6 +185,18 @@ describe('filterFridges and countByStatus', () => {
     expect(filterFridges(all, { branchId: null, type: null })).toHaveLength(4);
   });
 
+  it('narrows by status too, alone or with branch and type', () => {
+    const names = (list) => list.map((f) => f.fridgeName);
+    expect(names(filterFridges(all, { branchId: null, type: null, status: 'ok' }))).toEqual([
+      'Dairy',
+      'Display 2',
+    ]);
+    expect(
+      names(filterFridges(all, { branchId: branchId('Rishon LeZion'), type: null, status: 'ok' })),
+    ).toEqual(['Dairy']);
+    expect(filterFridges(all, { branchId: null, type: 'Display', status: 'alert' })).toEqual([]);
+  });
+
   it('counts every status, so the chips follow the filters', () => {
     expect(countByStatus(filterFridges(all, { branchId: null, type: 'Display' }))).toEqual({
       alert: 0,

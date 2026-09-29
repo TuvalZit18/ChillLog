@@ -197,7 +197,8 @@ The mockup follows the device setting only. The app adds a switch.
 
 ### Overview
 1. Title "Every fridge, this week" + "Readings for Mon 14 Sep to Sun 20 Sep · Last upload Mon 21 Sep, 09:12".
-2. Status count chips (Alert, Warming, Gap, No file, OK). Tapping one shows only those fridges; tapping again clears.
+2. Status count chips (Alert, Warming, Gap, No file, OK). Tapping one narrows both sections below (Needs attention and
+   the branches) to that status; tapping again clears. A chip's border takes its status color on hover.
    Under them, **Branch** and **Type of fridge** dropdowns (type = the fridge name with its number dropped, so
    Display 1 and Display 2 are "Display"). They narrow the chips' counts and both sections below; each list only
    offers what the other allows. All three filters live in the URL (`?status=&branch=&type=`).
