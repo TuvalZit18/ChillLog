@@ -32,6 +32,7 @@
   --mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
 
   --radius-control: 8px;
+  --radius-field: 12px; /* inputs and dropdowns, and their open list */
   --radius-card: 12px;
   --radius-dialog: 16px;
   --radius-pill: 999px;

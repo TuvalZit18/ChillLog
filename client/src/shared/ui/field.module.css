@@ -18,9 +18,58 @@
   min-height: 46px;
   padding: 0 12px;
   border: 1px solid var(--line);
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-field);
   background: var(--surface);
   font-size: 16px; /* 16px keeps iOS from zooming into the field */
+}
+
+/*
+ * The open dropdown list. Where the browser supports a customizable select (Chrome and Edge),
+ * the list gets the app's look: 12px corners and items that hover in the accent teal (the
+ * primary button color). Elsewhere, and on phones, the native list/picker is kept as is.
+ */
+@supports (appearance: base-select) {
+  .field select,
+  .field select::picker(select) {
+    appearance: base-select;
+  }
+
+  .field select {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .field select::picker-icon {
+    color: var(--muted);
+  }
+
+  .field select::picker(select) {
+    margin-top: 6px;
+    padding: 6px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-field);
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 10px 30px var(--shade);
+  }
+
+  .field select option {
+    min-height: 40px;
+    padding: 8px 12px;
+    border-radius: 8px;
+  }
+
+  .field select option:checked {
+    font-weight: 600;
+  }
+
+  .field select option:hover,
+  .field select option:focus-visible {
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
 }
 
 .field [aria-invalid='true'] {

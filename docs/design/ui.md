@@ -96,7 +96,7 @@ shows the old look. Contrast of strong on soft: 5.5:1 light, 7.0:1 dark.
 
 - **Page gutter:** 16px on phone, 32px on desktop. Content max width 1180px, centred.
 - **Gaps:** 24px between sections, 12px inside a section, 10px between cards, 8px between chips.
-- **Radius:** 8px controls and buttons · 12px cards · 16px dialogs (18px top corners on the bottom sheet) · 999px pills and chips.
+- **Radius:** 8px buttons · 12px inputs, dropdowns and cards · 16px dialogs (18px top corners on the bottom sheet) · 999px pills and chips.
 - **Heights:** buttons and chips 44px · inputs and selects 46px · nav items 62px (phone) / 46px (desktop) · top bar 54px.
 - Lay out groups with flex/grid and `gap`, not margins.
 
@@ -195,6 +195,9 @@ The mockup follows the device setting only. The app adds a switch.
 - **Dialog:** native `<dialog>`. On phones (≤640px) it's a bottom sheet with a grab handle and full-width
   buttons; on larger screens it's centred, max 520px. Primary action on the right.
 - **Form field:** 14px / 600 label above a 46px input; optional hint under it in 13px `--muted`.
+  Dropdowns stay native `<select>`s; where the browser supports a customizable select (Chrome, Edge),
+  the open list gets 12px corners and items hover in the accent teal. Other browsers and phones keep
+  their native list or picker.
 - **Timeline** (logger move history): vertical line with dots, newest first; the current place has a filled accent dot.
 - **Toast:** dark pill near the bottom (above the tab bar), plain sentence, disappears after ~3 s, `role="status"`.
 
