@@ -109,7 +109,7 @@ export function LoggersPage() {
               No loggers yet. Add one with the ID printed on it.
             </p>
           ) : (
-            <LoggerTable loggers={loggers.data} />
+            <LoggerTable loggers={loggers.data} branches={branches.data} />
           )
         ) : (
           <section className={styles.section} aria-labelledby="branch-list">

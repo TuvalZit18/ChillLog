@@ -129,8 +129,15 @@
 /* ---------- From 720px: the table ---------- */
 @media (min-width: 720px) {
   .phoneFilters,
-  .phoneList {
+  .phoneList,
+  .phoneEmpty {
     display: none;
+  }
+
+  /* No match: one row across the table, under the filters. */
+  .emptyCell {
+    padding-block: 20px;
+    color: var(--muted);
   }
 
   .tableWrap {
@@ -141,8 +148,11 @@
     background: var(--surface);
   }
 
+  /* Fixed layout: the widths come from the <colgroup>, not from whichever rows the filters show,
+     so the columns stay put while filtering. */
   .table {
     width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
   }
 

@@ -18,11 +18,12 @@ import {
 } from './loggerTableModel.js';
 import styles from './LoggerTable.module.css';
 
+// Fixed widths, so the columns don't jump when a filter changes which rows are shown.
 const COLUMNS = [
-  { key: 'code', label: 'Logger' },
-  { key: 'branch', label: 'Branch' },
-  { key: 'type', label: 'Type of fridge' },
-  { key: 'since', label: 'Since' },
+  { key: 'code', label: 'Logger', width: '28%' },
+  { key: 'branch', label: 'Branch', width: '26%' },
+  { key: 'type', label: 'Type of fridge', width: '26%' },
+  { key: 'since', label: 'Since', width: '20%' },
 ];
 
 const SORT_CHOICES = [
@@ -33,14 +34,14 @@ const SORT_CHOICES = [
   { value: 'since-asc', label: 'Longest in its fridge' },
 ];
 
-/** @param {{ loggers: object[] }} props GET /api/loggers */
-export function LoggerTable({ loggers }) {
+/** @param {{ loggers: object[], branches: object[] }} props GET /api/loggers and /api/branches */
+export function LoggerTable({ loggers, branches: allBranches }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const state = readTableState(searchParams);
   const all = toTableRows(loggers);
   const rows = sortRows(filterRows(all, state), state);
-  const { branches, types } = tableOptions(all);
+  const { branches, types } = tableOptions(allBranches);
   const filtered = state.q !== '' || state.branch !== null || state.type !== null;
 
   // Typing in the search box replaces the history entry, so Back doesn't step through letters.
@@ -89,6 +90,15 @@ export function LoggerTable({ loggers }) {
     </select>
   );
 
+  const noMatch = (
+    <>
+      No loggers match these filters.{' '}
+      <button type="button" className={`${button.button} ${button.link}`} onClick={clearFilters}>
+        Clear filters
+      </button>
+    </>
+  );
+
   const count = filtered
     ? `${rows.length} of ${all.length} loggers`
     : `${all.length} ${all.length === 1 ? 'logger' : 'loggers'}`;
@@ -133,16 +143,7 @@ export function LoggerTable({ loggers }) {
       </div>
 
       {rows.length === 0 ? (
-        <p className={styles.empty}>
-          No loggers match these filters.{' '}
-          <button
-            type="button"
-            className={`${button.button} ${button.link}`}
-            onClick={clearFilters}
-          >
-            Clear filters
-          </button>
-        </p>
+        <p className={`${styles.empty} ${styles.phoneEmpty}`}>{noMatch}</p>
       ) : (
         <ul className={styles.phoneList}>
           {rows.map((row) => (
@@ -163,6 +164,11 @@ export function LoggerTable({ loggers }) {
       {/* From 720px: the table, with sortable headers and the filter row under them. */}
       <div className={styles.tableWrap}>
         <table className={styles.table}>
+          <colgroup>
+            {COLUMNS.map((col) => (
+              <col key={col.key} style={{ width: col.width }} />
+            ))}
+          </colgroup>
           <thead>
             <tr>
               {COLUMNS.map((col) => {
@@ -202,6 +208,13 @@ export function LoggerTable({ loggers }) {
             </tr>
           </thead>
           <tbody>
+            {rows.length === 0 && (
+              <tr>
+                <td colSpan={COLUMNS.length} className={styles.emptyCell}>
+                  {noMatch}
+                </td>
+              </tr>
+            )}
             {rows.map((row) => (
               // The row is clickable with a mouse; the ID link is the keyboard and screen-reader way in.
               <tr

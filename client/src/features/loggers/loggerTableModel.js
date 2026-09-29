@@ -93,9 +93,14 @@ export function tableSearch(state) {
   return search ? `?${search}` : '';
 }
 
-/** The Branch and Type filters' options: each once, A–Z (spare loggers have neither). */
-export function tableOptions(rows) {
-  const unique = (values) =>
-    [...new Set(values.filter((v) => v !== null))].sort((a, b) => a.localeCompare(b));
-  return { branches: unique(rows.map((r) => r.branch)), types: unique(rows.map((r) => r.type)) };
+/**
+ * The Branch and Type filters' options, each once, A–Z. They come from the branches
+ * (GET /api/branches), not the loggers, so a new branch or fridge shows before it has a logger.
+ */
+export function tableOptions(branches) {
+  const unique = (values) => [...new Set(values)].sort((a, b) => a.localeCompare(b));
+  return {
+    branches: unique(branches.map((b) => b.name)),
+    types: unique(branches.flatMap((b) => b.fridges.map((f) => fridgeType(f.name)))),
+  };
 }

@@ -141,10 +141,22 @@ describe('readTableState and tableSearch', () => {
 });
 
 describe('tableOptions', () => {
-  it('lists each branch and each type of fridge once, A–Z, without the spare loggers', () => {
-    expect(tableOptions(toTableRows(loggers))).toEqual({
-      branches: ['Haifa', 'Tel Aviv'],
-      types: ['Dairy', 'Display', 'Walk-in'],
+  // GET /api/branches: every branch, even one with no fridges or loggers yet.
+  const branches = [
+    {
+      id: 2,
+      name: 'Tel Aviv',
+      fridges: [{ name: 'Walk-in' }, { name: 'Display 1' }, { name: 'Display 2' }],
+    },
+    { id: 1, name: 'Haifa', fridges: [{ name: 'Dairy' }] },
+    { id: 3, name: 'Yoqneam Illit', fridges: [{ name: 'Cream cakes' }] },
+    { id: 4, name: 'Ashdod', fridges: [] },
+  ];
+
+  it('lists every branch and every type of fridge once, A–Z, including ones with no logger yet', () => {
+    expect(tableOptions(branches)).toEqual({
+      branches: ['Ashdod', 'Haifa', 'Tel Aviv', 'Yoqneam Illit'],
+      types: ['Cream cakes', 'Dairy', 'Display', 'Walk-in'],
     });
   });
 });

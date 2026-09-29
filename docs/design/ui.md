@@ -247,6 +247,8 @@ own title, one-line description and main button (**Add logger** · **Add branch*
 loggers as a **table** (from 720px): Logger · Branch · Type of fridge · Since.
 Every header sorts its column (click again to reverse; the sorted one is teal), and a filter row under the
 headers has an ID search and Branch / Type dropdowns; all kept in the URL (`?q=&branch=&type=&sort=&dir=`).
+The dropdowns list every branch and type of fridge, even ones with no logger yet. Column widths are fixed,
+so they don't jump while filtering; no match shows as one row across the table.
 Each column looks different: ID bold mono with tags for non-default settings (°F, date format), branch in
 the small grey uppercase style used for branches everywhere, fridge in plain text, date muted. A row opens
 the logger and hovers in the soft teal. On phones: the same filters plus a **Sort by** dropdown above compact
