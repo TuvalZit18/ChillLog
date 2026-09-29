@@ -5,6 +5,7 @@ import { Link } from 'react-router';
 import { Icon } from '../../shared/ui/Icon.jsx';
 import { StatusPill } from '../../shared/status/StatusPill.jsx';
 import { describeStatus, STATUS_META } from '../../shared/status/status.js';
+import { glowCard } from '../../shared/ui/glowCard.js';
 import { branchSummary } from './overviewModel.js';
 import styles from './BranchList.module.css';
 
@@ -77,7 +78,8 @@ export function BranchList({ branches }) {
           return (
             <section
               key={branch.branchId}
-              className={`${styles.card} ${problem ? styles.toned : ''}`}
+              className={`${styles.card} ${glowCard(branch.worst.status).className}`}
+              // --tone for every status: the header's icon uses it too (green when all is OK).
               style={{ '--tone': meta.color }}
               aria-label={branch.branchName}
             >

@@ -1,17 +1,12 @@
+/* Layout only: border, glow and hover come from the shared glowCard design
+   (shared/ui/glowCard.*), the same as the branch cards. */
 .card {
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 14px 16px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-card);
-  background: var(--surface);
   color: var(--ink);
   text-decoration: none;
-}
-
-.card:hover {
-  border-color: var(--muted);
 }
 
 .top {

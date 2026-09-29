@@ -161,7 +161,8 @@ The mockup follows the device setting only. The app adds a switch.
 - **Chip** (filters, date ranges): 44px pill with a border. Selected = `aria-pressed="true"` and a 2px `--ink` ring.
 - **Status count chip** (Overview): status icon in its color + bold count + word, e.g. `✓ 31 OK`. Tapping filters.
 - **Fridge card:** branch as eyebrow, fridge name 17px / 600, status pill, then "Latest 7.1°C · Sun 20 Sep, 23:45" on
-  the left and a sparkline on the right. The whole card is a button.
+  the left and a sparkline on the right. The whole card is a link. Same border and hover design as the branch
+  cards: a problem glows in its status color, an OK card turns teal on hover/focus.
 - **Sparkline:** 112×36, last 7 days, `--muted` line, dashed 5°C line in `--alert`, end dot in the status color.
   Fixed scale 1–8°C so cards compare.
 - **Branch row (phone):** collapsible `<details>`: name, "3 fridges", worst status pill, chevron. Opens to one row per fridge.
