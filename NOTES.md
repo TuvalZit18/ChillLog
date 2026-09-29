@@ -84,7 +84,7 @@
 
 **Deferred on purpose**
 - **Login** (single user) before any real use.
-- **Hosting**, so Summer's phone works away from the laptop's network.
+- **Hosting**, so Summer's phone works away from the laptop's network. **And CD with it:** today there is CI only (lint, tests and build on every pull request) and no deployment, because the brief asks for an app that runs locally with no accounts or paid services. Once it's hosted, each merge to `main` would build the app, run the migrations and deploy it automatically.
 - **Automated backups** of the data folder.
 - **Importing Summer's existing Excel sheet** to seed the registry and past readings.
 - **Email ingestion**: branch managers' emails imported automatically, removing the upload step.

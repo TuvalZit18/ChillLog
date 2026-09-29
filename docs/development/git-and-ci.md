@@ -125,6 +125,13 @@ One workflow: [.github/workflows/ci.yml](../../.github/workflows/ci.yml).
 
 npm's download cache is kept between runs, so installs are quick.
 
+**There is CI, but no CD.** CI only checks: its result is a pass or fail on the pull request, and the
+build it makes is thrown away. Nothing is deployed when `main` changes, because there is nowhere to
+deploy to: the brief asks for an app that runs on a laptop with no accounts or paid services, so
+"deploying" today means `git pull` and `npm start`. Hosting is deferred on purpose
+([NOTES.md](../../NOTES.md), "Deferred on purpose"), and CD comes with it: a job after each merge to
+`main` that builds the app, runs the migrations and ships it to the host.
+
 **When CI fails:** open the failed run from the PR's "Checks", find the failing step, fix it on the
 same branch and push again. CI runs again by itself. Run the same commands locally first to save a
 round trip:
