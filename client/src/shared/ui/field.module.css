@@ -72,6 +72,22 @@
   }
 }
 
+/* A dropdown shows it can be clicked: hand cursor, and the border turns the accent teal on hover
+   (the same teal as its list items). A disabled one does neither. */
+.field select {
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.field select:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.field select:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .field [aria-invalid='true'] {
   border-color: var(--alert);
 }
