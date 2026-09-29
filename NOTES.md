@@ -5,9 +5,7 @@
 
 ## Time spent
 
-- Planning (understanding the brief, architecture, tech stack, UI mockup): ~[X] h
-- Build (backend, then the five screens): ~[X] h
-- Docs & final checks: ~[X] h
+- About **2 days** in total: planning (the brief, architecture, tech stack, UI mockup), the build (backend, then the five screens), and the docs and final checks.
 
 ## Decisions Summer didn't ask for, and why
 
