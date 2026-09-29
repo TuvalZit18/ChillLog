@@ -30,10 +30,13 @@ const PATHS = {
       <path d="M9 14l2 2 4-4.5" />
     </>
   ),
-  navLoggers: (
+  // Sliders: setting things up (loggers, branches and fridges), not the app's thermometer logo.
+  navSetup: (
     <>
-      <path d="M14 14.8V4.5a2 2 0 1 0-4 0v10.3a4 4 0 1 0 4 0z" />
-      <path d="M12 9v7" />
+      <path d="M4 7h9M17 7h3" />
+      <circle cx="15" cy="7" r="2" />
+      <path d="M4 17h3M11 17h9" />
+      <circle cx="9" cy="17" r="2" />
     </>
   ),
   check: <path d="M5 12.5l4.5 4.5L19 7.5" />,
@@ -84,6 +87,9 @@ const PATHS = {
   ),
   chevDown: <path d="M6 9l6 6 6-6" />,
   chevRight: <path d="M9 5l7 7-7 7" />,
+  sortBoth: <path d="M8 9.5l4-4 4 4M8 14.5l4 4 4-4" />,
+  sortAsc: <path d="M8 14l4-4 4 4" />,
+  sortDesc: <path d="M8 10l4 4 4-4" />,
   plus: <path d="M12 5v14M5 12h14" />,
   back: <path d="M15 5l-7 7 7 7" />,
   info: (

@@ -38,7 +38,7 @@
 - **Files waiting for Summer stay listed** on the Upload screen (no logger ID, or held back) until she handles them, with no re-upload.
 - **Moves and settings are checked before sending**, so errors use Israel dates ("Pick a date after 23 Sep…") instead of a UTC timestamp.
 - **Branch cards reviewed against the [Laws of UX](https://lawsofux.com/)**: OK fridges are one quiet line, problems keep filled badges, each branch says its state in words ("1 alert, 1 gap · 3 fridges"), and a branch with a problem glows in its worst status's color.
-- **A Loggers screen** (add logger / fridge / branch, move a logger, file settings). The first plan had no branch for it, but without it the registry could only be changed through the API.
+- **A Setup screen** (add logger / fridge / branch, move a logger, file settings). The first plan had no branch for it, but without it the registry could only be changed through the API. It has two tabs, Loggers and Branches and fridges, rather than a fifth nav item: both are setup Summer does a few times a year, and a fifth tab would squeeze the phone's bottom bar.
 
 **Scope**
 - **No login** in this version: it runs locally for one user. It's the first thing to add before real use.

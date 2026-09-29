@@ -1,0 +1,214 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.empty {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+/* Each column looks different, so a row reads at a glance: the ID bold in mono (with its
+   unusual-settings tags), branch and fridge in plain text, the date quiet. */
+.codeCell {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.code {
+  font-family: var(--mono);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* Branch names look the same as on the overview (small, grey, uppercase, letter-spaced), so a
+   branch never reads like a fridge anywhere in the app. */
+.branch {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.since {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.none {
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* ---------- Phones: filters above compact rows ---------- */
+.phoneFilters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.phoneSearch {
+  grid-column: 1 / -1;
+}
+
+.phoneList {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  list-style: none;
+}
+
+.phoneList > li + li {
+  border-top: 1px solid var(--line);
+}
+
+.phoneRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 10px 16px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.phoneRow:hover {
+  background: var(--accent-soft);
+}
+
+.phoneMain {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.place {
+  font-size: 14px;
+}
+
+.chevron {
+  flex: none;
+  color: var(--muted);
+}
+
+.tableWrap {
+  display: none;
+}
+
+/* ---------- From 720px: the table ---------- */
+@media (min-width: 720px) {
+  .phoneFilters,
+  .phoneList {
+    display: none;
+  }
+
+  .tableWrap {
+    display: block;
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    background: var(--surface);
+  }
+
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .table th,
+  .table td {
+    padding: 10px 16px;
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  .table thead {
+    background: var(--bg);
+  }
+
+  /* Headers: small uppercase labels that sort the column when clicked. */
+  .sortButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 36px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .sortButton:hover,
+  .sorted {
+    color: var(--accent);
+  }
+
+  /* The filter row under the headers: compact versions of the app's fields. */
+  .filterRow td {
+    padding-top: 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .filterRow :is(input, select) {
+    min-height: 38px;
+    font-size: 14px;
+  }
+
+  .bodyRow td {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .bodyRow:last-child td {
+    border-bottom: 0;
+  }
+
+  /* The whole row opens the logger; it hovers in the accent's soft teal. */
+  .bodyRow {
+    cursor: pointer;
+  }
+
+  .bodyRow:hover {
+    background: var(--accent-soft);
+  }
+
+  .codeLink {
+    text-decoration: none;
+  }
+}

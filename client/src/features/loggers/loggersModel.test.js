@@ -6,50 +6,11 @@ import {
   checkMove,
   DATE_FORMAT_LABELS,
   historyItems,
-  loggerRow,
+  readTab,
   retriedNote,
-  sortByCode,
+  tabSearch,
   UNIT_LABELS,
 } from './loggersModel.js';
-
-const logger = (overrides) => ({
-  id: 1,
-  code: 'TL-0417',
-  unit: 'C',
-  dateFormat: 'DD/MM',
-  current: {
-    fridgeId: 3,
-    fridgeName: 'Display 2',
-    branchName: 'Tel Aviv',
-    fromUtc: '2026-09-16T21:00:00Z',
-  },
-  ...overrides,
-});
-
-describe('loggerRow', () => {
-  it('"We moved one of the Tel Aviv loggers into the new display fridge last week": shows where it is now, and since when', () => {
-    expect(loggerRow(logger())).toEqual({
-      where: 'Tel Aviv · Display 2',
-      since: 'since 17 Sep',
-      tags: [],
-    });
-  });
-
-  it('"The old logger in Haifa shows the numbers differently": tags a logger whose files are °F or month-first', () => {
-    expect(loggerRow(logger({ unit: 'F', dateFormat: 'MM/DD' })).tags).toEqual([
-      '°F',
-      'Dates MM/DD',
-    ]);
-  });
-
-  it('calls a logger that is in no fridge a spare', () => {
-    expect(loggerRow(logger({ current: null }))).toEqual({
-      where: 'Not in a fridge',
-      since: 'Spare logger',
-      tags: [],
-    });
-  });
-});
 
 // TL-0417's detail as GET /api/loggers/1 returns it: history newest first.
 const moved = {
@@ -128,10 +89,17 @@ describe('UNIT_LABELS and DATE_FORMAT_LABELS', () => {
   });
 });
 
-describe('sortByCode', () => {
-  it('lists loggers by the ID printed on them', () => {
-    const sorted = sortByCode([logger({ code: 'TL-0512' }), logger({ code: 'TL-0231' })]);
-    expect(sorted.map((l) => l.code)).toEqual(['TL-0231', 'TL-0512']);
+describe('readTab and tabSearch', () => {
+  it('opens on the loggers, and on branches and fridges only when the URL says so', () => {
+    expect(readTab(new URLSearchParams(''))).toBe('loggers');
+    expect(readTab(new URLSearchParams('tab=branches'))).toBe('branches');
+    expect(readTab(new URLSearchParams('tab=nonsense'))).toBe('loggers');
+  });
+
+  it("keeps the loggers table's filters when switching tabs", () => {
+    const params = new URLSearchParams('q=TL&branch=Haifa');
+    expect(tabSearch(params, 'branches')).toBe('q=TL&branch=Haifa&tab=branches');
+    expect(tabSearch(new URLSearchParams('q=TL&tab=branches'), 'loggers')).toBe('q=TL');
   });
 });
 

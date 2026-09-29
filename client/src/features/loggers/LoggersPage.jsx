@@ -1,15 +1,16 @@
-// Loggers (docs/design/ui.md, "Screens > Loggers"): which logger sits in which fridge, set once
-// so uploads use it from then on; plus the branches and fridges they go in.
+// Setup (docs/design/ui.md, "Screens > Setup"): two tabs. Loggers: which logger sits in which
+// fridge, set once so uploads use it from then on. Branches and fridges: where they go.
 
 import { lazy, Suspense, useState } from 'react';
-import { Link } from 'react-router';
+import { useSearchParams } from 'react-router';
 import button from '../../shared/ui/button.module.css';
 import { Icon } from '../../shared/ui/Icon.jsx';
 import { Skeleton } from '../../shared/ui/Skeleton.jsx';
 import { StateBox } from '../../shared/ui/StateBox.jsx';
 import { Toast, useToast } from '../../shared/ui/Toast.jsx';
 import { useGetBranchesQuery, useGetLoggersQuery } from './loggersApi.js';
-import { loggerRow, retriedNote, sortByCode } from './loggersModel.js';
+import { LoggerTable } from './LoggerTable.jsx';
+import { readTab, retriedNote, tabSearch } from './loggersModel.js';
 import styles from './LoggersPage.module.css';
 
 // The forms bring react-hook-form and Zod; load them only when one opens.
@@ -18,9 +19,25 @@ const AddLoggerDialog = lazy(() => forms().then((m) => ({ default: m.AddLoggerDi
 const AddFridgeDialog = lazy(() => forms().then((m) => ({ default: m.AddFridgeDialog })));
 const AddBranchDialog = lazy(() => forms().then((m) => ({ default: m.AddBranchDialog })));
 
+// Each tab's own title, description and main button.
+const HEADS = {
+  loggers: {
+    title: 'Loggers',
+    about: 'Which logger sits in which fridge. Set it once; uploads use it from then on.',
+    action: 'Add logger',
+  },
+  branches: {
+    title: 'Branches and fridges',
+    about: 'Every branch and the fridges in it. Add a fridge here before you put a logger in it.',
+    action: 'Add branch',
+  },
+};
+
 export function LoggersPage() {
   const loggers = useGetLoggersQuery();
   const branches = useGetBranchesQuery();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = readTab(searchParams);
   /** Which dialog is open: { kind: 'logger' } · { kind: 'branch' } · { kind: 'fridge', branch } */
   const [dialog, setDialog] = useState(null);
   const [toast, showToast] = useToast();
@@ -29,7 +46,7 @@ export function LoggersPage() {
   if (loggers.isError || branches.isError) {
     return (
       <div className={styles.page}>
-        <Head />
+        <Head tab={tab} />
         <StateBox
           icon="wifiOff"
           tone="muted"
@@ -55,92 +72,75 @@ export function LoggersPage() {
   if (!loggers.data || !branches.data) {
     return (
       <div className={styles.page} role="status">
-        <span className="visually-hidden">Loading the loggers…</span>
-        <Head />
+        <span className="visually-hidden">Loading…</span>
+        <Head tab={tab} />
         <Skeleton height={320} />
       </div>
     );
   }
 
-  const list = sortByCode(loggers.data);
+  const tabs = [
+    { key: 'loggers', label: 'Loggers', count: loggers.data.length },
+    { key: 'branches', label: 'Branches and fridges', count: branches.data.length },
+  ];
 
   return (
     <div className={styles.page}>
-      <Head onAdd={() => setDialog({ kind: 'logger' })} />
+      {/* The tabs come first, so choosing one changes everything under it: title and all. */}
+      <Tabs
+        tabs={tabs}
+        current={tab}
+        onChange={(next) => setSearchParams(tabSearch(searchParams, next))}
+      />
 
-      <section className={styles.section} aria-labelledby="logger-list">
-        <h2 id="logger-list">
-          {list.length} {list.length === 1 ? 'logger' : 'loggers'}
-        </h2>
-        {list.length === 0 ? (
-          <p className={`${styles.card} ${styles.pad} muted`}>
-            No loggers yet. Add one with the ID printed on it.
-          </p>
+      <div
+        role="tabpanel"
+        id={`panel-${tab}`}
+        aria-labelledby={`tab-${tab}`}
+        className={styles.page}
+      >
+        <Head
+          tab={tab}
+          onAdd={() => setDialog({ kind: tab === 'loggers' ? 'logger' : 'branch' })}
+        />
+        {tab === 'loggers' ? (
+          loggers.data.length === 0 ? (
+            <p className={`${styles.card} ${styles.pad} muted`}>
+              No loggers yet. Add one with the ID printed on it.
+            </p>
+          ) : (
+            <LoggerTable loggers={loggers.data} />
+          )
         ) : (
-          <ul className={styles.card}>
-            {list.map((logger) => {
-              const row = loggerRow(logger);
-              return (
-                <li key={logger.id}>
-                  <Link to={`/loggers/${logger.id}`} className={styles.row}>
-                    <span className={styles.code}>{logger.code}</span>
-                    <span className={styles.where}>
-                      <span className={logger.current ? undefined : 'muted'}>{row.where}</span>
-                      <span className={`${styles.sub} num`}>{row.since}</span>
+          <section className={styles.section} aria-labelledby="branch-list">
+            <h2 id="branch-list">
+              {branches.data.length} {branches.data.length === 1 ? 'branch' : 'branches'}
+            </h2>
+            <ul className={styles.card}>
+              {branches.data.map((branch) => (
+                <li key={branch.id} className={styles.branch}>
+                  <span className={styles.where}>
+                    <span className={styles.branchName}>{branch.name}</span>
+                    <span className={styles.sub}>
+                      {branch.fridges.length
+                        ? branch.fridges.map((f) => f.name).join(', ')
+                        : 'No fridges yet'}
                     </span>
-                    {row.tags.length > 0 && (
-                      <span className={styles.tags}>
-                        {row.tags.map((tag) => (
-                          <span key={tag} className={styles.tag}>
-                            {tag}
-                          </span>
-                        ))}
-                      </span>
-                    )}
-                    <Icon name="chevRight" className={styles.chevron} />
-                  </Link>
+                  </span>
+                  <button
+                    type="button"
+                    className={button.button}
+                    onClick={() => setDialog({ kind: 'fridge', branch })}
+                  >
+                    <Icon name="plus" size={16} />
+                    Add fridge<span className="visually-hidden"> in {branch.name}</span>
+                  </button>
                 </li>
-              );
-            })}
-          </ul>
+              ))}
+            </ul>
+          </section>
         )}
-      </section>
-
-      <section className={styles.section} aria-labelledby="branch-list">
-        <div className={styles.sectionHead}>
-          <h2 id="branch-list">Branches and fridges</h2>
-          <button
-            type="button"
-            className={`${button.button} ${button.link}`}
-            onClick={() => setDialog({ kind: 'branch' })}
-          >
-            <Icon name="plus" size={16} />
-            Add branch
-          </button>
-        </div>
-        <ul className={styles.card}>
-          {branches.data.map((branch) => (
-            <li key={branch.id} className={styles.branch}>
-              <span className={styles.where}>
-                <span className={styles.branchName}>{branch.name}</span>
-                <span className={styles.sub}>
-                  {branch.fridges.length
-                    ? branch.fridges.map((f) => f.name).join(', ')
-                    : 'No fridges yet'}
-                </span>
-              </span>
-              <button
-                type="button"
-                className={button.button}
-                onClick={() => setDialog({ kind: 'fridge', branch })}
-              >
-                <Icon name="plus" size={16} />
-                Add fridge<span className="visually-hidden"> in {branch.name}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </section>
+      </div>
 
       <Suspense fallback={null}>
         {dialog?.kind === 'logger' && (
@@ -181,21 +181,54 @@ export function LoggersPage() {
   );
 }
 
-function Head({ onAdd }) {
+function Head({ tab, onAdd }) {
+  const { title, about, action } = HEADS[tab];
   return (
     <div className={styles.head}>
       <div className={styles.titles}>
-        <h1>Loggers</h1>
-        <p className="small muted">
-          Which logger sits in which fridge. Set it once; uploads use it from then on.
-        </p>
+        <h1>{title}</h1>
+        <p className="small muted">{about}</p>
       </div>
       {onAdd && (
         <button type="button" className={`${button.button} ${button.primary}`} onClick={onAdd}>
           <Icon name="plus" />
-          Add logger
+          {action}
         </button>
       )}
+    </div>
+  );
+}
+
+/** Two tabs with counts. Arrow keys move between them, as screen-reader users expect of tabs. */
+function Tabs({ tabs, current, onChange }) {
+  const onKeyDown = (e) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    const i = tabs.findIndex((t) => t.key === current);
+    const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length];
+    onChange(next.key);
+    document.getElementById(`tab-${next.key}`)?.focus();
+  };
+  return (
+    <div role="tablist" aria-label="Show" className={styles.tabs} onKeyDown={onKeyDown}>
+      {tabs.map((t) => {
+        const selected = t.key === current;
+        return (
+          <button
+            key={t.key}
+            id={`tab-${t.key}`}
+            type="button"
+            role="tab"
+            aria-selected={selected}
+            aria-controls={`panel-${t.key}`}
+            tabIndex={selected ? 0 : -1}
+            className={styles.tab}
+            onClick={() => onChange(t.key)}
+          >
+            {t.label}
+            <span className={styles.tabCount}>{t.count}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }

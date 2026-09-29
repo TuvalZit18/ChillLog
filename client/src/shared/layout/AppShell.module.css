@@ -34,7 +34,11 @@
   color: var(--accent);
 }
 
+/* position: relative makes the main area the containing block for anything absolutely
+   positioned inside it (e.g. .visually-hidden screen-reader text). Without it those elements are
+   placed against the page itself, stretch it and add a second, page-level scrollbar. */
 .main {
+  position: relative;
   grid-area: main;
   min-height: 0;
   overflow: auto;

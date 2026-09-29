@@ -56,25 +56,21 @@ export function checkMove({ fridgeId, from }, logger) {
   return null;
 }
 
-/** Loggers by the ID printed on them. */
-export function sortByCode(loggers) {
-  return [...loggers].sort((a, b) => a.code.localeCompare(b.code));
+/**
+ * The Loggers page has two tabs, kept in the URL: the loggers (the default, no `tab`) and
+ * branches and fridges (`?tab=branches`).
+ * @returns {'loggers' | 'branches'}
+ */
+export function readTab(params) {
+  return params.get('tab') === 'branches' ? 'branches' : 'loggers';
 }
 
-/**
- * One row of the logger list: where it is, since when, and tags for files written in a
- * non-default way (°F, month-first dates), so an odd logger stands out.
- */
-export function loggerRow(logger) {
-  const tags = [logger.unit === 'F' && '°F', logger.dateFormat === 'MM/DD' && 'Dates MM/DD'].filter(
-    Boolean,
-  );
-  if (!logger.current) return { where: 'Not in a fridge', since: 'Spare logger', tags };
-  return {
-    where: place(logger.current),
-    since: `since ${formatDate(logger.current.fromUtc)}`,
-    tags,
-  };
+/** The search string for another tab, keeping the loggers table's filters and sort. */
+export function tabSearch(params, tab) {
+  const next = new URLSearchParams(params);
+  if (tab === 'branches') next.set('tab', 'branches');
+  else next.delete('tab');
+  return next.toString();
 }
 
 /**
