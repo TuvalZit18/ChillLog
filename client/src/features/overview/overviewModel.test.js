@@ -3,8 +3,15 @@
 
 import { describe, expect, it } from 'vitest';
 import {
+  branchOptions,
   branchSummary,
+  countByStatus,
+  filterFridges,
+  fridgeType,
   groupBranches,
+  placeFilterOptions,
+  readPlaceFilter,
+  typeOptions,
   needsAttention,
   readStatusFilter,
   sortWorstFirst,
@@ -103,21 +110,139 @@ describe('branchSummary', () => {
     fridges: statuses.map((status, i) => fridge('Haifa', `Fridge ${i}`, status)),
   });
 
-  it('says in words what is wrong in a branch, worst first, and how many fridges it has', () => {
-    expect(branchSummary(branch('gap', 'ok'))).toBe('1 gap · 2 fridges');
-    expect(branchSummary(branch('ok', 'gap', 'alert'))).toBe('1 alert, 1 gap · 3 fridges');
+  // The fridge count sits in the card's corner, so the summary is only the branch's state and
+  // fits on one line.
+  it('says in words what is wrong in a branch, worst first', () => {
+    expect(branchSummary(branch('gap', 'ok'))).toBe('1 gap');
+    expect(branchSummary(branch('ok', 'gap', 'alert'))).toBe('1 alert, 1 gap');
     expect(branchSummary(branch('gap', 'gap', 'warming', 'no_file'))).toBe(
-      '1 warming, 2 gaps, 1 without a file · 4 fridges',
+      '1 warming, 2 gaps, 1 without a file',
     );
   });
 
   it('says "No file this week" when the whole branch sent nothing', () => {
-    expect(branchSummary(branch('no_file', 'no_file'))).toBe('No file this week · 2 fridges');
+    expect(branchSummary(branch('no_file', 'no_file'))).toBe('No file this week');
   });
 
   it('says "All OK" when nothing is wrong', () => {
-    expect(branchSummary(branch('ok', 'ok'))).toBe('All OK · 2 fridges');
-    expect(branchSummary(branch('ok'))).toBe('All OK · 1 fridge');
+    expect(branchSummary(branch('ok', 'ok'))).toBe('All OK');
+  });
+});
+
+describe('fridgeType', () => {
+  it('groups numbered fridges: "Display 1" and "Display 2" are both "Display"', () => {
+    expect(fridgeType('Display 1')).toBe('Display');
+    expect(fridgeType('Display 12')).toBe('Display');
+  });
+
+  it('keeps every other name as its own type', () => {
+    expect(fridgeType('Walk-in')).toBe('Walk-in');
+    expect(fridgeType('Cream cakes')).toBe('Cream cakes');
+    expect(fridgeType('  Dairy ')).toBe('Dairy');
+  });
+});
+
+describe('filter options', () => {
+  const all = [
+    fridge('Tel Aviv', 'Display 2', 'ok'),
+    fridge('Haifa', 'Dairy', 'ok'),
+    fridge('Tel Aviv', 'Display 1', 'ok'),
+    fridge('Ashdod', 'Walk-in', 'gap'),
+  ];
+
+  it('lists each type once, A–Z', () => {
+    expect(typeOptions(all)).toEqual(['Dairy', 'Display', 'Walk-in']);
+  });
+
+  it('lists each branch once, A–Z', () => {
+    expect(branchOptions(all).map((b) => b.name)).toEqual(['Ashdod', 'Haifa', 'Tel Aviv']);
+    expect(branchOptions(all)[2]).toEqual({ id: branchId('Tel Aviv'), name: 'Tel Aviv' });
+  });
+});
+
+describe('filterFridges and countByStatus', () => {
+  const all = [
+    fridge('Rishon LeZion', 'Cream cakes', 'alert'),
+    fridge('Rishon LeZion', 'Dairy', 'ok'),
+    fridge('Petah Tikva', 'Display 1', 'warming'),
+    fridge('Tel Aviv', 'Display 2', 'ok'),
+  ];
+
+  it('narrows to one branch, one type, or both', () => {
+    const names = (list) => list.map((f) => f.fridgeName);
+    expect(names(filterFridges(all, { branchId: branchId('Rishon LeZion'), type: null }))).toEqual([
+      'Cream cakes',
+      'Dairy',
+    ]);
+    expect(names(filterFridges(all, { branchId: null, type: 'Display' }))).toEqual([
+      'Display 1',
+      'Display 2',
+    ]);
+    expect(
+      filterFridges(all, { branchId: branchId('Petah Tikva'), type: 'Display' }).map(
+        (f) => f.fridgeName,
+      ),
+    ).toEqual(['Display 1']);
+    expect(filterFridges(all, { branchId: null, type: null })).toHaveLength(4);
+  });
+
+  it('narrows by status too, alone or with branch and type', () => {
+    const names = (list) => list.map((f) => f.fridgeName);
+    expect(names(filterFridges(all, { branchId: null, type: null, status: 'ok' }))).toEqual([
+      'Dairy',
+      'Display 2',
+    ]);
+    expect(
+      names(filterFridges(all, { branchId: branchId('Rishon LeZion'), type: null, status: 'ok' })),
+    ).toEqual(['Dairy']);
+    expect(filterFridges(all, { branchId: null, type: 'Display', status: 'alert' })).toEqual([]);
+  });
+
+  it('counts every status, so the chips follow the filters', () => {
+    expect(countByStatus(filterFridges(all, { branchId: null, type: 'Display' }))).toEqual({
+      alert: 0,
+      warming: 1,
+      gap: 0,
+      no_file: 0,
+      ok: 1,
+    });
+  });
+});
+
+describe('placeFilterOptions', () => {
+  const all = [
+    fridge('Beersheba', 'Dairy', 'no_file'),
+    fridge('Beersheba', 'Walk-in', 'no_file'),
+    fridge('Tel Aviv', 'Display 1', 'ok'),
+    fridge('Tel Aviv', 'Walk-in', 'ok'),
+  ];
+
+  it('only offers what the other filter allows, so no choice leads to nothing', () => {
+    const forBeersheba = placeFilterOptions(all, { branchId: branchId('Beersheba'), type: null });
+    expect(forBeersheba.types).toEqual(['Dairy', 'Walk-in']);
+    const forDisplays = placeFilterOptions(all, { branchId: null, type: 'Display' });
+    expect(forDisplays.branches.map((b) => b.name)).toEqual(['Tel Aviv']);
+  });
+
+  it('always keeps the chosen values, even an impossible pair from a bookmarked URL', () => {
+    const options = placeFilterOptions(all, { branchId: branchId('Beersheba'), type: 'Display' });
+    // Tel Aviv has displays; Beersheba doesn't, but stays because it's the one chosen.
+    expect(options.branches.map((b) => b.name)).toEqual(['Beersheba', 'Tel Aviv']);
+    expect(options.types).toEqual(['Dairy', 'Display', 'Walk-in']);
+  });
+});
+
+describe('readPlaceFilter', () => {
+  it('reads ?branch= and ?type= from the URL', () => {
+    expect(readPlaceFilter(new URLSearchParams('branch=4&type=Display'))).toEqual({
+      branchId: 4,
+      type: 'Display',
+    });
+    expect(readPlaceFilter(new URLSearchParams(''))).toEqual({ branchId: null, type: null });
+  });
+
+  it('ignores a branch that is not a number', () => {
+    expect(readPlaceFilter(new URLSearchParams('branch=abc')).branchId).toBeNull();
   });
 });
 

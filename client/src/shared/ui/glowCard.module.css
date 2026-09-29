@@ -1,0 +1,69 @@
+/*
+ * Card border and hover design, shared by the overview's fridge cards and branch cards
+ * (use it through glowCard(status) in glowCard.js).
+ *
+ * - toned: something is wrong. The card glows in its status color (--tone, set on the card): a
+ *   gradient border that fades along the edge, and a soft halo around the card (adapted from
+ *   CodeFronts' "Neon / Dark Mode Glow Card", MIT). The halo is an outer box-shadow, so it never
+ *   tints the card face under the text. Fainter in light mode (--glow), stronger on hover/focus.
+ * - calm: all OK. A plain border that answers hover and keyboard focus in the app's accent (the
+ *   teal of the active sidebar item), so only problems glow at rest.
+ */
+.card {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  transition:
+    border-color 0.3s,
+    box-shadow 0.3s;
+}
+
+.calm:hover,
+.calm:focus-within,
+.calm:focus-visible {
+  border-color: var(--accent);
+  box-shadow: 0 0 26px -4px color-mix(in oklab, var(--accent) calc(var(--glow) * 180%), transparent);
+}
+
+.toned {
+  --tone-fade: color-mix(in oklab, var(--tone) 30%, var(--line));
+  border-color: var(--tone);
+  box-shadow: 0 0 22px -4px color-mix(in oklab, var(--tone) calc(var(--glow) * 100%), transparent);
+}
+
+.toned:hover,
+.toned:focus-within,
+.toned:focus-visible {
+  box-shadow: 0 0 30px -2px color-mix(in oklab, var(--tone) calc(var(--glow) * 180%), transparent);
+}
+
+/* The gradient border: a gradient layer masked down to a 1.5px ring. Browsers without mask
+   compositing keep the plain border in the status color set above. */
+@supports (mask-composite: exclude) or (-webkit-mask-composite: xor) {
+  .toned {
+    border-color: transparent;
+  }
+
+  /* Above the card's content (z-index 1), so row dividers and hover backgrounds end under the
+     ring instead of cutting through it; pointer-events: none keeps everything clickable. */
+  .toned::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    z-index: 1;
+    padding: 1.5px;
+    border-radius: inherit;
+    background: linear-gradient(140deg, var(--tone), var(--tone-fade));
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+}

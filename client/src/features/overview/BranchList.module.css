@@ -33,8 +33,32 @@
   min-width: 0;
 }
 
-.name {
+/* Branch names look like the Needs attention eyebrow everywhere on the overview: small, grey,
+   uppercase and letter-spaced. Fridge names are larger and in full-strength ink, so a branch
+   never reads like a fridge (by size, color and case). */
+.name,
+.cardName {
+  font-size: 13px;
   font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* The branch name with the fridge count in the right corner, on one line. */
+.nameLine {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin-top: 4px;
 }
 
 .count {
@@ -97,97 +121,29 @@
     gap: 16px;
   }
 
-  /* No overflow: hidden, so a problem card's glow can show around it; the last row rounds its
-     own bottom corners instead, so its hover background stays inside the card. */
-  .card {
-    position: relative;
-    isolation: isolate;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-card);
-    background: var(--surface);
-  }
-
+  /* Border, glow and hover come from the shared glowCard design (shared/ui/glowCard.*). No
+     overflow: hidden, so the glow can show around the card; the last row rounds its own bottom
+     corners instead, so its hover background stays inside the card. */
   .card > :last-child {
     border-radius: 0 0 calc(var(--radius-card) - 1px) calc(var(--radius-card) - 1px);
   }
 
-  /* An all-OK card answers hover and keyboard focus in the app's accent (the teal of the active
-     sidebar item): accent border and a soft accent glow. Problem cards keep their status color
-     and just glow stronger (below). */
-  .card:not(.toned) {
-    transition:
-      border-color 0.3s,
-      box-shadow 0.3s;
-  }
-
-  .card:not(.toned):hover,
-  .card:not(.toned):focus-within {
-    border-color: var(--accent);
-    box-shadow: 0 0 26px -4px
-      color-mix(in oklab, var(--accent) calc(var(--glow) * 180%), transparent);
-  }
-
-  /*
-   * A branch with a problem glows in its worst status's color (--tone, set on the card):
-   * a gradient border that fades along the edge, and a soft halo of the same color around
-   * the card (adapted from CodeFronts' "Neon / Dark Mode Glow Card", MIT). The halo is an
-   * outer box-shadow, so it never tints the card face under the text. Fainter in light mode
-   * (--glow), stronger on hover or keyboard focus. All-OK cards stay plain, so only problems
-   * draw the eye.
-   */
-  .toned {
-    --tone-fade: color-mix(in oklab, var(--tone) 30%, var(--line));
-    border-color: var(--tone);
-    box-shadow: 0 0 22px -4px color-mix(in oklab, var(--tone) calc(var(--glow) * 100%), transparent);
-    transition: box-shadow 0.3s;
-  }
-
-  .toned:hover,
-  .toned:focus-within {
-    box-shadow: 0 0 30px -2px color-mix(in oklab, var(--tone) calc(var(--glow) * 180%), transparent);
-  }
-
-  /* The gradient border: a gradient layer masked down to a 1.5px ring. Browsers without mask
-     compositing keep the plain border in the status color set above. */
-  @supports (mask-composite: exclude) or (-webkit-mask-composite: xor) {
-    .toned {
-      border-color: transparent;
-    }
-
-    /* Above the rows (z-index 1), so the dividers and hover backgrounds end under the ring
-       instead of cutting through it; pointer-events: none keeps the rows clickable. */
-    .toned::after {
-      content: '';
-      position: absolute;
-      inset: -1px;
-      z-index: 1;
-      padding: 1.5px;
-      border-radius: inherit;
-      background: linear-gradient(140deg, var(--tone), var(--tone-fade));
-      -webkit-mask:
-        linear-gradient(#000 0 0) content-box,
-        linear-gradient(#000 0 0);
-      -webkit-mask-composite: xor;
-      mask:
-        linear-gradient(#000 0 0) content-box,
-        linear-gradient(#000 0 0);
-      mask-composite: exclude;
-      pointer-events: none;
-    }
-  }
-
   /* Header: the branch name, then what's wrong in words ("1 gap · 2 fridges") with the worst
      status's icon; in the status color when something is wrong, quiet when all is OK. */
+  /* The header is a shaded band, so it reads as the card's title and not as its first row
+     (Law of Common Region): tinted with the status color when something is wrong, neutral when
+     all is OK (a green tint would make OK cards compete with the problems). */
   .cardHead {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    padding: 14px 16px 10px;
+    gap: 6px;
+    padding: 14px 16px 12px;
+    border-radius: calc(var(--radius-card) - 1px) calc(var(--radius-card) - 1px) 0 0;
+    background: color-mix(in oklab, var(--ink) 4%, var(--surface));
   }
 
-  .cardName {
-    font-size: 16px;
-    font-weight: 700;
+  .headProblem {
+    background: color-mix(in oklab, var(--tone) 10%, var(--surface));
   }
 
   .cardSummary {

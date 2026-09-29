@@ -96,7 +96,7 @@ shows the old look. Contrast of strong on soft: 5.5:1 light, 7.0:1 dark.
 
 - **Page gutter:** 16px on phone, 32px on desktop. Content max width 1180px, centred.
 - **Gaps:** 24px between sections, 12px inside a section, 10px between cards, 8px between chips.
-- **Radius:** 8px controls and buttons · 12px cards · 16px dialogs (18px top corners on the bottom sheet) · 999px pills and chips.
+- **Radius:** 8px buttons · 12px inputs, dropdowns and cards · 16px dialogs (18px top corners on the bottom sheet) · 999px pills and chips.
 - **Heights:** buttons and chips 44px · inputs and selects 46px · nav items 62px (phone) / 46px (desktop) · top bar 54px.
 - Lay out groups with flex/grid and `gap`, not margins.
 
@@ -161,12 +161,18 @@ The mockup follows the device setting only. The app adds a switch.
 - **Chip** (filters, date ranges): 44px pill with a border. Selected = `aria-pressed="true"` and a 2px `--ink` ring.
 - **Status count chip** (Overview): status icon in its color + bold count + word, e.g. `✓ 31 OK`. Tapping filters.
 - **Fridge card:** branch as eyebrow, fridge name 17px / 600, status pill, then "Latest 7.1°C · Sun 20 Sep, 23:45" on
-  the left and a sparkline on the right. The whole card is a button.
+  the left and a sparkline on the right. The whole card is a link. Same border and hover design as the branch
+  cards: a problem glows in its status color, an OK card turns teal on hover/focus.
 - **Sparkline:** 112×36, last 7 days, `--muted` line, dashed 5°C line in `--alert`, end dot in the status color.
   Fixed scale 1–8°C so cards compare.
-- **Branch row (phone):** collapsible `<details>`: name, "3 fridges", worst status pill, chevron. Opens to one row per fridge.
-- **Branch card (desktop):** name, then the branch's state in words next to its worst status's icon
-  ("1 alert, 1 gap · 3 fridges", "All OK · 2 fridges"). OK fridges are one quiet line (icon, word and
+- **Branch row (phone):** collapsible `<details>`: the branch name with "3 fridges" on the right, then the worst
+  status pill (compact wording) on its own line, and a chevron. Opens to one row per fridge.
+- **Branch names look like the Needs attention eyebrow everywhere on the overview:** 13px, grey, uppercase and
+  letter-spaced. Fridge names are larger and in full-strength ink, so a branch never reads like a fridge.
+- **Branch card (desktop):** a shaded header band (tinted with the worst status's color, neutral when all
+  is OK): the branch name with the fridge count in the right corner, then the branch's state in words
+  next to its worst status's icon, left-aligned on its own line ("1 alert, 1 gap", "No file this week",
+  "All OK"). OK fridges are one quiet line (icon, word and
   value, no filled pill); a problem fridge gets its filled pill on its own line. All cards are the
   same size. A branch with a problem glows in its worst status's color: a gradient border and a soft
   outer halo (fainter in light mode, stronger on hover/focus); all-OK cards stay plain, and on
@@ -189,6 +195,9 @@ The mockup follows the device setting only. The app adds a switch.
 - **Dialog:** native `<dialog>`. On phones (≤640px) it's a bottom sheet with a grab handle and full-width
   buttons; on larger screens it's centred, max 520px. Primary action on the right.
 - **Form field:** 14px / 600 label above a 46px input; optional hint under it in 13px `--muted`.
+  Dropdowns stay native `<select>`s; where the browser supports a customizable select (Chrome, Edge),
+  the open list gets 12px corners and items hover in the accent teal. Other browsers and phones keep
+  their native list or picker.
 - **Timeline** (logger move history): vertical line with dots, newest first; the current place has a filled accent dot.
 - **Toast:** dark pill near the bottom (above the tab bar), plain sentence, disappears after ~3 s, `role="status"`.
 
@@ -196,7 +205,11 @@ The mockup follows the device setting only. The app adds a switch.
 
 ### Overview
 1. Title "Every fridge, this week" + "Readings for Mon 14 Sep to Sun 20 Sep · Last upload Mon 21 Sep, 09:12".
-2. Status count chips (Alert, Warming, Gap, No file, OK). Tapping one shows only those fridges; tapping again clears.
+2. Status count chips (Alert, Warming, Gap, No file, OK). Tapping one narrows both sections below (Needs attention and
+   the branches) to that status; tapping again clears. A chip's border takes its status color on hover.
+   Under them, **Branch** and **Type of fridge** dropdowns (type = the fridge name with its number dropped, so
+   Display 1 and Display 2 are "Display"). They narrow the chips' counts and both sections below; each list only
+   offers what the other allows. All three filters live in the URL (`?status=&branch=&type=`).
 3. **Needs attention:** fridge cards for every non-OK fridge, worst first. When a whole branch has no file, show
    one card for the branch ("All 3 fridges · No file this week").
 4. **All branches:** collapsible list (phone) or card grid (desktop).

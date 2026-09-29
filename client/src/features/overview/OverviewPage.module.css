@@ -34,7 +34,7 @@
 .cards {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 10px;
+  gap: 16px; /* room for the cards' glow, the same as the branch grid */
 }
 
 @media (min-width: 640px) {

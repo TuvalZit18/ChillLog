@@ -19,8 +19,9 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Hover in the chip's own color when it has one (a status chip), grey otherwise. */
 .chip:hover {
-  border-color: var(--muted);
+  border-color: var(--chip-tone, var(--muted));
 }
 
 .chip[aria-pressed='true'] {

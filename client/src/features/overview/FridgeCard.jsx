@@ -5,6 +5,7 @@ import { Link } from 'react-router';
 import { formatDateTime, formatTemp } from '../../shared/format/format.js';
 import { StatusPill } from '../../shared/status/StatusPill.jsx';
 import { describeStatus } from '../../shared/status/status.js';
+import { glowCard } from '../../shared/ui/glowCard.js';
 import { Sparkline } from './Sparkline.jsx';
 import styles from './FridgeCard.module.css';
 
@@ -21,9 +22,15 @@ function latestLine(fridge) {
   return fridge.noLogger ? 'No logger in this fridge yet' : 'No readings this week';
 }
 
+/** The card's layout class plus the shared glow border and hover for a status. */
+function cardProps(status) {
+  const glow = glowCard(status);
+  return { className: `${styles.card} ${glow.className}`, style: glow.style };
+}
+
 export function FridgeCard({ fridge }) {
   return (
-    <Link to={`/fridges/${fridge.fridgeId}`} className={styles.card}>
+    <Link to={`/fridges/${fridge.fridgeId}`} {...cardProps(fridge.status)}>
       <div className={styles.top}>
         <span className={styles.name}>
           <span className={styles.branch}>{fridge.branchName}</span>
@@ -46,7 +53,7 @@ export function FridgeCard({ fridge }) {
 /** One card for a branch that sent no file this week; tapping it lists those fridges. */
 export function BranchNoFileCard({ branchName, fridgeCount }) {
   return (
-    <Link to={{ search: '?status=no_file' }} className={styles.card}>
+    <Link to={{ search: '?status=no_file' }} {...cardProps('no_file')}>
       <div className={styles.top}>
         <span className={styles.name}>
           <span className={styles.branch}>{branchName}</span>

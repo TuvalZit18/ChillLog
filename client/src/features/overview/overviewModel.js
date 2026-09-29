@@ -80,17 +80,85 @@ const COUNT_WORDS = {
 };
 
 /**
- * A branch card's header in words, worst first: "1 alert, 1 gap · 3 fridges" or
- * "All OK · 2 fridges", so the branch reads at a glance without decoding icons.
+ * A branch's state in words, worst first: "1 alert, 1 gap", "No file this week" or "All OK", so
+ * the branch reads at a glance without decoding icons. The fridge count is shown separately.
  */
 export function branchSummary(branch) {
-  const fridges = `${branch.fridges.length} ${branch.fridges.length === 1 ? 'fridge' : 'fridges'}`;
-  if (branch.fridges.every((f) => f.status === 'no_file')) return `No file this week · ${fridges}`;
+  if (branch.fridges.every((f) => f.status === 'no_file')) return 'No file this week';
   const problems = STATUS_ORDER.filter((status) => status !== 'ok')
     .map((status) => [status, branch.fridges.filter((f) => f.status === status).length])
     .filter(([, n]) => n > 0)
     .map(([status, n]) => `${n} ${COUNT_WORDS[status][n === 1 ? 0 : 1]}`);
-  return `${problems.length ? problems.join(', ') : 'All OK'} · ${fridges}`;
+  return problems.length ? problems.join(', ') : 'All OK';
+}
+
+/**
+ * A fridge's type, from its name: numbered fridges are one type ("Display 1", "Display 2" →
+ * "Display"); every other name is its own type. There's no stored type, so a new fridge name
+ * becomes a new type by itself.
+ */
+export function fridgeType(name) {
+  return name.trim().replace(/\s+\d+$/, '');
+}
+
+/** Every type in the overview, once each, A–Z (the Type filter's options). */
+export function typeOptions(fridges) {
+  return [...new Set(fridges.map((f) => fridgeType(f.fridgeName)))].sort((a, b) =>
+    a.localeCompare(b),
+  );
+}
+
+/** Every branch in the overview, once each, A–Z (the Branch filter's options). */
+export function branchOptions(fridges) {
+  const byId = new Map(fridges.map((f) => [f.branchId, { id: f.branchId, name: f.branchName }]));
+  return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/**
+ * The Branch and Type filters' options: each list offers only what the other filter allows (with
+ * Beersheba chosen, Type lists Beersheba's types), so no choice leads to an empty screen. The
+ * chosen values always stay in their lists, even an impossible pair from a bookmarked URL.
+ */
+export function placeFilterOptions(fridges, place) {
+  const branches = branchOptions(filterFridges(fridges, { ...place, branchId: null }));
+  if (place.branchId !== null && !branches.some((b) => b.id === place.branchId)) {
+    const chosen = branchOptions(fridges).find((b) => b.id === place.branchId);
+    if (chosen) branches.push(chosen);
+    branches.sort((a, b) => a.name.localeCompare(b.name));
+  }
+  const types = typeOptions(filterFridges(fridges, { ...place, type: null }));
+  if (place.type !== null && !types.includes(place.type)) {
+    types.push(place.type);
+    types.sort((a, b) => a.localeCompare(b));
+  }
+  return { branches, types };
+}
+
+/** The fridges in the chosen branch, of the chosen type and with the chosen status (null = any). */
+export function filterFridges(fridges, { branchId, type, status = null }) {
+  return fridges.filter(
+    (f) =>
+      (branchId === null || f.branchId === branchId) &&
+      (type === null || fridgeType(f.fridgeName) === type) &&
+      (status === null || f.status === status),
+  );
+}
+
+/** How many fridges have each status, so the chips can follow the Branch and Type filters. */
+export function countByStatus(fridges) {
+  return Object.fromEntries(
+    STATUS_ORDER.map((status) => [status, fridges.filter((f) => f.status === status).length]),
+  );
+}
+
+/** The ?branch= and ?type= filters from the URL (null when not set or not valid). */
+export function readPlaceFilter(params) {
+  const branch = params.get('branch');
+  const type = params.get('type');
+  return {
+    branchId: branch && /^\d+$/.test(branch) ? Number(branch) : null,
+    type: type || null,
+  };
 }
 
 /** The ?status= filter, or null when it's missing or not a real status. */

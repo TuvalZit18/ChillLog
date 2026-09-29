@@ -1,5 +1,6 @@
-// Status count chips: icon in the status color, bold count, word, e.g. "✓ 31 OK".
-// Tapping one filters to that status; tapping it again clears the filter.
+// Status count chips: icon in the status color, bold count, word, e.g. "✓ 31 OK"; the border
+// takes the status color on hover. Tapping one narrows the overview (both sections) to that
+// status, like the Branch and Type filters; tapping it again clears it.
 
 import { STATUS_META, STATUS_ORDER } from '../../shared/status/status.js';
 import { Chip, ChipGroup } from '../../shared/ui/Chip.jsx';
@@ -13,7 +14,12 @@ export function StatusChips({ counts, selected, onToggle }) {
   return (
     <ChipGroup label="Filter by status">
       {STATUS_ORDER.map((status) => (
-        <Chip key={status} pressed={selected === status} onClick={() => onToggle(status)}>
+        <Chip
+          key={status}
+          pressed={selected === status}
+          tone={STATUS_META[status].color}
+          onClick={() => onToggle(status)}
+        >
           <span style={{ color: STATUS_META[status].color, display: 'inline-flex' }}>
             <Icon name={STATUS_META[status].icon} size={16} />
           </span>

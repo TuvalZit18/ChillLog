@@ -1,0 +1,16 @@
+/* Two dropdowns side by side (they fit on a phone), with Clear filters after them. */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.field {
+  flex: 1 1 150px;
+  max-width: 260px;
+}
+
+.clear {
+  min-height: 46px;
+}
