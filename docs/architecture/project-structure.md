@@ -183,6 +183,9 @@ docs/
 │   ├── database.md                Tables, relations, what changes them
 │   ├── database-tables.png        The tables diagram as an image
 │   └── api.html                   API reference with real examples (open in a browser)
+├── development/                   How to work on it
+│   ├── git-and-ci.md              Branches, commits, pull requests, GitHub Actions
+│   └── testing.md                 How tests are organised, run and written
 ├── design/                        How it looks
 │   ├── ui.md                      The UI spec
 │   ├── chilllog-mockup.html       The clickable HTML mockup
@@ -209,7 +212,7 @@ docs/
 | **Code both sides need** | `shared/src/`, exported from `index.js` | |
 | **A one-off command** | `server/scripts/`, with an npm script in `server/package.json` (and the root one if users run it) | Cross-platform: no bash-only syntax |
 | **A test** | Server: `server/test/`. Client: next to the file it tests (`*.test.js`) | Test names quote the email where there's a matching line |
-| **A doc** | The `docs/` folder that matches what it answers: `architecture/` (how it's built), `design/` (how it looks), `ai/` (how the AI was used). `assignment/` holds only the brief. | Add a line to [docs/README.md](../README.md) |
+| **A doc** | The `docs/` folder that matches what it answers: `architecture/` (how it's built), `development/` (how to work on it), `design/` (how it looks), `ai/` (how the AI was used). `assignment/` holds only the brief. | Add a line to [docs/README.md](../README.md) |
 | **An idea for later or a question for Summer** | NOTES.md ("What I'd ask Summer", "Ideas to decide with Summer") | |
 | **A new top-level folder** | Avoid. Everything fits in `client/`, `server/`, `shared/` or `docs/`. If it really doesn't, decide it first in architecture-and-stack.md. | |
 

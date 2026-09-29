@@ -18,6 +18,13 @@ Everything written about the project, grouped by what you want to know. To run t
   diagram is also an image: [database-tables.png](architecture/database-tables.png).
 - [api.html](architecture/api.html): the API reference with real examples. Open it in a browser.
 
+## How to work on it: `development/`
+
+- [git-and-ci.md](development/git-and-ci.md): branches, commits, pull requests, and the GitHub
+  Actions checks every change goes through.
+- [testing.md](development/testing.md): how the tests are organised, how to run them, and how to write
+  new ones.
+
 ## How it looks: `design/`
 
 - [ui.md](design/ui.md): the UI spec: tokens, components, every screen and state.
