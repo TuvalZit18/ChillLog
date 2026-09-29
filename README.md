@@ -120,6 +120,7 @@ npm run rebuild   # re-derive every reading from the stored raw files
   [docs/architecture-and-stack.md](docs/architecture-and-stack.md). UI spec:
   [docs/design/ui.md](docs/design/ui.md). API reference with real examples:
   [docs/api.html](docs/api.html). Database tables and how they relate:
-  [docs/database.md](docs/database.md).
+  [docs/database.md](docs/database.md). What is where in the repo, and where new code goes:
+  [docs/project-structure.md](docs/project-structure.md).
 - How the AI tools were used: [docs/ai-log.md](docs/ai-log.md), [docs/ai-sessions/](docs/ai-sessions/)
   and the instructions they followed, [CLAUDE.md](CLAUDE.md).
