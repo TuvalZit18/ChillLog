@@ -27,7 +27,9 @@ const COLUMNS = [
 ];
 
 const SORT_CHOICES = [
-  { value: 'code-asc', label: 'Logger ID, A–Z' },
+  // No column sorted: the rows are in logger ID order anyway.
+  { value: '', label: 'Logger ID, A–Z' },
+  { value: 'code-desc', label: 'Logger ID, Z–A' },
   { value: 'branch-asc', label: 'Branch, A–Z' },
   { value: 'type-asc', label: 'Type of fridge, A–Z' },
   { value: 'since-desc', label: 'Newest in its fridge' },
@@ -127,9 +129,13 @@ export function LoggerTable({ loggers, branches: allBranches }) {
           <select
             id="loggers-sort-phone"
             aria-label="Sort by"
-            value={`${state.sort}-${state.dir}`}
+            value={
+              !state.sort || (state.sort === 'code' && state.dir === 'asc')
+                ? ''
+                : `${state.sort}-${state.dir}`
+            }
             onChange={(e) => {
-              const [sort, dir] = e.target.value.split('-');
+              const [sort = null, dir = null] = e.target.value ? e.target.value.split('-') : [];
               update({ sort, dir });
             }}
           >

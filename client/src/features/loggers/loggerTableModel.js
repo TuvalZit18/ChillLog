@@ -4,7 +4,8 @@
 import { fridgeType } from '../../shared/fridgeType.js';
 
 export const SORT_KEYS = /** @type {const} */ (['code', 'branch', 'type', 'since']);
-const DEFAULTS = { q: '', branch: null, type: null, sort: 'code', dir: 'asc' };
+// By default no column is sorted (every header shows both arrows); the rows are in ID order.
+const UNSORTED = { sort: null, dir: null };
 
 /**
  * @typedef {{ id: number, code: string, tags: string[], branch: string | null,
@@ -44,8 +45,12 @@ const SORT_VALUE = {
 };
 const compareText = (a, b) => a.localeCompare(b, 'en', { numeric: true });
 
-/** Sorted by a column; spare loggers (no value) always last, ties by logger ID. */
+/**
+ * Sorted by a column; spare loggers (no value) always last, ties by logger ID. With no column
+ * sorted, the rows are in logger ID order.
+ */
 export function sortRows(rows, { sort, dir }) {
+  if (sort === null) return [...rows].sort((a, b) => compareText(a.code, b.code));
   const value = SORT_VALUE[sort];
   const sign = dir === 'desc' ? -1 : 1;
   return [...rows].sort((a, b) => {
@@ -61,36 +66,36 @@ export function sortRows(rows, { sort, dir }) {
 }
 
 /**
- * Clicking a header cycles through three states: its first direction (A–Z; Since: newest
- * first), the other direction, then back to the default order (logger ID, A–Z).
+ * Clicking a header cycles through three states, the same for every column: its first
+ * direction (A–Z; Since: newest first), the other direction, then no column sorted.
  */
 export function nextSort({ sort, dir }, key) {
   const first = key === 'since' ? 'desc' : 'asc';
   if (key !== sort) return { sort: key, dir: first };
   if (dir === first) return { sort, dir: first === 'asc' ? 'desc' : 'asc' };
-  return { sort: DEFAULTS.sort, dir: DEFAULTS.dir };
+  return { ...UNSORTED };
 }
 
-/** The table's state from the URL, with safe defaults. */
+/** The table's state from the URL; a missing or broken sort means no column is sorted. */
 export function readTableState(params) {
   const sort = params.get('sort');
   const dir = params.get('dir');
+  const sorted = SORT_KEYS.includes(sort) && (dir === 'asc' || dir === 'desc');
   return {
     q: params.get('q') ?? '',
     branch: params.get('branch') || null,
     type: params.get('type') || null,
-    sort: SORT_KEYS.includes(sort) ? sort : DEFAULTS.sort,
-    dir: dir === 'asc' || dir === 'desc' ? dir : DEFAULTS.dir,
+    ...(sorted ? { sort, dir } : UNSORTED),
   };
 }
 
-/** The URL search for the table's state; defaults are left out. */
+/** The URL search for the table's state; only what is set, so the plain URL stays clean. */
 export function tableSearch(state) {
   const params = new URLSearchParams();
   if (state.q) params.set('q', state.q);
   if (state.branch) params.set('branch', state.branch);
   if (state.type) params.set('type', state.type);
-  if (state.sort !== DEFAULTS.sort || state.dir !== DEFAULTS.dir) {
+  if (state.sort) {
     params.set('sort', state.sort);
     params.set('dir', state.dir);
   }

@@ -73,7 +73,17 @@ describe('filterRows', () => {
 describe('sortRows', () => {
   const rows = toTableRows(loggers);
 
-  it('sorts by logger ID by default, A–Z', () => {
+  it('with no column sorted, lists the loggers in ID order', () => {
+    expect(codes(sortRows([...rows].reverse(), { sort: null, dir: null }))).toEqual([
+      'TL-0231',
+      'TL-0415',
+      'TL-0417',
+      'TL-0419',
+      'TL-0800',
+    ]);
+  });
+
+  it('sorts by logger ID, A–Z', () => {
     expect(codes(sortRows(rows, { sort: 'code', dir: 'asc' }))).toEqual([
       'TL-0231',
       'TL-0415',
@@ -100,27 +110,34 @@ describe('sortRows', () => {
 });
 
 describe('nextSort', () => {
-  const byDefault = { sort: 'code', dir: 'asc' };
+  const unsorted = { sort: null, dir: null };
 
-  it('three clicks on a column: A–Z, then Z–A, then back to the default order', () => {
-    const first = nextSort(byDefault, 'branch');
+  it('three clicks on a column: A–Z, then Z–A, then no column sorted again', () => {
+    const first = nextSort(unsorted, 'branch');
     expect(first).toEqual({ sort: 'branch', dir: 'asc' });
     const second = nextSort(first, 'branch');
     expect(second).toEqual({ sort: 'branch', dir: 'desc' });
-    expect(nextSort(second, 'branch')).toEqual(byDefault);
+    expect(nextSort(second, 'branch')).toEqual(unsorted);
   });
 
-  it('Since starts newest first, then oldest first, then back to the default order', () => {
-    const first = nextSort(byDefault, 'since');
+  it('Since starts newest first, then oldest first, then no column sorted again', () => {
+    const first = nextSort(unsorted, 'since');
     expect(first).toEqual({ sort: 'since', dir: 'desc' });
     const second = nextSort(first, 'since');
     expect(second).toEqual({ sort: 'since', dir: 'asc' });
-    expect(nextSort(second, 'since')).toEqual(byDefault);
+    expect(nextSort(second, 'since')).toEqual(unsorted);
   });
 
-  it('the Logger column, already the default, flips between A–Z and Z–A', () => {
-    expect(nextSort(byDefault, 'code')).toEqual({ sort: 'code', dir: 'desc' });
-    expect(nextSort({ sort: 'code', dir: 'desc' }, 'code')).toEqual(byDefault);
+  it('the Logger column cycles the same way: A–Z, Z–A, then no column sorted', () => {
+    const first = nextSort(unsorted, 'code');
+    expect(first).toEqual({ sort: 'code', dir: 'asc' });
+    const second = nextSort(first, 'code');
+    expect(second).toEqual({ sort: 'code', dir: 'desc' });
+    expect(nextSort(second, 'code')).toEqual(unsorted);
+  });
+
+  it('un-sorting another column leaves the Logger column unsorted too', () => {
+    expect(nextSort({ sort: 'type', dir: 'desc' }, 'type')).toEqual(unsorted);
   });
 
   it('another column starts fresh, whatever was sorted before', () => {
@@ -129,26 +146,31 @@ describe('nextSort', () => {
 });
 
 describe('readTableState and tableSearch', () => {
-  it('reads the filters and sort from the URL, with safe defaults', () => {
+  it('reads the filters and sort from the URL; by default no column is sorted', () => {
     expect(readTableState(new URLSearchParams(''))).toEqual({
       q: '',
       branch: null,
       type: null,
-      sort: 'code',
-      dir: 'asc',
+      sort: null,
+      dir: null,
     });
     expect(
       readTableState(new URLSearchParams('q=04&branch=Tel+Aviv&type=Display&sort=since&dir=desc')),
     ).toEqual({ q: '04', branch: 'Tel Aviv', type: 'Display', sort: 'since', dir: 'desc' });
     expect(readTableState(new URLSearchParams('sort=nonsense&dir=up'))).toMatchObject({
-      sort: 'code',
-      dir: 'asc',
+      sort: null,
+      dir: null,
+    });
+    expect(readTableState(new URLSearchParams('sort=code'))).toMatchObject({
+      sort: null,
+      dir: null,
     });
   });
 
-  it('writes only what differs from the defaults, so the plain URL stays clean', () => {
+  it('writes only what is set, so the plain URL stays clean', () => {
     const state = readTableState(new URLSearchParams(''));
     expect(tableSearch(state)).toBe('');
+    expect(tableSearch({ ...state, sort: 'code', dir: 'asc' })).toBe('?sort=code&dir=asc');
     expect(tableSearch({ ...state, branch: 'Tel Aviv', sort: 'since', dir: 'desc' })).toBe(
       '?branch=Tel+Aviv&sort=since&dir=desc',
     );
