@@ -3,7 +3,7 @@
 > Why SQLite, raw files and a rebuildable design: [`architecture-and-stack.md`](architecture-and-stack.md)
 > §2 (Data storage), §3 (Raw files, upload & ingest flow) and §11 (Backup & recovery).
 > This page describes what is actually in the database today. The schema itself is in
-> [`server/migrations/`](../server/migrations/).
+> [`server/migrations/`](../../server/migrations/).
 
 ## At a glance
 
@@ -150,7 +150,7 @@ are recalculated.
 | Column | Type | Notes |
 | --- | --- | --- |
 | `id` | INTEGER PK | |
-| `name` | TEXT, NOT NULL, UNIQUE | e.g. `Haifa`. The match is exact, so `haifa` would be accepted (see [NOTES.md](../NOTES.md), "With one more hour"). |
+| `name` | TEXT, NOT NULL, UNIQUE | e.g. `Haifa`. The match is exact, so `haifa` would be accepted (see [NOTES.md](../../NOTES.md), "With one more hour"). |
 
 **`fridges`**: one row per fridge, in one branch.
 
@@ -322,7 +322,7 @@ deletes are of derived rows, and of `readings` during a rebuild.
 
 ## Migrations
 
-- Numbered SQL files in [`server/migrations/`](../server/migrations/), run in name order on every
+- Numbered SQL files in [`server/migrations/`](../../server/migrations/), run in name order on every
   start by `server/src/db/migrate.js`. Each file runs in one transaction together with its
   `schema_migrations` row, so a failed file leaves no trace and is retried next start.
   - `001_core_tables.sql`: setup, uploads and readings.

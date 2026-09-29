@@ -12,4 +12,4 @@
 
 ## AI notes
 
-<!-- What the AI wrote, what I rejected or corrected, and where to see it (commit, test, docs/ai-log.md entry). -->
+<!-- What the AI wrote, what I rejected or corrected, and where to see it (commit, test, docs/ai/ai-log.md entry). -->

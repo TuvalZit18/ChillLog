@@ -8,11 +8,11 @@
 
 **To understand the project, read in this order:**
 
-1. [README.md](../README.md): run it and see it work (10 minutes).
-2. [docs/brief.md](brief.md): the assignment and Summer's email. Every feature traces back to it.
-3. [NOTES.md](../NOTES.md): the decisions she didn't ask for, and what's left out.
+1. [README.md](../../README.md): run it and see it work (10 minutes).
+2. [docs/assignment/brief.md](../assignment/brief.md): the assignment and Summer's email. Every feature traces back to it.
+3. [NOTES.md](../../NOTES.md): the decisions she didn't ask for, and what's left out.
 4. This page, then [architecture-and-stack.md](architecture-and-stack.md) for the why.
-5. [database.md](database.md) and [design/ui.md](design/ui.md) when you touch data or screens.
+5. [database.md](database.md) and [design/ui.md](../design/ui.md) when you touch data or screens.
 
 **To understand the code, follow one request end to end.** For example, the Inspector screen:
 
@@ -170,17 +170,26 @@ need, no React and no Node-only code.
 
 ## `docs/`
 
+Grouped by what the reader wants to know. [docs/README.md](../README.md) lists every doc.
+
 ```text
 docs/
-├── brief.md                   The assignment (the spec)
-├── architecture-and-stack.md  Every architecture and tool decision, with the rejected options
-├── database.md                Tables, relations, what changes them
-├── database-tables.png        The tables diagram as an image
-├── project-structure.md       This page
-├── api.html                   API reference with real examples (open in a browser)
-├── ai-log.md                  What the AI got wrong and how it was caught
-├── ai-sessions/               One summary per AI conversation (NNN-topic.md)
-└── design/                    ui.md (the UI spec), the HTML mockup, the design prompt
+├── README.md                      Index of every doc, one line each
+├── assignment/                    What was asked
+│   └── brief.md                   The assignment and Summer's email (the spec)
+├── architecture/                  How it's built
+│   ├── architecture-and-stack.md  Every architecture and tool decision, with the rejected options
+│   ├── project-structure.md       This page
+│   ├── database.md                Tables, relations, what changes them
+│   ├── database-tables.png        The tables diagram as an image
+│   └── api.html                   API reference with real examples (open in a browser)
+├── design/                        How it looks
+│   ├── ui.md                      The UI spec
+│   ├── chilllog-mockup.html       The clickable HTML mockup
+│   └── stitch-prompt.md           The brief given to Google Stitch for the first mockups
+└── ai/                            How the AI tools were used
+    ├── ai-log.md                  What the AI got wrong and how it was caught
+    └── sessions/                  One summary per AI conversation (NNN-topic.md)
 ```
 
 ## Where do I put…
@@ -191,7 +200,7 @@ docs/
 | **A piece of a screen** | Next to its page in the feature folder | Move to `client/src/shared/ui/` once a second feature needs it |
 | **An icon** | `client/src/shared/ui/Icon.jsx` (inline SVG paths) | |
 | **A color, size or spacing** | `client/src/styles/tokens.css` (light, dark and both `data-theme` blocks) | |
-| **An API endpoint** | The matching `server/src/api/*-routes.js`, or a new `x-routes.js` mounted in `app.js` | Input schema in `shared/src/schemas.js`; a test in `server/test/api-x.test.js`; update `docs/api.html` |
+| **An API endpoint** | The matching `server/src/api/*-routes.js`, or a new `x-routes.js` mounted in `app.js` | Input schema in `shared/src/schemas.js`; a test in `server/test/api-x.test.js`; update `docs/architecture/api.html` |
 | **The logic behind an endpoint** | `server/src/reporting/` (answers) or `registry/` (setup changes) | Not in the route file |
 | **A detection rule** | `server/src/detection/detection.js`, **test first** in `server/test/detection.test.js` | If it needs storing: a table via a migration, written by `store.js` |
 | **A threshold** | `shared/src/thresholds.js` only | Explain it in NOTES.md, "Detection parameters" |
@@ -200,7 +209,7 @@ docs/
 | **Code both sides need** | `shared/src/`, exported from `index.js` | |
 | **A one-off command** | `server/scripts/`, with an npm script in `server/package.json` (and the root one if users run it) | Cross-platform: no bash-only syntax |
 | **A test** | Server: `server/test/`. Client: next to the file it tests (`*.test.js`) | Test names quote the email where there's a matching line |
-| **A doc** | `docs/`; UI specs in `docs/design/` | Link it from the README's docs list |
+| **A doc** | The `docs/` folder that matches what it answers: `architecture/` (how it's built), `design/` (how it looks), `ai/` (how the AI was used). `assignment/` holds only the brief. | Add a line to [docs/README.md](../README.md) |
 | **An idea for later or a question for Summer** | NOTES.md ("What I'd ask Summer", "Ideas to decide with Summer") | |
 | **A new top-level folder** | Avoid. Everything fits in `client/`, `server/`, `shared/` or `docs/`. If it really doesn't, decide it first in architecture-and-stack.md. | |
 

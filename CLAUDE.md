@@ -10,8 +10,8 @@ fridge is doing and answer a health inspector: "when did this fridge go above 5ย
 
 ## Source of truth: read before working
 
-- [docs/brief.md](docs/brief.md): the assignment and Summer's email (the whole spec).
-- [docs/architecture-and-stack.md](docs/architecture-and-stack.md): every architecture and tool decision. **These are decided.** Don't reopen them or swap tools. If something in the code seems to need a different call, stop and ask; don't work around it.
+- [docs/assignment/brief.md](docs/assignment/brief.md): the assignment and Summer's email (the whole spec).
+- [docs/architecture/architecture-and-stack.md](docs/architecture/architecture-and-stack.md): every architecture and tool decision. **These are decided.** Don't reopen them or swap tools. If something in the code seems to need a different call, stop and ask; don't work around it.
 - [NOTES.md](NOTES.md): decisions Summer didn't ask for, questions for her, deferred items.
 
 ## Hard constraints
@@ -40,14 +40,14 @@ fridge is doing and answer a health inspector: "when did this fridge go above 5ย
 
 ## Working process
 
-- **One branch per module/feature**, in the order in docs/architecture-and-stack.md ยง16. Names are `type/scope`. **Don't write code that belongs to a later branch.**
+- **One branch per module/feature**, in the order in docs/architecture/architecture-and-stack.md ยง16. Names are `type/scope`. **Don't write code that belongs to a later branch.**
 - **The AI never commits. Ever.** The user makes every commit by hand. The AI doesn't run `git commit` (and doesn't `git push`, merge or tag). When a piece of work is ready, stop, say it's ready to commit, and optionally suggest a Conventional Commit message.
 - **Stop after each commit-sized piece.** Don't start the next piece of work until the user says to continue.
 - **Conventional Commits.** Never rewrite history (no amend, no force-push, no squash). PRs are self-merged with merge commits after CI passes, using the PR template.
 - **Tests:** one named test per messy case in the email, with test names quoting the email. Write detection rules test-first. Use the named CSV fixtures listed in ยง13.
-- **When the AI gets something wrong:** commit the failing test first, then the fix, then add an entry to [docs/ai-log.md](docs/ai-log.md).
+- **When the AI gets something wrong:** commit the failing test first, then the fix, then add an entry to [docs/ai/ai-log.md](docs/ai/ai-log.md).
 - **Be fully transparent: narrate every action.** Before each action (reading a file, running a command, editing, installing, moving anything), write a line in the conversation saying what you're about to do and why. Afterwards, write what happened, including failures, surprises and anything skipped. Never do silent work. The conversation must read as a complete log, so it can be extracted at the end of the session.
-- **Session summaries:** at the end of each AI conversation (not before), write `docs/ai-sessions/NNN-<topic>.md` in the format of [001](docs/ai-sessions/001-architecture-and-tech-stack.md).
+- **Session summaries:** at the end of each AI conversation (not before), write `docs/ai/sessions/NNN-<topic>.md` in the format of [001](docs/ai/sessions/001-architecture-and-tech-stack.md).
 - **Don't act before being asked.** When the user states a rule or convention, record it; don't carry it out on the spot.
 - New open questions for Summer go in NOTES.md under "What I'd ask Summer".
 - Development machine is Windows. Keep scripts cross-platform (no bash-only syntax in npm scripts).
