@@ -24,12 +24,64 @@
   gap: 12px;
 }
 
-.sectionHead {
+/* Tabs: Loggers · Branches and fridges. The selected one is bold with a teal underline (not
+   colour alone); on phones the two share the width, each on one line. */
+.tabs {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.tab {
+  display: inline-flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 12px;
+  white-space: nowrap;
+  margin-bottom: -1px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--ink);
+}
+
+.tab[aria-selected='true'] {
+  border-bottom-color: var(--accent);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.tabCount {
+  min-width: 24px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--sunken);
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.tab[aria-selected='true'] .tabCount {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+@media (min-width: 720px) {
+  .tab {
+    flex: none;
+    padding: 0 16px;
+  }
 }
 
 .card {

@@ -57,6 +57,23 @@ export function checkMove({ fridgeId, from }, logger) {
 }
 
 /**
+ * The Loggers page has two tabs, kept in the URL: the loggers (the default, no `tab`) and
+ * branches and fridges (`?tab=branches`).
+ * @returns {'loggers' | 'branches'}
+ */
+export function readTab(params) {
+  return params.get('tab') === 'branches' ? 'branches' : 'loggers';
+}
+
+/** The search string for another tab, keeping the loggers table's filters and sort. */
+export function tabSearch(params, tab) {
+  const next = new URLSearchParams(params);
+  if (tab === 'branches') next.set('tab', 'branches');
+  else next.delete('tab');
+  return next.toString();
+}
+
+/**
  * After adding a logger or changing its settings, files that were waiting for it are tried
  * again on the server; say what happened to them.
  * @param {Array<{ status: string, readings: { added: number } }> | undefined} retried

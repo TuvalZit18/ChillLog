@@ -6,7 +6,9 @@ import {
   checkMove,
   DATE_FORMAT_LABELS,
   historyItems,
+  readTab,
   retriedNote,
+  tabSearch,
   UNIT_LABELS,
 } from './loggersModel.js';
 
@@ -84,6 +86,20 @@ describe('UNIT_LABELS and DATE_FORMAT_LABELS', () => {
       'DD/MM': 'Day first (21/09)',
       'MM/DD': 'Month first (09/21)',
     });
+  });
+});
+
+describe('readTab and tabSearch', () => {
+  it('opens on the loggers, and on branches and fridges only when the URL says so', () => {
+    expect(readTab(new URLSearchParams(''))).toBe('loggers');
+    expect(readTab(new URLSearchParams('tab=branches'))).toBe('branches');
+    expect(readTab(new URLSearchParams('tab=nonsense'))).toBe('loggers');
+  });
+
+  it("keeps the loggers table's filters when switching tabs", () => {
+    const params = new URLSearchParams('q=TL&branch=Haifa');
+    expect(tabSearch(params, 'branches')).toBe('q=TL&branch=Haifa&tab=branches');
+    expect(tabSearch(new URLSearchParams('q=TL&tab=branches'), 'loggers')).toBe('q=TL');
   });
 });
 

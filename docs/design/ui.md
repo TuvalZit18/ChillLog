@@ -237,13 +237,19 @@ cards below. Note: "Single readings above 5°C, such as a door opening, are not 
 are listed separately." Gaps section. Buttons **Export CSV** and Share.
 
 ### Loggers
-Title + **Add logger**. The loggers as a **table** (from 720px): Logger · Branch · Type of fridge · Since.
+Title, then two **tabs** with counts: **Loggers** (the default) and **Branches and fridges**
+(`?tab=branches`, which keeps the table's filters). The selected tab is bold with a teal underline; arrow
+keys move between tabs. The main button follows the tab: **Add logger** or **Add branch**.
+
+**Loggers tab:** the loggers as a **table** (from 720px): Logger · Branch · Type of fridge · Since.
 Every header sorts its column (click again to reverse; the sorted one is teal), and a filter row under the
 headers has an ID search and Branch / Type dropdowns; all kept in the URL (`?q=&branch=&type=&sort=&dir=`).
 Each column looks different: ID bold mono with tags for non-default settings (°F, date format), branch in
 the small grey uppercase style used for branches everywhere, fridge in plain text, date muted. A row opens
 the logger and hovers in the soft teal. On phones: the same filters plus a **Sort by** dropdown above compact
-rows (ID, "BRANCH · fridge", date). **Branches and fridges** section with **Add fridge** per branch.
+rows (ID, "BRANCH · fridge", date).
+
+**Branches and fridges tab:** "N branches", then each branch with its fridges and **Add fridge**.
 
 ### Logger detail
 Back link, logger ID. Details: current fridge, in this fridge since, unit, date format. Buttons
