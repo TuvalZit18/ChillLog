@@ -60,10 +60,15 @@ export function sortRows(rows, { sort, dir }) {
   });
 }
 
-/** Clicking a header: a new column starts A–Z (Since: newest first); the same column flips. */
+/**
+ * Clicking a header cycles through three states: its first direction (A–Z; Since: newest
+ * first), the other direction, then back to the default order (logger ID, A–Z).
+ */
 export function nextSort({ sort, dir }, key) {
-  if (key === sort) return { sort, dir: dir === 'asc' ? 'desc' : 'asc' };
-  return { sort: key, dir: key === 'since' ? 'desc' : 'asc' };
+  const first = key === 'since' ? 'desc' : 'asc';
+  if (key !== sort) return { sort: key, dir: first };
+  if (dir === first) return { sort, dir: first === 'asc' ? 'desc' : 'asc' };
+  return { sort: DEFAULTS.sort, dir: DEFAULTS.dir };
 }
 
 /** The table's state from the URL, with safe defaults. */

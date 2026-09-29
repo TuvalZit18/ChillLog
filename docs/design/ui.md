@@ -245,7 +245,8 @@ own title, one-line description and main button (**Add logger** · **Add branch*
 
 **Loggers tab** ("Which logger sits in which fridge. Set it once; uploads use it from then on."): the
 loggers as a **table** (from 720px): Logger · Branch · Type of fridge · Since.
-Every header sorts its column (click again to reverse; the sorted one is teal), and a filter row under the
+Every header sorts its column: first click A–Z (Since: newest first), second click the other way, third
+click back to the default order (logger ID, A–Z); the sorted one is teal. A filter row under the
 headers has an ID search and Branch / Type dropdowns; all kept in the URL (`?q=&branch=&type=&sort=&dir=`).
 Each column looks different: ID bold mono with tags for non-default settings (°F, date format), branch in
 the small grey uppercase style used for branches everywhere, fridge in plain text, date muted. A row opens
