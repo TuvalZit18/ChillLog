@@ -110,21 +110,22 @@ describe('branchSummary', () => {
     fridges: statuses.map((status, i) => fridge('Haifa', `Fridge ${i}`, status)),
   });
 
-  it('says in words what is wrong in a branch, worst first, and how many fridges it has', () => {
-    expect(branchSummary(branch('gap', 'ok'))).toBe('1 gap · 2 fridges');
-    expect(branchSummary(branch('ok', 'gap', 'alert'))).toBe('1 alert, 1 gap · 3 fridges');
+  // The fridge count sits in the card's corner, so the summary is only the branch's state and
+  // fits on one line.
+  it('says in words what is wrong in a branch, worst first', () => {
+    expect(branchSummary(branch('gap', 'ok'))).toBe('1 gap');
+    expect(branchSummary(branch('ok', 'gap', 'alert'))).toBe('1 alert, 1 gap');
     expect(branchSummary(branch('gap', 'gap', 'warming', 'no_file'))).toBe(
-      '1 warming, 2 gaps, 1 without a file · 4 fridges',
+      '1 warming, 2 gaps, 1 without a file',
     );
   });
 
   it('says "No file this week" when the whole branch sent nothing', () => {
-    expect(branchSummary(branch('no_file', 'no_file'))).toBe('No file this week · 2 fridges');
+    expect(branchSummary(branch('no_file', 'no_file'))).toBe('No file this week');
   });
 
   it('says "All OK" when nothing is wrong', () => {
-    expect(branchSummary(branch('ok', 'ok'))).toBe('All OK · 2 fridges');
-    expect(branchSummary(branch('ok'))).toBe('All OK · 1 fridge');
+    expect(branchSummary(branch('ok', 'ok'))).toBe('All OK');
   });
 });
 

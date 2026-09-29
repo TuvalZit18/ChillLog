@@ -51,14 +51,24 @@ export function BranchList({ branches }) {
         {branches.map((branch) => (
           <details key={branch.branchId} className={styles.item}>
             <summary className={styles.summary}>
+              {/* Same shape as the desktop header: branch name with the fridge count on the right,
+                  then the worst status on a line of its own. */}
               <span className={styles.main}>
-                <span className={styles.name}>{branch.branchName}</span>
-                <span className={styles.count}>{fridgeCount(branch.fridges.length)}</span>
+                <span className={styles.nameLine}>
+                  <span className={styles.name}>{branch.branchName}</span>
+                  <span className={styles.count}>{fridgeCount(branch.fridges.length)}</span>
+                </span>
+                <span className={styles.meta}>
+                  <StatusPill
+                    status={branch.worst.status}
+                    text={
+                      branch.worst.status === 'ok'
+                        ? 'All OK'
+                        : describeStatus(branch.worst, { compact: true })
+                    }
+                  />
+                </span>
               </span>
-              <StatusPill
-                status={branch.worst.status}
-                text={branch.worst.status === 'ok' ? 'All OK' : describeStatus(branch.worst)}
-              />
               <Icon name="chevDown" size={20} className={styles.chevron} />
             </summary>
             {branch.fridges.map((fridge) => (
@@ -70,9 +80,9 @@ export function BranchList({ branches }) {
 
       <div className={styles.grid}>
         {branches.map((branch) => {
-          // A branch with a problem takes its worst status's color on the card's edge; the header
-          // says what's wrong in words ("1 alert, 1 gap · 3 fridges") next to that status's icon,
-          // so neither the color nor the icon has to be decoded.
+          // A branch with a problem takes its worst status's color on the card's edge. The header:
+          // the branch name (small, like the Needs attention eyebrow) with the fridge count in the
+          // corner, then what's wrong in words ("1 alert, 1 gap") next to the worst status's icon.
           const problem = branch.worst.status !== 'ok';
           const meta = STATUS_META[branch.worst.status];
           return (
@@ -83,8 +93,11 @@ export function BranchList({ branches }) {
               style={{ '--tone': meta.color }}
               aria-label={branch.branchName}
             >
-              <div className={styles.cardHead}>
-                <span className={styles.cardName}>{branch.branchName}</span>
+              <div className={`${styles.cardHead} ${problem ? styles.headProblem : ''}`}>
+                <span className={styles.nameLine}>
+                  <span className={styles.cardName}>{branch.branchName}</span>
+                  <span className={styles.count}>{fridgeCount(branch.fridges.length)}</span>
+                </span>
                 <span className={`${styles.cardSummary} ${problem ? styles.summaryProblem : ''}`}>
                   <Icon name={meta.icon} size={16} className={styles.summaryIcon} />
                   {branchSummary(branch)}

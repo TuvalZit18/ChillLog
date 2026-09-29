@@ -165,9 +165,14 @@ The mockup follows the device setting only. The app adds a switch.
   cards: a problem glows in its status color, an OK card turns teal on hover/focus.
 - **Sparkline:** 112×36, last 7 days, `--muted` line, dashed 5°C line in `--alert`, end dot in the status color.
   Fixed scale 1–8°C so cards compare.
-- **Branch row (phone):** collapsible `<details>`: name, "3 fridges", worst status pill, chevron. Opens to one row per fridge.
-- **Branch card (desktop):** name, then the branch's state in words next to its worst status's icon
-  ("1 alert, 1 gap · 3 fridges", "All OK · 2 fridges"). OK fridges are one quiet line (icon, word and
+- **Branch row (phone):** collapsible `<details>`: the branch name with "3 fridges" on the right, then the worst
+  status pill (compact wording) on its own line, and a chevron. Opens to one row per fridge.
+- **Branch names look like the Needs attention eyebrow everywhere on the overview:** 13px, grey, uppercase and
+  letter-spaced. Fridge names are larger and in full-strength ink, so a branch never reads like a fridge.
+- **Branch card (desktop):** a shaded header band (tinted with the worst status's color, neutral when all
+  is OK): the branch name with the fridge count in the right corner, then the branch's state in words
+  next to its worst status's icon, left-aligned on its own line ("1 alert, 1 gap", "No file this week",
+  "All OK"). OK fridges are one quiet line (icon, word and
   value, no filled pill); a problem fridge gets its filled pill on its own line. All cards are the
   same size. A branch with a problem glows in its worst status's color: a gradient border and a soft
   outer halo (fainter in light mode, stronger on hover/focus); all-OK cards stay plain, and on

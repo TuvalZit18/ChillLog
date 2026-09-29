@@ -33,8 +33,32 @@
   min-width: 0;
 }
 
-.name {
+/* Branch names look like the Needs attention eyebrow everywhere on the overview: small, grey,
+   uppercase and letter-spaced. Fridge names are larger and in full-strength ink, so a branch
+   never reads like a fridge (by size, color and case). */
+.name,
+.cardName {
+  font-size: 13px;
   font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* The branch name with the fridge count in the right corner, on one line. */
+.nameLine {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin-top: 4px;
 }
 
 .count {
@@ -106,16 +130,20 @@
 
   /* Header: the branch name, then what's wrong in words ("1 gap · 2 fridges") with the worst
      status's icon; in the status color when something is wrong, quiet when all is OK. */
+  /* The header is a shaded band, so it reads as the card's title and not as its first row
+     (Law of Common Region): tinted with the status color when something is wrong, neutral when
+     all is OK (a green tint would make OK cards compete with the problems). */
   .cardHead {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    padding: 14px 16px 10px;
+    gap: 6px;
+    padding: 14px 16px 12px;
+    border-radius: calc(var(--radius-card) - 1px) calc(var(--radius-card) - 1px) 0 0;
+    background: color-mix(in oklab, var(--ink) 4%, var(--surface));
   }
 
-  .cardName {
-    font-size: 16px;
-    font-weight: 700;
+  .headProblem {
+    background: color-mix(in oklab, var(--tone) 10%, var(--surface));
   }
 
   .cardSummary {

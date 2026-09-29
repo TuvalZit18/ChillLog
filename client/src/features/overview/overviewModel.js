@@ -80,17 +80,16 @@ const COUNT_WORDS = {
 };
 
 /**
- * A branch card's header in words, worst first: "1 alert, 1 gap · 3 fridges" or
- * "All OK · 2 fridges", so the branch reads at a glance without decoding icons.
+ * A branch's state in words, worst first: "1 alert, 1 gap", "No file this week" or "All OK", so
+ * the branch reads at a glance without decoding icons. The fridge count is shown separately.
  */
 export function branchSummary(branch) {
-  const fridges = `${branch.fridges.length} ${branch.fridges.length === 1 ? 'fridge' : 'fridges'}`;
-  if (branch.fridges.every((f) => f.status === 'no_file')) return `No file this week · ${fridges}`;
+  if (branch.fridges.every((f) => f.status === 'no_file')) return 'No file this week';
   const problems = STATUS_ORDER.filter((status) => status !== 'ok')
     .map((status) => [status, branch.fridges.filter((f) => f.status === status).length])
     .filter(([, n]) => n > 0)
     .map(([status, n]) => `${n} ${COUNT_WORDS[status][n === 1 ? 0 : 1]}`);
-  return `${problems.length ? problems.join(', ') : 'All OK'} · ${fridges}`;
+  return problems.length ? problems.join(', ') : 'All OK';
 }
 
 /**
