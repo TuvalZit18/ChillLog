@@ -50,27 +50,7 @@
   border-top: 1px solid var(--line);
 }
 
-/* A logger row: ID, where it is and since when, tags, chevron. */
-.row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  min-height: 64px;
-  padding: 10px 16px;
-  color: var(--ink);
-  text-decoration: none;
-}
-
-.row:hover {
-  background: var(--bg);
-}
-
-.code {
-  min-width: 76px;
-  font-family: var(--mono);
-  font-weight: 500;
-}
-
+/* The logger list is its own component (LoggerTable); these style the branches list below it. */
 .where {
   display: flex;
   flex: 1;
@@ -80,28 +60,6 @@
 
 .sub {
   font-size: 14px;
-  color: var(--muted);
-}
-
-.tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 1px 8px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--muted);
-}
-
-.chevron {
-  flex: none;
   color: var(--muted);
 }
 

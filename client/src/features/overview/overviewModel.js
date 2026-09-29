@@ -2,6 +2,7 @@
 // list and the status filter from the URL. Pure functions, so the rules are tested without a DOM.
 
 import { STATUS_ORDER } from '@chilllog/shared';
+import { fridgeType } from '../../shared/fridgeType.js';
 
 const rank = (status) => STATUS_ORDER.indexOf(status);
 
@@ -92,14 +93,7 @@ export function branchSummary(branch) {
   return problems.length ? problems.join(', ') : 'All OK';
 }
 
-/**
- * A fridge's type, from its name: numbered fridges are one type ("Display 1", "Display 2" →
- * "Display"); every other name is its own type. There's no stored type, so a new fridge name
- * becomes a new type by itself.
- */
-export function fridgeType(name) {
-  return name.trim().replace(/\s+\d+$/, '');
-}
+export { fridgeType };
 
 /** Every type in the overview, once each, A–Z (the Type filter's options). */
 export function typeOptions(fridges) {

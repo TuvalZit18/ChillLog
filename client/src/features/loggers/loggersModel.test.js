@@ -6,50 +6,9 @@ import {
   checkMove,
   DATE_FORMAT_LABELS,
   historyItems,
-  loggerRow,
   retriedNote,
-  sortByCode,
   UNIT_LABELS,
 } from './loggersModel.js';
-
-const logger = (overrides) => ({
-  id: 1,
-  code: 'TL-0417',
-  unit: 'C',
-  dateFormat: 'DD/MM',
-  current: {
-    fridgeId: 3,
-    fridgeName: 'Display 2',
-    branchName: 'Tel Aviv',
-    fromUtc: '2026-09-16T21:00:00Z',
-  },
-  ...overrides,
-});
-
-describe('loggerRow', () => {
-  it('"We moved one of the Tel Aviv loggers into the new display fridge last week": shows where it is now, and since when', () => {
-    expect(loggerRow(logger())).toEqual({
-      where: 'Tel Aviv · Display 2',
-      since: 'since 17 Sep',
-      tags: [],
-    });
-  });
-
-  it('"The old logger in Haifa shows the numbers differently": tags a logger whose files are °F or month-first', () => {
-    expect(loggerRow(logger({ unit: 'F', dateFormat: 'MM/DD' })).tags).toEqual([
-      '°F',
-      'Dates MM/DD',
-    ]);
-  });
-
-  it('calls a logger that is in no fridge a spare', () => {
-    expect(loggerRow(logger({ current: null }))).toEqual({
-      where: 'Not in a fridge',
-      since: 'Spare logger',
-      tags: [],
-    });
-  });
-});
 
 // TL-0417's detail as GET /api/loggers/1 returns it: history newest first.
 const moved = {
@@ -125,13 +84,6 @@ describe('UNIT_LABELS and DATE_FORMAT_LABELS', () => {
       'DD/MM': 'Day first (21/09)',
       'MM/DD': 'Month first (09/21)',
     });
-  });
-});
-
-describe('sortByCode', () => {
-  it('lists loggers by the ID printed on them', () => {
-    const sorted = sortByCode([logger({ code: 'TL-0512' }), logger({ code: 'TL-0231' })]);
-    expect(sorted.map((l) => l.code)).toEqual(['TL-0231', 'TL-0512']);
   });
 });
 

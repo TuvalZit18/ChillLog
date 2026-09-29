@@ -2,14 +2,14 @@
 // so uploads use it from then on; plus the branches and fridges they go in.
 
 import { lazy, Suspense, useState } from 'react';
-import { Link } from 'react-router';
 import button from '../../shared/ui/button.module.css';
 import { Icon } from '../../shared/ui/Icon.jsx';
 import { Skeleton } from '../../shared/ui/Skeleton.jsx';
 import { StateBox } from '../../shared/ui/StateBox.jsx';
 import { Toast, useToast } from '../../shared/ui/Toast.jsx';
 import { useGetBranchesQuery, useGetLoggersQuery } from './loggersApi.js';
-import { loggerRow, retriedNote, sortByCode } from './loggersModel.js';
+import { LoggerTable } from './LoggerTable.jsx';
+import { retriedNote } from './loggersModel.js';
 import styles from './LoggersPage.module.css';
 
 // The forms bring react-hook-form and Zod; load them only when one opens.
@@ -62,49 +62,17 @@ export function LoggersPage() {
     );
   }
 
-  const list = sortByCode(loggers.data);
-
   return (
     <div className={styles.page}>
       <Head onAdd={() => setDialog({ kind: 'logger' })} />
 
-      <section className={styles.section} aria-labelledby="logger-list">
-        <h2 id="logger-list">
-          {list.length} {list.length === 1 ? 'logger' : 'loggers'}
-        </h2>
-        {list.length === 0 ? (
-          <p className={`${styles.card} ${styles.pad} muted`}>
-            No loggers yet. Add one with the ID printed on it.
-          </p>
-        ) : (
-          <ul className={styles.card}>
-            {list.map((logger) => {
-              const row = loggerRow(logger);
-              return (
-                <li key={logger.id}>
-                  <Link to={`/loggers/${logger.id}`} className={styles.row}>
-                    <span className={styles.code}>{logger.code}</span>
-                    <span className={styles.where}>
-                      <span className={logger.current ? undefined : 'muted'}>{row.where}</span>
-                      <span className={`${styles.sub} num`}>{row.since}</span>
-                    </span>
-                    {row.tags.length > 0 && (
-                      <span className={styles.tags}>
-                        {row.tags.map((tag) => (
-                          <span key={tag} className={styles.tag}>
-                            {tag}
-                          </span>
-                        ))}
-                      </span>
-                    )}
-                    <Icon name="chevRight" className={styles.chevron} />
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
+      {loggers.data.length === 0 ? (
+        <p className={`${styles.card} ${styles.pad} muted`}>
+          No loggers yet. Add one with the ID printed on it.
+        </p>
+      ) : (
+        <LoggerTable loggers={loggers.data} />
+      )}
 
       <section className={styles.section} aria-labelledby="branch-list">
         <div className={styles.sectionHead}>

@@ -84,6 +84,9 @@ const PATHS = {
   ),
   chevDown: <path d="M6 9l6 6 6-6" />,
   chevRight: <path d="M9 5l7 7-7 7" />,
+  sortBoth: <path d="M8 9.5l4-4 4 4M8 14.5l4 4 4-4" />,
+  sortAsc: <path d="M8 14l4-4 4 4" />,
+  sortDesc: <path d="M8 10l4 4 4-4" />,
   plus: <path d="M12 5v14M5 12h14" />,
   back: <path d="M15 5l-7 7 7 7" />,
   info: (

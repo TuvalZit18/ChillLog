@@ -56,27 +56,6 @@ export function checkMove({ fridgeId, from }, logger) {
   return null;
 }
 
-/** Loggers by the ID printed on them. */
-export function sortByCode(loggers) {
-  return [...loggers].sort((a, b) => a.code.localeCompare(b.code));
-}
-
-/**
- * One row of the logger list: where it is, since when, and tags for files written in a
- * non-default way (°F, month-first dates), so an odd logger stands out.
- */
-export function loggerRow(logger) {
-  const tags = [logger.unit === 'F' && '°F', logger.dateFormat === 'MM/DD' && 'Dates MM/DD'].filter(
-    Boolean,
-  );
-  if (!logger.current) return { where: 'Not in a fridge', since: 'Spare logger', tags };
-  return {
-    where: place(logger.current),
-    since: `since ${formatDate(logger.current.fromUtc)}`,
-    tags,
-  };
-}
-
 /**
  * After adding a logger or changing its settings, files that were waiting for it are tried
  * again on the server; say what happened to them.
