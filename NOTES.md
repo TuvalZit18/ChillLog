@@ -87,6 +87,7 @@
 - **Email ingestion**: branch managers' emails imported automatically, removing the upload step.
 - **AI Assistant**: ask inspector-style questions in plain language, answered through read-only tools over the same detection code, with the underlying rows shown. Deferred because free AI APIs still need an account (conflicts with the brief). I'd ask you whether to add it.
 - **Move to Postgres/MySQL** once hosted with multiple users.
+- **A date picker in the app's style on desktop.** Date fields open the browser's own calendar, which is square with a blue selected day; pages can't restyle it. A picker library (e.g. react-datepicker) on desktop only, loaded when opened and styled with the app's tokens, would fix that, while phones keep their own picker. Left out of the two days because Summer works on her phone, where her phone's picker already opens, and it would reverse the native-controls decision. To decide with Summer once she's back: does the desktop look matter to her?
 
 ## How I worked with AI tools
 
