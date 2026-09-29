@@ -2,7 +2,7 @@
 
 - **Date:** 2026-09-27 14:33 → 2026-09-28 02:00 (Israel time)
 - **Tool:** Claude (claude.ai cloud session), using my own `architecture-advisor` skill
-- **Outputs:** `docs/brief.md`, `docs/architecture-and-stack.md`, `NOTES.md` (draft)
+- **Outputs:** `docs/assignment/brief.md`, `docs/architecture/architecture-and-stack.md`, `NOTES.md` (draft)
 - **Next:** continue in VS Code (Claude Code extension), branch `chore/scaffold`
 
 ## What I asked for
@@ -18,7 +18,7 @@
 - Ran 12 tool topics in the same format.
 - Flagged conflicts with the brief's constraints: free AI APIs still need an account; MySQL needs a server.
 - Raised non-obvious risks: row-count mismatch in Summer's email (~3k vs ~25k/week), daylight-saving hour silently dropping readings, DD/MM ambiguity, averaging hiding spikes in charts, CSV formula injection in Excel exports, showing times in Israel time for reviewers abroad, weekly data making notifications useless.
-- Wrote `docs/architecture-and-stack.md` (16 sections: architecture → stack) and a NOTES.md draft with [TO FILL] placeholders.
+- Wrote `docs/architecture/architecture-and-stack.md` (16 sections: architecture → stack) and a NOTES.md draft with [TO FILL] placeholders.
 - Looked up in the Claude Code docs how to resume this cloud session in the VS Code extension.
 
 ## Where I overrode or corrected the AI

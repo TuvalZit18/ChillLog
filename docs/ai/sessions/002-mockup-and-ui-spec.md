@@ -7,7 +7,7 @@
   `docs/design/ui.md` (UI spec)
 - **Branches / PRs:** `docs/mockup` → PR #1 · `docs/ui-spec` → PR #2 · `docs/ai-session-002` → PR #3 (this file) ·
   `ci/skip-docs` → PR #4 · `docs/ai-session-002-ci` (this update)
-- **Next:** start the feature branches in the order of `docs/architecture-and-stack.md` §16
+- **Next:** start the feature branches in the order of `docs/architecture/architecture-and-stack.md` §16
 
 ## What I asked for
 1. "Are we good?": a status check after the scaffold merge.

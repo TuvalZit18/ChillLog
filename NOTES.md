@@ -1,13 +1,11 @@
 # ChillLog: Notes
 
-> Full reasoning for every decision: [`docs/architecture-and-stack.md`](docs/architecture-and-stack.md).
+> Full reasoning for every decision: [`docs/architecture/architecture-and-stack.md`](docs/architecture/architecture-and-stack.md).
 > How to run it: [`README.md`](README.md).
 
 ## Time spent
 
-- Planning (understanding the brief, architecture, tech stack, UI mockup): ~[X] h
-- Build (backend, then the five screens): ~[X] h
-- Docs & final checks: ~[X] h
+- About **2 days** in total: planning (the brief, architecture, tech stack, UI mockup), the build (backend, then the five screens), and the docs and final checks.
 
 ## Decisions Summer didn't ask for, and why
 
@@ -84,7 +82,7 @@
 
 **Deferred on purpose**
 - **Login** (single user) before any real use.
-- **Hosting**, so Summer's phone works away from the laptop's network.
+- **Hosting**, so Summer's phone works away from the laptop's network. **And CD with it:** today there is CI only (lint, tests and build on every pull request) and no deployment, because the brief asks for an app that runs locally with no accounts or paid services. Once it's hosted, each merge to `main` would build the app, run the migrations and deploy it automatically.
 - **Automated backups** of the data folder.
 - **Importing Summer's existing Excel sheet** to seed the registry and past readings.
 - **Email ingestion**: branch managers' emails imported automatically, removing the upload step.
@@ -113,18 +111,18 @@
 I used Claude Code for the whole build, with fixed rules in [`CLAUDE.md`](CLAUDE.md): the architecture is decided and not reopened, one branch per feature, stop after each commit-sized piece, narrate every action, and **the AI never commits**: I made every commit and merge by hand.
 
 **One thing it got wrong, how it was caught, where to see it**
-- The fridge page and the inspector counted missing data up to "now", so every Monday, before the week's files are due, every fridge showed a gap (a healthy fridge got "Gap · 19h 36m"), and the overview disagreed with them. It was caught by screenshotting the new fridge page against the demo data. Tests were written first and shown failing, then fixed in one commit: **`f75c5cb`**, tests in `server/test/api-fridges.test.js` (`"Once a week each branch manager downloads the logger's file" …`). Full entry: [`docs/ai-log.md`](docs/ai-log.md) #2; entry #1 is an earlier bug (a repeated upload reported readings added).
+- The fridge page and the inspector counted missing data up to "now", so every Monday, before the week's files are due, every fridge showed a gap (a healthy fridge got "Gap · 19h 36m"), and the overview disagreed with them. It was caught by screenshotting the new fridge page against the demo data. Tests were written first and shown failing, then fixed in one commit: **`f75c5cb`**, tests in `server/test/api-fridges.test.js` (`"Once a week each branch manager downloads the logger's file" …`). Full entry: [`docs/ai/ai-log.md`](docs/ai/ai-log.md) #2; entry #1 is an earlier bug (a repeated upload reported readings added).
 
 **Where I rejected or changed its output**
 - **Process:** it wanted each fix on its own branch and the failing test in its own commit (CLAUDE.md said so); I chose fixes on the current branch and tests committed with their fix, and it recorded that in the log.
 - **Design:** I rejected its Gap look (purple, three dots → blue, broken line), sent it to review the branch cards against the Laws of UX, replaced its card border with a glow design, and pointed out uneven card heights and dividers crossing the border, which it then fixed.
 - **Caught by me in use:** the upload report disappearing when leaving the page (left as a known gap above).
 
-Per-conversation summaries (what I asked, where I overrode it, what it did): [`docs/ai-sessions/`](docs/ai-sessions/).
+Per-conversation summaries (what I asked, where I overrode it, what it did): [`docs/ai/sessions/`](docs/ai/sessions/).
 
 ## Approach (optional)
 
-- Decided the **architecture before any tools**, using my own `architecture-advisor` skill (context questions → decision tables with options, trade-offs, approval), then picked tools to serve each decision. Both are in `docs/architecture-and-stack.md`.
+- Decided the **architecture before any tools**, using my own `architecture-advisor` skill (context questions → decision tables with options, trade-offs, approval), then picked tools to serve each decision. Both are in `docs/architecture/architecture-and-stack.md`.
 - Built in feature branches with self-merged PRs, one per module, so the history shows how it came together.
 - **Test-first where there's logic** (detection, gaps, time zones, wording): ~290 tests, each messy case from the email named after the line it quotes.
 - **Every screen checked in a real browser** before committing: headless Edge driven against freshly seeded demo data, at phone and desktop width, in light and dark. That's how the gap bug above was found.

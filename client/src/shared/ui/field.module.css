@@ -88,7 +88,7 @@
   opacity: 0.6;
 }
 
-/* Date fields keep the browser's own calendar (docs/architecture-and-stack.md: native controls, so
+/* Date fields keep the browser's own calendar (docs/architecture/architecture-and-stack.md: native controls, so
    phones open their own picker). Like the dropdowns, they show they can be clicked: hand cursor
    and a teal border on hover. The calendar itself (its square shape and blue selected day) is the
    browser's and can't be styled; accent-color was tried and Edge ignores it there. */

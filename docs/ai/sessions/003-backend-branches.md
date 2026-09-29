@@ -3,7 +3,7 @@
 - **Date:** 2026-09-28 ~09:50 → 12:40 (Israel time)
 - **Tool:** Claude Code (VS Code extension), Claude Opus 5.5
 - **Outputs:** the whole server side: SQLite migrations, logger registry, ingest pipeline (normalize, upload,
-  rebuild), detection rules and derived tables, the REST API, and the demo data generator. `docs/ai-log.md` entry #1.
+  rebuild), detection rules and derived tables, the REST API, and the demo data generator. `docs/ai/ai-log.md` entry #1.
   NOTES.md: detection parameters, the overview's week, early-stopping files.
 - **Branches / PRs:** `feat/db-migrations` → PR #6 · `feat/registry` → PR #7 · `feat/ingest` → PR #8 (3 commits) ·
   `feat/detection` → PR #9 (2 commits) · `feat/api` → PR #10 (5 pieces, plus the ai-log test and fix) ·
