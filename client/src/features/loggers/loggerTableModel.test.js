@@ -100,16 +100,31 @@ describe('sortRows', () => {
 });
 
 describe('nextSort', () => {
-  it('a new column starts A–Z (Since starts newest first); the same column flips', () => {
-    expect(nextSort({ sort: 'code', dir: 'asc' }, 'branch')).toEqual({
-      sort: 'branch',
-      dir: 'asc',
-    });
-    expect(nextSort({ sort: 'code', dir: 'asc' }, 'since')).toEqual({ sort: 'since', dir: 'desc' });
-    expect(nextSort({ sort: 'branch', dir: 'asc' }, 'branch')).toEqual({
-      sort: 'branch',
-      dir: 'desc',
-    });
+  const byDefault = { sort: 'code', dir: 'asc' };
+
+  it('three clicks on a column: A–Z, then Z–A, then back to the default order', () => {
+    const first = nextSort(byDefault, 'branch');
+    expect(first).toEqual({ sort: 'branch', dir: 'asc' });
+    const second = nextSort(first, 'branch');
+    expect(second).toEqual({ sort: 'branch', dir: 'desc' });
+    expect(nextSort(second, 'branch')).toEqual(byDefault);
+  });
+
+  it('Since starts newest first, then oldest first, then back to the default order', () => {
+    const first = nextSort(byDefault, 'since');
+    expect(first).toEqual({ sort: 'since', dir: 'desc' });
+    const second = nextSort(first, 'since');
+    expect(second).toEqual({ sort: 'since', dir: 'asc' });
+    expect(nextSort(second, 'since')).toEqual(byDefault);
+  });
+
+  it('the Logger column, already the default, flips between A–Z and Z–A', () => {
+    expect(nextSort(byDefault, 'code')).toEqual({ sort: 'code', dir: 'desc' });
+    expect(nextSort({ sort: 'code', dir: 'desc' }, 'code')).toEqual(byDefault);
+  });
+
+  it('another column starts fresh, whatever was sorted before', () => {
+    expect(nextSort({ sort: 'branch', dir: 'desc' }, 'type')).toEqual({ sort: 'type', dir: 'asc' });
   });
 });
 
