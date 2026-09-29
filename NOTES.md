@@ -71,12 +71,15 @@
 - Can one fridge have two loggers at the same time (e.g. a spare left inside)? The app allows it and combines their readings; if it's always a mistake, I'd block it.
 - When a logger moves, do you know the time, or only the day? Moves are recorded from a date.
 - Is "last full Monday–Sunday week" the right first view, or would you rather see "the last 7 days"?
+- Are branches always named after their city, or are some named after an area or a mall (e.g. two branches in Tel Aviv)? That decides whether branch names should come from the official list of Israeli localities or stay free text.
+- Would a map of the branches help you, e.g. to see at a glance where the problems are?
 
 ## What's not done / what I'd do with one more hour
 
 **With one more hour**
 - **Keep the upload report when Summer leaves the page.** Today it lives in the Upload page, so opening a fridge from the report and coming back shows an empty screen (the files themselves are saved; files still needing her stay listed).
 - **Block, or at least warn about, a second logger in the same fridge** (see the question above).
+- **Catch near-duplicate branch names.** "Haifa" twice is already refused, but "haifa" or "Tel-Aviv" next to "Tel Aviv" would get in; compare names ignoring case, spaces and dashes.
 - **Try it on a real phone.** Every screen was checked with screenshots at phone width (390 px) in light and dark, but not by hand on a device; touch on the chart and the Share button are untested.
 
 **Deferred on purpose**
@@ -87,7 +90,23 @@
 - **Email ingestion**: branch managers' emails imported automatically, removing the upload step.
 - **AI Assistant**: ask inspector-style questions in plain language, answered through read-only tools over the same detection code, with the underlying rows shown. Deferred because free AI APIs still need an account (conflicts with the brief). I'd ask you whether to add it.
 - **Move to Postgres/MySQL** once hosted with multiple users.
-- **A date picker in the app's style on desktop.** Date fields open the browser's own calendar, which is square with a blue selected day; pages can't restyle it. A picker library (e.g. react-datepicker) on desktop only, loaded when opened and styled with the app's tokens, would fix that, while phones keep their own picker. Left out of the two days because Summer works on her phone, where her phone's picker already opens, and it would reverse the native-controls decision. To decide with Summer once she's back: does the desktop look matter to her?
+
+**Ideas to decide with Summer once she's back** (left out of the two days on purpose)
+
+- **Date picker in the app's style (desktop)**
+  - Today: date fields open the browser's own calendar, square with a blue selected day. Pages can't restyle it.
+  - Idea: a picker library (e.g. react-datepicker) on desktop only, loaded when opened. Phones keep their own picker.
+  - Why not now: Summer works on her phone, where her own picker already opens, and it would reverse the native-controls decision.
+
+- **Branch names suggested from real Israeli localities**
+  - Idea: when adding a branch, suggest names from the official locality list (data.gov.il) as she types, still allowing any name.
+  - How: the list ships inside the app with a native `<datalist>`. No live API, because the app runs without internet.
+  - Why not now: a branch name isn't always a city (see the question above).
+
+- **Map of the branches**
+  - Idea: every branch as a pin on a map of Israel with its worst status (icon + word). Tap a pin to open that branch; pick a place to add a new one.
+  - How: each branch needs a location (the locality list has coordinates). A built-in outline map works offline; map tiles only once the app is hosted.
+  - Why not now: 12 branches read fine as a list; worth it only if Summer wants it (see the question above).
 
 ## How I worked with AI tools
 
