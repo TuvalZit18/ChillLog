@@ -1,5 +1,6 @@
 // Overview (docs/design/ui.md, "Screens > Overview"): how every fridge did last week and where
-// something is wrong. The status filter lives in the URL (?status=alert) so it can be bookmarked.
+// something is wrong. The status, branch and type filters live in the URL
+// (?status=alert&branch=4&type=Display) so a view can be bookmarked or shared.
 
 import { Link, useSearchParams } from 'react-router';
 import { formatDateTime, formatDay } from '../../shared/format/format.js';
@@ -12,11 +13,16 @@ import { BranchNoFileCard, FridgeCard } from './FridgeCard.jsx';
 import { OverviewSkeleton } from './OverviewSkeleton.jsx';
 import { useGetOverviewQuery } from './overviewApi.js';
 import {
+  countByStatus,
+  filterFridges,
   groupBranches,
   needsAttention,
+  placeFilterOptions,
+  readPlaceFilter,
   readStatusFilter,
   sortWorstFirst,
 } from './overviewModel.js';
+import { PlaceFilters } from './PlaceFilters.jsx';
 import { StatusChips } from './StatusChips.jsx';
 import styles from './OverviewPage.module.css';
 
@@ -75,17 +81,29 @@ export function OverviewPage() {
     );
   }
 
-  function toggleFilter(status) {
+  /** Set or clear URL filters, keeping the others. */
+  function setParams(changes) {
     setSearchParams((current) => {
       const next = new URLSearchParams(current);
-      if (next.get('status') === status) next.delete('status');
-      else next.set('status', status);
+      for (const [name, value] of Object.entries(changes)) {
+        if (value === null) next.delete(name);
+        else next.set(name, value);
+      }
       return next;
     });
   }
 
-  const { week, lastUploadUtc, counts, fridges } = data;
+  function toggleFilter(status) {
+    setParams({ status: filter === status ? null : status });
+  }
+
+  const { week, lastUploadUtc } = data;
+  // Branch and Type narrow everything below them: the chip counts and both sections.
+  const place = readPlaceFilter(searchParams);
+  const narrowed = place.branchId !== null || place.type !== null;
+  const fridges = filterFridges(data.fridges, place);
   const branches = groupBranches(fridges);
+  const clearPlace = () => setParams({ branch: null, type: null });
 
   return (
     <div className={styles.page}>
@@ -97,9 +115,24 @@ export function OverviewPage() {
         </p>
       </div>
 
-      <StatusChips counts={counts} selected={filter} onToggle={toggleFilter} />
+      <StatusChips counts={countByStatus(fridges)} selected={filter} onToggle={toggleFilter} />
 
-      {filter ? (
+      <PlaceFilters
+        {...placeFilterOptions(data.fridges, place)}
+        branchId={place.branchId}
+        type={place.type}
+        onChange={(name, value) => setParams({ [name]: value })}
+        onClear={clearPlace}
+      />
+
+      {fridges.length === 0 ? (
+        <div className={styles.allOk}>
+          <p>No fridges match these filters.</p>
+          <button type="button" className={`${button.button} ${button.link}`} onClick={clearPlace}>
+            Clear filters
+          </button>
+        </div>
+      ) : filter ? (
         <FilteredList
           status={filter}
           fridges={sortWorstFirst(fridges.filter((f) => f.status === filter))}
@@ -107,10 +140,10 @@ export function OverviewPage() {
         />
       ) : (
         <>
-          <NeedsAttention fridges={fridges} />
+          <NeedsAttention fridges={fridges} narrowed={narrowed} />
           <section className={styles.section} aria-labelledby="all-branches">
             <div className={styles.sectionHead}>
-              <h2 id="all-branches">All branches</h2>
+              <h2 id="all-branches">{narrowed ? 'Branches' : 'All branches'}</h2>
               <span className="small muted">
                 {plural(branches.length, 'branch', 'branches')} · {plural(fridges.length, 'fridge')}
               </span>
@@ -123,8 +156,11 @@ export function OverviewPage() {
   );
 }
 
-function NeedsAttention({ fridges }) {
+function NeedsAttention({ fridges, narrowed }) {
   const items = needsAttention(fridges);
+  const allOk = narrowed
+    ? 'Every fridge in this view is OK this week'
+    : 'Every fridge is OK this week';
   return (
     <section className={styles.section} aria-labelledby="needs-attention">
       <div className={styles.sectionHead}>
@@ -133,7 +169,7 @@ function NeedsAttention({ fridges }) {
       </div>
       {items.length === 0 ? (
         <div className={styles.allOk}>
-          <StatusPill status="ok" text="Every fridge is OK this week" />
+          <StatusPill status="ok" text={allOk} />
         </div>
       ) : (
         <div className={styles.cards}>
