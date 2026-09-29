@@ -95,37 +95,27 @@ export function branchSummary(branch) {
 
 export { fridgeType };
 
-/** Every type in the overview, once each, A–Z (the Type filter's options). */
-export function typeOptions(fridges) {
-  return [...new Set(fridges.map((f) => fridgeType(f.fridgeName)))].sort((a, b) =>
-    a.localeCompare(b),
-  );
-}
-
-/** Every branch in the overview, once each, A–Z (the Branch filter's options). */
-export function branchOptions(fridges) {
-  const byId = new Map(fridges.map((f) => [f.branchId, { id: f.branchId, name: f.branchName }]));
-  return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name));
-}
+const byName = (a, b) => a.localeCompare(b);
 
 /**
- * The Branch and Type filters' options: each list offers only what the other filter allows (with
- * Beersheba chosen, Type lists Beersheba's types), so no choice leads to an empty screen. The
- * chosen values always stay in their lists, even an impossible pair from a bookmarked URL.
+ * The Branch and Type filters' options, from the branches in the database (GET /api/branches),
+ * so a branch just added in Setup is listed even before it has fridges. Each list offers only
+ * what the other filter allows (with Beersheba chosen, Type lists Beersheba's types). The chosen
+ * values always stay in their lists, even an impossible pair from a bookmarked URL.
+ * @param {Array<{ id: number, name: string, fridges: Array<{ name: string }> }>} branches
  */
-export function placeFilterOptions(fridges, place) {
-  const branches = branchOptions(filterFridges(fridges, { ...place, branchId: null }));
-  if (place.branchId !== null && !branches.some((b) => b.id === place.branchId)) {
-    const chosen = branchOptions(fridges).find((b) => b.id === place.branchId);
-    if (chosen) branches.push(chosen);
-    branches.sort((a, b) => a.name.localeCompare(b.name));
-  }
-  const types = typeOptions(filterFridges(fridges, { ...place, type: null }));
-  if (place.type !== null && !types.includes(place.type)) {
-    types.push(place.type);
-    types.sort((a, b) => a.localeCompare(b));
-  }
-  return { branches, types };
+export function placeFilterOptions(branches, place) {
+  const typesOf = (branch) => branch.fridges.map((f) => fridgeType(f.name));
+  const branchOptions = branches
+    .filter(
+      (b) => place.type === null || b.id === place.branchId || typesOf(b).includes(place.type),
+    )
+    .map((b) => ({ id: b.id, name: b.name }))
+    .sort((a, b) => byName(a.name, b.name));
+  const inBranch = branches.filter((b) => place.branchId === null || b.id === place.branchId);
+  const types = new Set(inBranch.flatMap(typesOf));
+  if (place.type !== null) types.add(place.type);
+  return { branches: branchOptions, types: [...types].sort(byName) };
 }
 
 /** The fridges in the chosen branch, of the chosen type and with the chosen status (null = any). */
