@@ -69,8 +69,8 @@ After step 5, every messy case from the email can be seen in the app:
 
 | From the email                                  | Where to look                                                                                                                                                           |
 | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| "The old logger in Haifa shows the numbers differently" | Loggers → **TL-0231** is tagged **°F**; its file (Haifa · Dairy) is converted to °C. Its upload card also counts 2 ERR readings.                                |
-| "We moved one of the Tel Aviv loggers into the new display fridge" | Loggers → **TL-0417** → move history: Walk-in, then Display 2 from Wednesday. Each fridge's chart gets the readings from its own dates.       |
+| "The old logger in Haifa shows the numbers differently" | Setup → **TL-0231** is tagged **°F**; its file (Haifa · Dairy) is converted to °C. Its upload card also counts 2 ERR readings.                                |
+| "We moved one of the Tel Aviv loggers into the new display fridge" | Setup → **TL-0417** → move history: Walk-in, then Display 2 from Wednesday. Each fridge's chart gets the readings from its own dates.       |
 | "The files don't look quite the same… the columns move around" | The 28 files use six layouts: commas, semicolons with decimal commas, tabs, different date formats, the logger ID in the name or on the first line. All read the same. |
 | "Sometimes there's a gap of a couple of hours"   | **Jerusalem · Dairy**: "Gap · 2h 15m" on the Overview (on Monday; pick **30 days** on its page to see the break in the chart). **Ashdod · Dairy**: the file stops on Thursday ("the battery ran out"). |
 | "someone opens the door… a jump for one reading, which is fine" | Any fridge's page: single high readings are orange circles on the chart ("Door opening") and listed as "ignored as a door opening"; they never count as time above 5°C. |

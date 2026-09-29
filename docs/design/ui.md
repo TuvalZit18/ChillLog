@@ -133,12 +133,13 @@ The mockup follows the device setting only. The app adds a switch.
 ## App shell
 
 - **Top bar** (`--surface`, bottom border): thermometer icon + "ChillLog" on the left, theme button on the right.
-- **Phone:** bottom tab bar with 4 tabs, each an icon above a label: **Overview · Upload · Inspector · Loggers**.
+- **Phone:** bottom tab bar with 4 tabs, each an icon above a label: **Overview · Upload · Inspector · Setup**
+  (Setup: loggers, branches and fridges, with a sliders icon; the URL stays `/loggers`).
   The active tab has accent text and an accent-soft pill behind the icon. The bar pads for the phone's safe area.
 - **Desktop (≥880px):** the same 4 items in a left sidebar, icon beside label; the active item has an accent-soft background.
 - Only the main area scrolls; the top bar and nav stay put.
-- Fridge detail belongs to the Overview tab; logger detail belongs to the Loggers tab. Both have a
-  "← Overview" / "← Loggers" back link at the top.
+- Fridge detail belongs to the Overview tab; logger detail belongs to the Setup tab. Both have a
+  "← Overview" / "← Loggers" back link at the top (the latter opens Setup's Loggers tab).
 
 ## Status system
 
@@ -236,12 +237,14 @@ Filters: Branch (or All branches), Fridge (or All fridges), From, To. **Answer c
 cards below. Note: "Single readings above 5°C, such as a door opening, are not counted. Gaps in the data
 are listed separately." Gaps section. Buttons **Export CSV** and Share.
 
-### Loggers
-Title, then two **tabs** with counts: **Loggers** (the default) and **Branches and fridges**
+### Setup
+Two **tabs** with counts at the top: **Loggers** (the default) and **Branches and fridges**
 (`?tab=branches`, which keeps the table's filters). The selected tab is bold with a teal underline; arrow
-keys move between tabs. The main button follows the tab: **Add logger** or **Add branch**.
+keys move between tabs. The tabs come first, so choosing one changes everything under it: each tab has its
+own title, one-line description and main button (**Add logger** · **Add branch**).
 
-**Loggers tab:** the loggers as a **table** (from 720px): Logger · Branch · Type of fridge · Since.
+**Loggers tab** ("Which logger sits in which fridge. Set it once; uploads use it from then on."): the
+loggers as a **table** (from 720px): Logger · Branch · Type of fridge · Since.
 Every header sorts its column (click again to reverse; the sorted one is teal), and a filter row under the
 headers has an ID search and Branch / Type dropdowns; all kept in the URL (`?q=&branch=&type=&sort=&dir=`).
 Each column looks different: ID bold mono with tags for non-default settings (°F, date format), branch in
@@ -249,7 +252,8 @@ the small grey uppercase style used for branches everywhere, fridge in plain tex
 the logger and hovers in the soft teal. On phones: the same filters plus a **Sort by** dropdown above compact
 rows (ID, "BRANCH · fridge", date).
 
-**Branches and fridges tab:** "N branches", then each branch with its fridges and **Add fridge**.
+**Branches and fridges tab** ("Every branch and the fridges in it. Add a fridge here before you put a
+logger in it."): "N branches", then each branch with its fridges and **Add fridge**.
 
 ### Logger detail
 Back link, logger ID. Details: current fridge, in this fridge since, unit, date format. Buttons

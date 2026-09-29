@@ -12,7 +12,8 @@ const TABS = [
   { to: '/', label: 'Overview', icon: 'navOverview', paths: ['/', '/fridges/*'] },
   { to: '/upload', label: 'Upload', icon: 'navUpload', paths: ['/upload/*'] },
   { to: '/inspector', label: 'Inspector', icon: 'navInspector', paths: ['/inspector/*'] },
-  { to: '/loggers', label: 'Loggers', icon: 'navLoggers', paths: ['/loggers/*'] },
+  // Setup: loggers, branches and fridges (the URL stays /loggers, where it opens).
+  { to: '/loggers', label: 'Setup', icon: 'navSetup', paths: ['/loggers/*'] },
 ];
 
 const isActive = (tab, pathname) => tab.paths.some((path) => matchPath(path, pathname));

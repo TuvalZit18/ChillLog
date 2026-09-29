@@ -1,5 +1,5 @@
-// Loggers (docs/design/ui.md, "Screens > Loggers"): which logger sits in which fridge, set once
-// so uploads use it from then on; plus the branches and fridges they go in, on a second tab.
+// Setup (docs/design/ui.md, "Screens > Setup"): two tabs. Loggers: which logger sits in which
+// fridge, set once so uploads use it from then on. Branches and fridges: where they go.
 
 import { lazy, Suspense, useState } from 'react';
 import { useSearchParams } from 'react-router';
@@ -19,6 +19,20 @@ const AddLoggerDialog = lazy(() => forms().then((m) => ({ default: m.AddLoggerDi
 const AddFridgeDialog = lazy(() => forms().then((m) => ({ default: m.AddFridgeDialog })));
 const AddBranchDialog = lazy(() => forms().then((m) => ({ default: m.AddBranchDialog })));
 
+// Each tab's own title, description and main button.
+const HEADS = {
+  loggers: {
+    title: 'Loggers',
+    about: 'Which logger sits in which fridge. Set it once; uploads use it from then on.',
+    action: 'Add logger',
+  },
+  branches: {
+    title: 'Branches and fridges',
+    about: 'Every branch and the fridges in it. Add a fridge here before you put a logger in it.',
+    action: 'Add branch',
+  },
+};
+
 export function LoggersPage() {
   const loggers = useGetLoggersQuery();
   const branches = useGetBranchesQuery();
@@ -32,7 +46,7 @@ export function LoggersPage() {
   if (loggers.isError || branches.isError) {
     return (
       <div className={styles.page}>
-        <Head />
+        <Head tab={tab} />
         <StateBox
           icon="wifiOff"
           tone="muted"
@@ -58,8 +72,8 @@ export function LoggersPage() {
   if (!loggers.data || !branches.data) {
     return (
       <div className={styles.page} role="status">
-        <span className="visually-hidden">Loading the loggers…</span>
-        <Head />
+        <span className="visually-hidden">Loading…</span>
+        <Head tab={tab} />
         <Skeleton height={320} />
       </div>
     );
@@ -72,19 +86,23 @@ export function LoggersPage() {
 
   return (
     <div className={styles.page}>
-      {tab === 'loggers' ? (
-        <Head action="Add logger" onAdd={() => setDialog({ kind: 'logger' })} />
-      ) : (
-        <Head action="Add branch" onAdd={() => setDialog({ kind: 'branch' })} />
-      )}
-
+      {/* The tabs come first, so choosing one changes everything under it: title and all. */}
       <Tabs
         tabs={tabs}
         current={tab}
         onChange={(next) => setSearchParams(tabSearch(searchParams, next))}
       />
 
-      <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
+      <div
+        role="tabpanel"
+        id={`panel-${tab}`}
+        aria-labelledby={`tab-${tab}`}
+        className={styles.page}
+      >
+        <Head
+          tab={tab}
+          onAdd={() => setDialog({ kind: tab === 'loggers' ? 'logger' : 'branch' })}
+        />
         {tab === 'loggers' ? (
           loggers.data.length === 0 ? (
             <p className={`${styles.card} ${styles.pad} muted`}>
@@ -163,14 +181,13 @@ export function LoggersPage() {
   );
 }
 
-function Head({ action, onAdd }) {
+function Head({ tab, onAdd }) {
+  const { title, about, action } = HEADS[tab];
   return (
     <div className={styles.head}>
       <div className={styles.titles}>
-        <h1>Loggers</h1>
-        <p className="small muted">
-          Which logger sits in which fridge. Set it once; uploads use it from then on.
-        </p>
+        <h1>{title}</h1>
+        <p className="small muted">{about}</p>
       </div>
       {onAdd && (
         <button type="button" className={`${button.button} ${button.primary}`} onClick={onAdd}>
