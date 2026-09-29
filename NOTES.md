@@ -1,13 +1,12 @@
 # ChillLog: Notes
 
-> Draft. Sections marked **[TO FILL]** get completed as the build progresses.
 > Full reasoning for every decision: [`docs/architecture-and-stack.md`](docs/architecture-and-stack.md).
+> How to run it: [`README.md`](README.md).
 
 ## Time spent
 
-**[TO FILL]**
-- Planning (understanding the brief, architecture, tech stack): ~[X] h
-- Build: ~[X] h
+- Planning (understanding the brief, architecture, tech stack, UI mockup): ~[X] h
+- Build (backend, then the five screens): ~[X] h
 - Docs & final checks: ~[X] h
 
 ## Decisions Summer didn't ask for, and why
@@ -32,6 +31,14 @@
 - **Mobile-first**, phone date pickers, status shown with icon + word + value (not color alone), readable in sunlight.
 - **Excursion export (CSV)** for the inspector, escaped so it can't run as formulas when opened in Excel.
 - **No push notifications.** Files arrive weekly, so an alert could only fire at upload time, when she's already looking. Catching a fridge "slowly dying for two days" needs more frequent data (see questions).
+
+**Made while building**
+- **Missing time after the last reading only counts as a gap up to the end of the last full week.** Files arrive on Monday for the week before, so on a Monday every fridge would otherwise show a "gap" until now. The fridge page says "Readings after Sun 27 Sep arrive with next Monday's files" instead.
+- **The inspector answer never calls a fridge with no readings "not above 5°C".** It says there are no readings for that range, so missing data can't look like a clean record.
+- **Files waiting for Summer stay listed** on the Upload screen (no logger ID, or held back) until she handles them, with no re-upload.
+- **Moves and settings are checked before sending**, so errors use Israel dates ("Pick a date after 23 Sep…") instead of a UTC timestamp.
+- **Branch cards reviewed against the [Laws of UX](https://lawsofux.com/)**: OK fridges are one quiet line, problems keep filled badges, each branch says its state in words ("1 alert, 1 gap · 3 fridges"), and a branch with a problem glows in its worst status's color.
+- **A Loggers screen** (add logger / fridge / branch, move a logger, file settings). The first plan had no branch for it, but without it the registry could only be changed through the API.
 
 **Scope**
 - **No login** in this version: it runs locally for one user. It's the first thing to add before real use.
@@ -59,11 +66,20 @@
 - Could files come daily instead of weekly? That's what would have saved the Rishon dairy.
 - Should branch managers upload their own files, or see only their branch?
 - What does the inspector want to take away: on-screen, emailed list, printed report?
-- **[TO FILL: questions that come up while building]**
+
+**Questions that came up while building**
+- Can one fridge have two loggers at the same time (e.g. a spare left inside)? The app allows it and combines their readings; if it's always a mistake, I'd block it.
+- When a logger moves, do you know the time, or only the day? Moves are recorded from a date.
+- Is "last full Monday–Sunday week" the right first view, or would you rather see "the last 7 days"?
 
 ## What's not done / what I'd do with one more hour
 
-**[TO FILL at the end]**. Known deferred items so far:
+**With one more hour**
+- **Keep the upload report when Summer leaves the page.** Today it lives in the Upload page, so opening a fridge from the report and coming back shows an empty screen (the files themselves are saved; files still needing her stay listed).
+- **Block, or at least warn about, a second logger in the same fridge** (see the question above).
+- **Try it on a real phone.** Every screen was checked with screenshots at phone width (390 px) in light and dark, but not by hand on a device; touch on the chart and the Share button are untested.
+
+**Deferred on purpose**
 - **Login** (single user) before any real use.
 - **Hosting**, so Summer's phone works away from the laptop's network.
 - **Automated backups** of the data folder.
@@ -74,13 +90,21 @@
 
 ## How I worked with AI tools
 
-**[TO FILL]**
-- One thing the AI got wrong or I rejected, how I caught it, where to see it: see [`docs/ai-log.md`](docs/ai-log.md) (commit + test references).
-- Per-conversation summaries (what I asked, where I overrode the AI, what the AI did): [`docs/ai-sessions/`](docs/ai-sessions/).
-- Instructions given to the tools: [`CLAUDE.md`](CLAUDE.md).
+I used Claude Code for the whole build, with fixed rules in [`CLAUDE.md`](CLAUDE.md): the architecture is decided and not reopened, one branch per feature, stop after each commit-sized piece, narrate every action, and **the AI never commits**: I made every commit and merge by hand.
+
+**One thing it got wrong, how it was caught, where to see it**
+- The fridge page and the inspector counted missing data up to "now", so every Monday, before the week's files are due, every fridge showed a gap (a healthy fridge got "Gap · 19h 36m"), and the overview disagreed with them. It was caught by screenshotting the new fridge page against the demo data. Tests were written first and shown failing, then fixed in one commit: **`f75c5cb`**, tests in `server/test/api-fridges.test.js` (`"Once a week each branch manager downloads the logger's file" …`). Full entry: [`docs/ai-log.md`](docs/ai-log.md) #2; entry #1 is an earlier bug (a repeated upload reported readings added).
+
+**Where I rejected or changed its output**
+- **Process:** it wanted each fix on its own branch and the failing test in its own commit (CLAUDE.md said so); I chose fixes on the current branch and tests committed with their fix, and it recorded that in the log.
+- **Design:** I rejected its Gap look (purple, three dots → blue, broken line), sent it to review the branch cards against the Laws of UX, replaced its card border with a glow design, and pointed out uneven card heights and dividers crossing the border, which it then fixed.
+- **Caught by me in use:** the upload report disappearing when leaving the page (left as a known gap above).
+
+Per-conversation summaries (what I asked, where I overrode it, what it did): [`docs/ai-sessions/`](docs/ai-sessions/).
 
 ## Approach (optional)
 
 - Decided the **architecture before any tools**, using my own `architecture-advisor` skill (context questions → decision tables with options, trade-offs, approval), then picked tools to serve each decision. Both are in `docs/architecture-and-stack.md`.
 - Built in feature branches with self-merged PRs, one per module, so the history shows how it came together.
-- **[TO FILL: anything else worth saying at the end]**
+- **Test-first where there's logic** (detection, gaps, time zones, wording): ~290 tests, each messy case from the email named after the line it quotes.
+- **Every screen checked in a real browser** before committing: headless Edge driven against freshly seeded demo data, at phone and desktop width, in light and dark. That's how the gap bug above was found.
