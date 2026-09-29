@@ -16,6 +16,10 @@ Everything written about the project, grouped by what you want to know. To run t
   your way around, and where new code goes.
 - [database.md](architecture/database.md): every table, how they relate, and what changes them. The
   diagram is also an image: [database-tables.png](architecture/database-tables.png).
+- [security.md](architecture/security.md): what is protected today, what isn't, and what must
+  happen before real use.
+- [scalability.md](architecture/scalability.md): how big the data gets, why it stays fast, and what to
+  change as the bakery grows.
 - [api.html](architecture/api.html): the API reference with real examples. Open it in a browser.
 
 ## How to work on it: `development/`
