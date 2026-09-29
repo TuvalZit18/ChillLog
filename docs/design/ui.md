@@ -198,7 +198,9 @@ The mockup follows the device setting only. The app adds a switch.
 - **Form field:** 14px / 600 label above a 46px input; optional hint under it in 13px `--muted`.
   Dropdowns stay native `<select>`s; where the browser supports a customizable select (Chrome, Edge),
   the open list gets 12px corners and items hover in the accent teal. Other browsers and phones keep
-  their native list or picker.
+  their native list or picker. Dropdowns and date fields show a hand cursor and a teal border on hover.
+  Date fields open the browser's own calendar, which can't be styled (square, blue selected day); a
+  custom calendar was considered and rejected, since phones already open their own picker.
 - **Timeline** (logger move history): vertical line with dots, newest first; the current place has a filled accent dot.
 - **Toast:** dark pill near the bottom (above the tab bar), plain sentence, disappears after ~3 s, `role="status"`.
 
